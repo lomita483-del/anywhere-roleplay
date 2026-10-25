@@ -44,7 +44,7 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 42, z: 52, w: 26, d: 22, h: 26, color: "#d9c4e0", kind: "apartments", label: "IKOYI TOWERS" },
   { x: 62, z: 24, w: 16, d: 14, h: 9, color: "#c4d1a3" },
   { x: 24, z: 26, w: 14, d: 12, h: 11, color: "#d1bfa3" },
-  { x: 22, z: 58, w: 14, d: 16, h: 8, color: "#a3b8d1", label: "TRADE DEPOT" },
+  { x: 22, z: 58, w: 14, d: 16, h: 8, color: "#a3b8d1", kind: "depot", label: "TRADE DEPOT" },
 ];
 
 export interface Poi {
@@ -61,7 +61,7 @@ export const POIS: Poi[] = [
   { id: "atm-market", kind: "atm", x: 30, z: 9, label: "ATM" },
   { id: "atm-se", kind: "atm", x: 62, z: 10, label: "ATM" },
   { id: "bank", kind: "bank", x: -19, z: -30, label: "Lagos Union Bank" },
-  { id: "police", kind: "police", x: -44, z: -64, label: "Police HQ" },
+  { id: "police", kind: "police", x: -41, z: -64, label: "Police HQ" },
   { id: "dealership", kind: "dealership", x: 40, z: -61, label: "Ojoto Motors" },
   { id: "home", kind: "apartments", x: 42, z: 38, label: "Ikoyi Towers" },
   { id: "market", kind: "market", x: -40, z: 32, label: "Balogun Market" },
