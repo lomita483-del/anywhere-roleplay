@@ -103,7 +103,7 @@ function Index() {
             value={playerName}
             maxLength={16}
             onChange={(event) => setPlayerName(event.target.value)}
-            onKeyDown={(event) => { if (event.key === "Enter") begin(false && hasSave); }}
+            onKeyDown={(event) => { if (event.key === "Enter") begin(false); }}
             placeholder="Enter your name"
             autoComplete="nickname"
             className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#e9ad49]/70 focus:ring-2 focus:ring-[#e9ad49]/15"
