@@ -130,6 +130,9 @@ interface GameStore {
   driving: boolean;
   hasSave: boolean;
   lastRadio: number;
+  spawnedVehicles: { id: string; model: string; x: number; z: number; rotY: number }[];
+
+  addSpawned: (v: { id: string; model: string; x: number; z: number; rotY: number }) => void;
 
   start: (fresh: boolean) => void;
   setName: (n: string) => void;
@@ -188,6 +191,9 @@ export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   hasSave: false,
   lastRadio: 0,
+  spawnedVehicles: [],
+
+  addSpawned: (v) => set({ spawnedVehicles: [...get().spawnedVehicles, v] }),
 
   start: (fresh) => {
     const saved = fresh ? null : loadSave();

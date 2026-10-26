@@ -57,7 +57,6 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
 function Lamps() {
   const lamps = useMemo(lampPositions, []);
   const headMat = useRef<THREE.MeshStandardMaterial>(null);
-  const poles = useMemo(() => new Float32Array(lamps.length * 3).map((_, i) => [lamps[Math.floor(i / 3)]?.[i % 3] ?? 0]), [lamps]);
 
   useFrame(() => {
     if (headMat.current) {
@@ -87,14 +86,10 @@ function Lamps() {
         <boxGeometry args={[0.7, 0.25, 0.35]} />
         <meshStandardMaterial ref={headMat} color="#ffe9b0" emissive="#ffd257" emissiveIntensity={0} />
       </instancedMesh>
-      <group>
-        {lamps.map(([x, z], i) => (
-          <pointLight key={i} position={[x, 5.6, z]} intensity={0} color="#ffd257" distance={14} decay={2} />
-        ))}
-      </group>
     </group>
   );
 }
+
 
 function Trees() {
   const trees = useMemo(treePositions, []);
