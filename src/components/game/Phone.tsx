@@ -453,6 +453,22 @@ function MapApp() {
         const [, pz] = to(0, rz, S);
         ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(S, pz); ctx.stroke();
       }
+      // Named locality access roads added to the expanded 3D city.
+      ctx.fillStyle = "#d0cfc4";
+      for (const z of [-112, 131]) {
+        const [, py] = to(0, z, S);
+        ctx.fillRect(0, py - (7 + 4) * S / WORLD / 2, S, (7 + 4) * S / WORLD);
+      }
+      ctx.fillStyle = "#4b5058";
+      for (const z of [-112, 131]) {
+        const [, py] = to(0, z, S);
+        ctx.fillRect(0, py - 7 * S / WORLD / 2, S, 7 * S / WORLD);
+      }
+      ctx.strokeStyle = "#e8c95c"; ctx.lineWidth = 1.1; ctx.setLineDash([4, 4]);
+      for (const z of [-112, 131]) {
+        const [, py] = to(0, z, S);
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(S, py); ctx.stroke();
+      }
       ctx.setLineDash([]);
       ctx.strokeStyle = "rgba(255,255,255,.78)";
       ctx.lineWidth = 1;
@@ -509,6 +525,25 @@ function MapApp() {
         ["Ajegunle / Makoko", "AJEGUNLE / MAKOKO", -143, 62],
         ["Eko Atlantic", "EKO ATLANTIC", 142, 143],
       ];
+      // Dedicated named localities, always visible independently of unlockable districts.
+      ctx.font = "bold 8px sans-serif";
+      const localityLabels: [string, number, number, string][] = [
+        ["GOVERNMENT AVENUE", -25, -124, "#173c31"],
+        ["ESTATE DRIVE", 78, 140, "#1d4a36"],
+        ["VILLAGE ROAD", -130, 132, "#67452b"],
+        ["MARKET SQUARE", -52, 132, "#74411d"],
+        ["BIG CITY", 1, 75, "#18364d"],
+      ];
+      for (const [label, x, z, color] of localityLabels) {
+        const [px, py] = to(x, z, S);
+        ctx.fillStyle = color;
+        const width = ctx.measureText(label).width + 10;
+        ctx.fillRect(px - width / 2, py - 5.5, width, 11);
+        ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 0.7;
+        ctx.strokeRect(px - width / 2, py - 5.5, width, 11);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, px, py);
+      }
       for (const [district, label, x, z] of districtLabels) {
         const open = unlockedDistricts.includes(district);
         const shownLabel = open ? label : "LOCKED · " + label;
