@@ -50,6 +50,34 @@ function CloudSaveSync() {
             updated_at: new Date().toISOString(),
           }).eq("id", userId);
           if (profileUpdate.error) console.warn("[Anywhere Roleplay] Profile sync skipped:", profileUpdate.error.message);
+          if (current.owned.length) {
+            const vehicleRows = current.owned.map((model) => ({
+              owner_id: userId,
+              vehicle_type: model,
+              plate_number: "LR-" + userId!.slice(0, 4).toUpperCase() + "-" + model.toUpperCase(),
+              color: model === "danfo" ? "#f2c230" : model === "police" ? "#263d66" : "#eab308",
+            }));
+            const vehicleSync = await (supabase as any).from("vehicles").upsert(vehicleRows, { onConflict: "owner_id,plate_number" });
+            if (vehicleSync.error) console.warn("[Anywhere Roleplay] Vehicle sync skipped:", vehicleSync.error.message);
+          }
+          const inventoryRows = Object.entries(current.inventory).filter(([, quantity]) => quantity > 0).map(([item_name, quantity]) => ({
+            owner_id: userId, item_name, quantity, item_type: item_name.includes("fit") ? "clothing" : item_name.includes("apartment") || item_name.includes("studio") ? "property" : "item", updated_at: new Date().toISOString(),
+          }));
+          if (inventoryRows.length) {
+            const inventorySync = await (supabase as any).from("inventories").upsert(inventoryRows, { onConflict: "owner_id,item_name,item_type" });
+            if (inventorySync.error) console.warn("[Anywhere Roleplay] Inventory sync skipped:", inventorySync.error.message);
+          }
+          const propertyRows = [
+            ...current.inventory["mainland-studio"] ? [{ owner_id: userId, property_key: "mainland-studio", property_name: "Mainland Studio", status: "owned", rent_until: null }] : [],
+            ...current.inventory["ikoyi-apartment"] ? [{ owner_id: userId, property_key: "ikoyi-apartment", property_name: "Ikoyi Apartment", status: "owned", rent_until: null }] : [],
+            ...Object.entries(current.rentals).filter(([, expiry]) => expiry > Date.now()).map(([property_key, expiry]) => ({
+              owner_id: userId, property_key, property_name: property_key === "ikoyi-apartment" ? "Ikoyi Apartment" : "Mainland Studio", status: "rented", rent_until: new Date(expiry).toISOString(),
+            })),
+          ];
+          if (propertyRows.length) {
+            const propertySync = await (supabase as any).from("properties").upsert(propertyRows, { onConflict: "owner_id,property_key" });
+            if (propertySync.error) console.warn("[Anywhere Roleplay] Property sync skipped:", propertySync.error.message);
+          }
         } catch (profileError) {
           console.warn("[Anywhere Roleplay] Profile sync unavailable:", profileError);
         }
