@@ -30,6 +30,8 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
 };
 
 function atAtm() {
+  const state = useGame.getState();
+  if (state.interior && /bank|atm/i.test(state.interiorLabel)) return true;
   const p = POIS.find((p) => (p.kind === "atm" || p.kind === "bank") && Math.hypot(p.x - g.playerPos.x, p.z - g.playerPos.z) < 8);
   return !!p;
 }
