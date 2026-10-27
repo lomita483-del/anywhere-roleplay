@@ -25,7 +25,7 @@ export const ROADS_Z = [-140, -80, 0, 80, 140];
 export const ROAD_HALF = 7;
 export const SIDEWALK = 3; // sidewalk band on each side of the road
 
-const LAGOS_BUILDINGS: BuildingDef[] = [
+export const LAGOS_BUILDINGS: BuildingDef[] = [
   // North-west block
   { x: -38, z: -46, w: 26, d: 20, h: 15, color: "#c9b08a", kind: "bank", label: "ZENITH  /  KUDA BANK" },
   { x: -56, z: -60, w: 24, d: 16, h: 9, color: "#7f9ec4", kind: "police", label: "LAGOS POLICE STATION" },
@@ -161,7 +161,7 @@ export interface Poi {
 }
 
 // Interaction points — placed on sidewalks / plazas next to their building fronts
-const LAGOS_POIS: Poi[] = [
+export const LAGOS_POIS: Poi[] = [
   { id: "atm-bank", kind: "atm", x: -19, z: -40, label: "ATM" },
   { id: "atm-market", kind: "atm", x: 30, z: 9, label: "ATM" },
   { id: "atm-se", kind: "atm", x: 62, z: 10, label: "ATM" },
@@ -392,3 +392,55 @@ export function setCityWorld(city: CityId) {
 
 // Start in the empty sandbox before the game session begins.
 setCityWorld("newmap");
+
+
+export type MapPlaceIcon = "bank" | "atm" | "hospital" | "police" | "fuel" | "pharmacy" | "food" | "market" | "school" | "airport" | "port" | "stadium" | "real-estate" | "dealership" | "tower" | "factory" | "home" | "park";
+export interface MapPlace {
+  id: string; label: string; kind: string; district: string;
+  x: number; z: number; w: number; d: number; h: number; color: string;
+  doorX: number; doorZ: number; icon: MapPlaceIcon;
+}
+const MAP_ICON_KIND: Record<string, MapPlaceIcon> = {
+  bank: "bank", atm: "atm", hospital: "hospital", police: "police", fuel: "fuel",
+  pharmacy: "pharmacy", food: "food", "mama-put": "food", market: "market", depot: "market",
+  school: "school", university: "school", airport: "airport", port: "port", stadium: "stadium",
+  "real-estate": "real-estate", dealership: "dealership", tower: "tower", factory: "factory",
+  warehouse: "factory", home: "home", residential: "home", apartments: "home", resort: "park", lake: "park",
+};
+const mapDoor = (b: BuildingDef, pois: Poi[]) => {
+  const match = pois.find(p => p.id === (b as any).id)
+    ?? pois.find(p => p.label.toLowerCase() === (b.label ?? "").toLowerCase())
+    ?? pois.filter(p => p.kind === b.kind).sort((a, z) => Math.hypot(a.x-b.x,a.z-b.z)-Math.hypot(z.x-b.x,z.z-b.z))[0];
+  if (Number.isFinite((b as any).doorX) && Number.isFinite((b as any).doorZ)) return { doorX: (b as any).doorX as number, doorZ: (b as any).doorZ as number };
+  if (match) return { doorX: match.x, doorZ: match.z };
+  return { doorX: b.x, doorZ: b.z + b.d / 2 + 1.5 };
+};
+
+/** Returns the current city's real building footprints and door positions for the phone map. */
+export function getMapPlaces(city: CityId): MapPlace[] {
+  const buildings: BuildingDef[] = city === "newmap" ? NEW_MAP_BUILDINGS : city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
+  const pois: Poi[] = city === "newmap" ? NEW_MAP_POI_DATA : city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
+  const districtName = (b: BuildingDef) => {
+    if ((b as any).district) return String((b as any).district).replace(/-/g, " ");
+    if (city === "lagos") return districtAt(b.x, b.z) ?? "Lagos";
+    if (city === "umuahia") return "Umuahia";
+    return "City";
+  };
+  const places: MapPlace[] = buildings.map((b, i) => {
+    const id = String((b as any).id ?? `${city}-building-${i}`);
+    const kind = String(b.kind ?? "building");
+    const door = mapDoor(b, pois);
+    return { id, label: b.label ?? kind.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+      kind, district: districtName(b), x: b.x, z: b.z, w: b.w, d: b.d, h: b.h,
+      color: b.color, ...door, icon: MAP_ICON_KIND[kind] ?? "tower" };
+  });
+  // Keep POIs that are not attached to a building (ATMs, job boards and natural landmarks) tappable too.
+  for (const p of pois) {
+    if (places.some(b => b.id === p.id || (Math.hypot(b.doorX-p.x,b.doorZ-p.z) < 1.5 && b.kind === p.kind))) continue;
+    const b = buildings.find(b => b.label?.toLowerCase() === p.label.toLowerCase());
+    places.push({ id: p.id, label: p.label, kind: p.kind, district: b ? districtName(b) : city === "newmap" ? "NEW MAP" : city === "umuahia" ? "Umuahia" : districtAt(p.x,p.z) ?? "Lagos",
+      x: p.x, z: p.z, w: b?.w ?? 5, d: b?.d ?? 5, h: b?.h ?? 1, color: b?.color ?? "#5d806e",
+      doorX: p.x, doorZ: p.z, icon: MAP_ICON_KIND[p.kind] ?? "park" });
+  }
+  return places;
+}
