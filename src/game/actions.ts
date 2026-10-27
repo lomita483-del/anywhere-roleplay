@@ -42,6 +42,8 @@ export function interact() {
   else if (p.kind === "atm") s.openPhone("bank");
   else if (p.kind === "dealer") s.setModal("dealer");
   else if (p.kind === "home") s.setModal("home");
+  else if (p.kind === "wardrobe") s.openPhone("wardrobe");
+  else if (p.kind === "jobboard") s.openPhone("jobs");
 }
 
 // Spawn an owned vehicle on the nearest road lane to the player.
