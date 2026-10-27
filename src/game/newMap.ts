@@ -10,7 +10,8 @@ const ringPoints: [number,number][] = [...ring, ring[0]!];
 const roadEdges: NewMapRoadEdge[] = [
  {id:"stadium-boulevard",from:"boulevard-west",to:"boulevard-west",type:"boulevard",width:8,points:ringPoints},
  {id:"outer-perimeter",from:"perimeter-nw",to:"perimeter-nw",type:"perimeter",width:8,points:[[-178,-178],[178,-178],[178,178],[-178,178],[-178,-178]]},
- {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},\n {id:"airport-terminal-access",from:"airport-avenue",to:"airport-terminal",type:"street",width:5,points:[[0,-106],[17,-106],[34,-106]]},
+ {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},
+ {id:"airport-terminal-access",from:"airport-avenue",to:"airport-terminal",type:"street",width:5,points:[[0,-106],[17,-106],[34,-106]]},
  {id:"port-avenue",from:"boulevard-south-east",to:"perimeter-south-east",type:"avenue",width:8,points:[[55,55],[78,78],[104,104],[132,132],[178,178]]},
  {id:"university-avenue",from:"boulevard-west",to:"perimeter-west",type:"avenue",width:8,points:[[-78,0],[-104,0],[-132,0],[-178,0]]},
  {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[178,0]]},
@@ -108,7 +109,8 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_GROUND_PATCHES = [{x:-151,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];\nexport const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
+export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
+export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
 export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
@@ -118,8 +120,8 @@ export function validateNewMapLayout() {
   const a=NEW_MAP_BUILDINGS[i]!;
   if(Math.hypot(a.x,a.z)<28)errors.push(`building ${a.id} overlaps stadium plaza`);
   for(const e of NEW_MAP_ROAD_GRAPH.edges)for(let j=1;j<e.points.length;j++){
-   const dist=pointSegmentDistance(a.x,a.z,e.points[j-1]!,e.points[j]!);
-   if(dist < e.width/2+Math.max(a.w,a.d)/2+3) { errors.push(`building ${a.id} too close to road ${e.id}`); break; }
+   const p0=e.points[j-1]!,p1=e.points[j]!,dx=Math.abs(p1[0]-p0[0]),dz=Math.abs(p1[1]-p0[1]);const extent=dx>dz?a.d/2:dz>dx?a.w/2:Math.max(a.w,a.d)/2;const dist=pointSegmentDistance(a.x,a.z,p0,p1);
+   if(dist < e.width/2+extent+3) { errors.push(`building ${a.id} too close to road ${e.id}`); break; }
   }
   for(let j=i+1;j<NEW_MAP_BUILDINGS.length;j++){const b=NEW_MAP_BUILDINGS[j]!;if(Math.abs(a.x-b.x)<(a.w+b.w)/2+1&&Math.abs(a.z-b.z)<(a.d+b.d)/2+1)errors.push(`building collision: ${a.id} / ${b.id}`);}
  }
