@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { JOB_POINTS, POIS, isBlocked, clampWorld } from "./city";
 import { g } from "./state";
+import { supabase } from "@/integrations/supabase/client";
 
 export type JobType = "courier" | "driver" | "trader" | "security";
 
@@ -231,6 +232,25 @@ export const useGame = create<GameStore>((set, get) => ({
       activeJob: s.activeJob, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
+
+    // Local storage is immediate; signed-in players also sync to their own cloud row.
+    // Cloud failures are intentionally non-fatal so guest/offline play keeps working.
+    if (typeof window !== "undefined") {
+      void (async () => {
+        try {
+          const { data: authData, error: authError } = await supabase.auth.getSession();
+          if (authError || !authData.session) return;
+          const { error: saveError } = await supabase.from("player_save").upsert({
+            user_id: authData.session.user.id,
+            state: data as unknown as import("@/integrations/supabase/types").Json,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+          if (saveError) console.warn("[Anywhere Roleplay] Cloud save failed; local save is safe.", saveError.message);
+        } catch (error) {
+          console.warn("[Anywhere Roleplay] Cloud save unavailable; local save is safe.", error);
+        }
+      })();
+    }
   },
 
   spend: (amount, from) => {
