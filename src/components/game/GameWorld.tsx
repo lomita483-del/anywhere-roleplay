@@ -571,6 +571,62 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
   );
 }
 
+
+function RideDriver() {
+  const ride = useGame((s) => s.rideRequest);
+  const ref = useRef<THREE.Group>(null);
+  const runtime = useRef<{ id: string; x: number; z: number; yaw: number; status: "approaching" | "travelling" } | null>(null);
+
+  useFrame((_, rawDelta) => {
+    const dt = Math.min(rawDelta, 0.05);
+    const group = ref.current;
+    if (!ride || !group) {
+      g.ridingPassenger = false;
+      runtime.current = null;
+      return;
+    }
+    if (!runtime.current || runtime.current.id !== ride.id) {
+      runtime.current = { id: ride.id, x: ride.x, z: ride.z, yaw: ride.yaw, status: "approaching" };
+    }
+    const r = runtime.current;
+    const targetX = r.status === "approaching" ? g.playerPos.x : ride.destination.x;
+    const targetZ = r.status === "approaching" ? g.playerPos.z : ride.destination.z;
+    const dx = targetX - r.x;
+    const dz = targetZ - r.z;
+    const distance = Math.hypot(dx, dz);
+    const speed = r.status === "approaching" ? (ride.service === "bike" ? 10 : 8) : (ride.service === "bike" ? 14 : ride.service === "private" ? 11 : 9);
+    if (distance > (r.status === "approaching" ? 2.8 : 2.2)) {
+      const step = Math.min(distance, speed * dt);
+      r.x += (dx / distance) * step;
+      r.z += (dz / distance) * step;
+      r.yaw = Math.atan2(dx, dz);
+    } else if (r.status === "approaching") {
+      r.status = "travelling";
+      g.ridingPassenger = true;
+      g.playerPos.set(r.x, 0, r.z);
+      useGame.getState().setRideRequest({ ...ride, status: "travelling", x: r.x, z: r.z, yaw: r.yaw });
+      useGame.getState().radio(ride.service === "bike" ? "🏍️ Okada arrived. Oya, your trip has started!" : "🚘 Your driver has arrived. Trip started.");
+    } else {
+      g.playerPos.set(ride.destination.x, 0, ride.destination.z);
+      g.ridingPassenger = false;
+      useGame.getState().setWaypoint(null);
+      useGame.getState().setRideRequest(null);
+      useGame.getState().radio("📍 Arrived at " + ride.destination.label + ". Safe journey — fare paid: " + "₦" + ride.fare.toLocaleString("en-NG") + ".");
+      return;
+    }
+    group.position.set(r.x, 0, r.z);
+    group.rotation.y = r.yaw;
+    if (r.status === "travelling") g.playerPos.set(r.x, 0, r.z);
+  });
+
+  if (!ride) return null;
+  const model = ride.service === "bike" ? "bike" : ride.service === "private" ? "sedan" : "taxi";
+  return <group ref={ref} position={[ride.x, 0, ride.z]} rotation-y={ride.yaw}>
+    <VehicleBody model={model} />
+    {ride.status === "approaching" && <Html position={[0, 2.6, 0]} center distanceFactor={18}><div className="whitespace-nowrap rounded-full border border-emerald-300/40 bg-[#071c16]/90 px-2 py-1 text-[9px] font-bold text-emerald-100">{ride.service === "bike" ? "OKADA" : ride.service === "private" ? "PRIVATE DRIVER" : "RIDE PICKUP"}</div></Html>}
+  </group>;
+}
+
 export default function GameWorld() {
   const keys = useKeys();
   const playerGroup = useRef<THREE.Group>(null);
@@ -718,7 +774,7 @@ export default function GameWorld() {
     const st = useGame.getState();
     const camera = state.camera as THREE.PerspectiveCamera;
 
-    if (g.drivingId) {
+    if (g.ridingPassenger) {\n      g.playerSpeed = 0;\n      st.setSpeed(0);\n    } else if (g.drivingId) {
       const v = g.vehicles.get(g.drivingId);
       if (!v) {
         g.drivingId = null;
@@ -803,7 +859,7 @@ export default function GameWorld() {
 
     const pg = playerGroup.current;
     if (pg) {
-      pg.position.set(g.playerPos.x, 0, g.playerPos.z);
+      pg.visible = !g.ridingPassenger;\n      pg.position.set(g.playerPos.x, 0, g.playerPos.z);
       pg.rotation.y = g.playerYaw;
     }
 
@@ -875,7 +931,7 @@ export default function GameWorld() {
       <Pedestrians />
       <JobMarker />
       <JobPickupVisual job={activeJob} />
-      <GpsRoute waypoint={waypoint} />
+      <GpsRoute waypoint={waypoint} />\n      <RideDriver />
     </>
   );
 }
