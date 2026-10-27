@@ -27,6 +27,10 @@ export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface PlayerOutfit { skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
+export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
+
+export const DEFAULT_NEEDS: PlayerNeeds = { hunger: 100, energy: 100, health: 100, stress: 8, hygiene: 100 };
+
 export interface JobStats {
   deliveries: number;
   drives: number;
@@ -46,6 +50,7 @@ export interface SaveData {
   z: number;
   activeJob?: ActiveJob | null;
   outfit?: PlayerOutfit;
+  needs?: PlayerNeeds;
   rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
@@ -207,7 +212,7 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
-  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,\n  needs: { ...DEFAULT_NEEDS },
   rentals: {} as Record<string, number>,
   interior: false,
   interiorLabel: "Ikoyi Apartment",
@@ -239,7 +244,7 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
-        outfit: saved.outfit ?? DEFAULTS.outfit,
+        outfit: saved.outfit ?? DEFAULTS.outfit,\n        needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
@@ -261,7 +266,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, outfit: s.outfit, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
@@ -355,7 +360,7 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save();
     return true;
   },
-  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },\n  tickNeeds: (seconds) => {\n    if (!Number.isFinite(seconds) || seconds <= 0 || !get().started) return;\n    const n = get().needs;\n    const hunger = Math.max(0, n.hunger - seconds / 30);\n    const energy = Math.max(0, n.energy - seconds / 45);\n    const stress = Math.min(100, n.stress + (g.playerSpeed > 5 ? seconds * 0.035 : seconds * 0.008));\n    const hygiene = Math.max(0, n.hygiene - seconds / 180);\n    const health = Math.max(0, Math.min(100, n.health + (hunger > 15 && energy > 10 ? seconds * 0.006 : -seconds * 0.06)));\n    set({ needs: { hunger, energy, health, stress, hygiene } });\n  },\n  eatFood: (kind) => {\n    const choices = { "mama-put": { price: 900, hunger: 42, energy: 12, stress: -8, hygiene: 0, message: "🍲 Mama Put rice and stew — belle don full!" }, snack: { price: 250, hunger: 12, energy: 3, stress: -2, hygiene: 0, message: "🥟 Quick roadside snack bought." }, water: { price: 150, hunger: 0, energy: 2, stress: -4, hygiene: 0, message: "💧 Cold sachet water. Refreshing!" } } as const;\n    const item = choices[kind];\n    if (!get().spend(item.price, "cash") && !get().spend(item.price, "bank")) return false;\n    const n = get().needs;\n    set({ needs: { hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), health: n.health, stress: Math.max(0, n.stress + item.stress), hygiene: n.hygiene } });\n    get().radio(item.message); get().save(); return true;\n  },
   setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
