@@ -80,7 +80,23 @@ function CharacterBody() {
       <mesh position={[0, 1.04, 0]} castShadow receiveShadow><capsuleGeometry args={[0.26, 0.43, 5, 10]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
       <mesh position={[0, 1.27, 0.015]}><torusGeometry args={[0.105, 0.022, 5, 12]} /><meshStandardMaterial color={outfit.top === "formal" ? "#e6e6e3" : top} roughness={0.8} /></mesh>
       <mesh position={[0.13, 1.12, 0.245]}><boxGeometry args={[0.075, 0.1, 0.016]} /><meshStandardMaterial color={outfit.top === "formal" ? "#d8dce2" : "#c5c8c8"} roughness={0.9} /></mesh>
-      {outfit.top === "formal" && <mesh position={[0, 1.05, 0.258]}><boxGeometry args={[0.025, 0.33, 0.015]} /><meshStandardMaterial color="#e6e6e3" roughness={0.8} /></mesh>}
+      {outfit.top === "formal" && <group>
+        <mesh position={[0, 1.05, 0.258]}><boxGeometry args={[0.025, 0.33, 0.015]} /><meshStandardMaterial color="#e6e6e3" roughness={0.8} /></mesh>
+        <mesh position={[0, 1.07, 0.275]} rotation-z={Math.PI}><coneGeometry args={[0.055, 0.19, 4]} /><meshStandardMaterial color="#8d1f32" roughness={0.72} /></mesh>
+        <mesh position={[-0.11, 1.17, 0.245]} rotation-z={-0.18}><boxGeometry args={[0.08, 0.22, 0.025]} /><meshStandardMaterial color="#e7e8e9" roughness={0.85} /></mesh>
+        <mesh position={[0.11, 1.17, 0.245]} rotation-z={0.18}><boxGeometry args={[0.08, 0.22, 0.025]} /><meshStandardMaterial color="#e7e8e9" roughness={0.85} /></mesh>
+      </group>}
+      {outfit.top === "streetwear" && <group>
+        <mesh position={[0, 1.34, -0.13]} scale={[0.19, 0.18, 0.1]} castShadow><sphereGeometry args={[1, 10, 8]} /><meshStandardMaterial color={top} roughness={0.94} /></mesh>
+        <mesh position={[0, 1.34, -0.07]}><torusGeometry args={[0.145, 0.025, 6, 12]} /><meshStandardMaterial color={top} roughness={0.92} /></mesh>
+        <mesh position={[0, 0.91, 0.245]}><boxGeometry args={[0.2, 0.12, 0.025]} /><meshStandardMaterial color={top} roughness={0.9} /></mesh>
+        {[-1, 1].map(side => <mesh key={"hood-string"+side} position={[side*0.045, 1.12, 0.266]}><cylinderGeometry args={[0.008, 0.008, 0.2, 5]} /><meshStandardMaterial color="#d5d0c8" roughness={0.85} /></mesh>)}
+      </group>}
+      {outfit.top === "uniform" && <group>
+        <mesh position={[0.15, 1.16, 0.258]}><boxGeometry args={[0.085, 0.09, 0.018]} /><meshStandardMaterial color="#eab308" metalness={0.35} roughness={0.4} /></mesh>
+        <mesh position={[-0.12, 1.15, 0.257]}><boxGeometry args={[0.1, 0.08, 0.018]} /><meshStandardMaterial color="#dbe7ee" roughness={0.75} /></mesh>
+        <mesh position={[0, 0.83, 0.15]}><boxGeometry args={[0.37, 0.035, 0.31]} /><meshStandardMaterial color="#171d26" roughness={0.65} /></mesh>
+      </group>}
       {outfit.top === "agbada" && <group>
         <mesh position={[-0.2, 1.04, 0.02]} rotation-z={-0.08}><boxGeometry args={[0.12, 0.56, 0.31]} /><meshStandardMaterial color={top} roughness={0.92} /></mesh>
         <mesh position={[0.2, 1.04, 0.02]} rotation-z={0.08}><boxGeometry args={[0.12, 0.56, 0.31]} /><meshStandardMaterial color={top} roughness={0.92} /></mesh>
