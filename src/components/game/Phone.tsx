@@ -3,12 +3,12 @@ import {
   ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff,
 } from "lucide-react";
 import { g } from "@/game/state";
-import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType, type PlayerOutfit } from "@/game/store";
+import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -23,6 +23,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   rides: { icon: MapPin, label: "Ride & GPS", tint: "#63c7f0" },
   food: { icon: Utensils, label: "Buka & Food", tint: "#f59e0b" },
   travel: { icon: PlaneTakeoff, label: "Airline", tint: "#8bbde8" },
+  districts: { icon: MapIcon, label: "Districts", tint: "#a3e635" },
 };
 
 function atAtm() {
@@ -565,6 +566,38 @@ function RadioApp() {
 
 
 
+
+function DistrictsApp() {
+  const unlocked = useGame((s) => s.unlockedDistricts);
+  const unlockDistrict = useGame((s) => s.unlockDistrict);
+  const cash = useGame((s) => s.cash);
+  const bank = useGame((s) => s.bank);
+  const [notice, setNotice] = useState("");
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-lime-300/20 bg-gradient-to-br from-[#23381c] to-[#111923] p-4">
+      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-lime-200">Lagos city network</div>
+      <div className="mt-1 text-lg font-bold text-white">District access</div>
+      <div className="mt-1 text-[11px] text-slate-300">Unlock neighbourhoods as your hustle grows. Each district opens new streets, jobs and opportunities.</div>
+      <div className="mt-3 text-[10px] text-lime-100/80">{unlocked.length} / {DISTRICT_INFO.length} districts unlocked</div>
+    </div>
+    {notice && <div role="status" className="rounded-xl border border-lime-300/20 bg-lime-300/10 p-2 text-xs text-lime-100">{notice}</div>}
+    {DISTRICT_INFO.map((d, i) => {
+      const active = unlocked.includes(d.name);
+      return <div key={d.name} className="rounded-2xl border border-hud-line bg-white/[0.045] p-3">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lime-300/10 text-xs font-black text-lime-200">{active ? "✓" : String(i + 1).padStart(2, "0")}</div>
+          <div className="min-w-0 flex-1"><div className="text-xs font-bold text-hud-bright">{d.name}</div><div className="mt-1 text-[10px] leading-relaxed text-hud-muted">{d.description}</div></div>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className={active ? "text-[10px] font-bold text-emerald-200" : "text-[10px] font-bold text-amber-200"}>{active ? "UNLOCKED" : d.price === 0 ? "STARTER DISTRICT" : naira(d.price)}</span>
+          {!active && <button onClick={() => setNotice(unlockDistrict(d.name) ? d.name + " is now open. Explore the new district!" : "Not enough cash or bank balance to unlock this district.")} className="rounded-lg bg-lime-300/15 px-3 py-1.5 text-[10px] font-bold text-lime-100">Unlock</button>}
+        </div>
+      </div>;
+    })}
+    <div className="text-[10px] text-hud-muted">Cash: {naira(cash)} · Bank: {naira(bank)}</div>
+  </div>;
+}
+
 function TravelApp() {
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
@@ -710,6 +743,7 @@ export default function Phone() {
     app === "rides" ? <RideApp /> :
     app === "food" ? <FoodApp /> :
     app === "travel" ? <TravelApp /> :
+    app === "districts" ? <DistrictsApp /> :
     <HomeApp />;
 
   return (
