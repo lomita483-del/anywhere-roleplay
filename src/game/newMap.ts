@@ -12,7 +12,7 @@ export const NEW_MAP_ROADS: [number, number][][] = [
   // Airport terminal access: approaches the terminal apron from the south without crossing runways.
   [[6, -94], [-10, -91], [-24, -86], [-34, -81], [-38, -76], [-30, -70], [-18, -69], [-9, -70]],
   // East arterial links the terminal apron, stadium's east junction, civic edge and port approach.
-  [[6, -94], [20, -94], [34, -90], [49, -75], [60, -59], [67, -50], [67, -27], [72, 3], [84, 8], [96, 27], [101, 48], [108, 64], [103, 75], [90, 84], [76, 92], [70, 103], [70, 114]],
+  [[6, -94], [20, -94], [34, -90], [49, -75], [60, -59], [67, -50], [67, -27], [72, 3], [84, 8], [96, 27], [101, 48], [108, 64], [103, 75], [90, 84], [76, 92], [70, 103]],
   // University access road joins the west distributor directly to the stadium loop.
   [[-100, 43], [-96, 35], [-85, 22], [-78, 10], [-72, 1]],
   // Market-to-boulevard connector, aligned with the market's south-east entrance.
