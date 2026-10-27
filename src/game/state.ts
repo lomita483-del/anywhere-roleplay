@@ -24,6 +24,7 @@ export const g = {
   camSatellite: false,
   camBeforeSatellite: { pitch: 0.42, distance: 8 },
   playerPos: new THREE.Vector3(-14, 0, -14),
+  interiorReturn: new THREE.Vector3(42, 0, 38),
   playerYaw: 0,
   playerSpeed: 0, // horizontal speed, for anim blend
   joy: { x: 0, y: 0 }, // virtual joystick (-1..1)
