@@ -374,7 +374,7 @@ function CityTraffic() {
       const point = route.getPointAt(u);
       const tangent = route.getTangentAt(u);
       car.position.set(point.x, 0.16, point.z);
-      car.rotation.y = Math.atan2(-tangent.x, -tangent.z);
+      car.rotation.y = Math.atan2(-tangent.z, tangent.x);
     });
   });
   return <>{Array.from({ length: 12 }, (_, i) => <group key={i} ref={(el) => { refs.current[i] = el; }}>
