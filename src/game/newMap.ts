@@ -68,10 +68,10 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"factory-b",label:"ASSEMBLY DEPOT",kind:"factory",district:"industrial",x:-119,z:-70,w:15,d:12,h:8,color:"#b5a18b",doorSide:"south"},
  {id:"factory-c",label:"WAREHOUSE 01",kind:"warehouse",district:"industrial",x:-145,z:-44,w:15,d:12,h:7,color:"#c8bca5",doorSide:"north"},
  {id:"police",label:"POLICE STATION",kind:"police",district:"industrial",x:-119,z:-44,w:12,d:10,h:8,color:"#8ba2b4",doorSide:"north"},
- {id:"market",label:"CENTRAL MARKET",kind:"market",district:"market",x:-34,z:-104,w:24,d:14,h:6,color:"#c7864b",doorSide:"south"},
+ {id:"market",label:"CENTRAL MARKET",kind:"market",district:"market",x:-34,z:-104,w:20,d:14,h:6,color:"#c7864b",doorSide:"south"},
  {id:"depot",label:"BUS & GOODS DEPOT",kind:"depot",district:"market",x:-63,z:-104,w:14,d:12,h:5,color:"#b9a17c",doorSide:"south"},
- {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:20,d:14,h:10,color:"#b8a28d",doorSide:"south"},
- {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:18,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
+ {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:16,d:12,h:10,color:"#b8a28d",doorSide:"south"},
+ {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:16,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
  {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-125,z:126,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-140,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"south"},
@@ -79,7 +79,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
  {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:138,z:110,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
  {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:82,z:132,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"south"},
- {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:138,z:156,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
+ {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:140,z:160,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-132,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
  {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
  ...[0,1,2,3,4,5,6,7,8].map(i=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-42,-14,42][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
@@ -110,7 +110,7 @@ function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,nu
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
 export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
 export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
-export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-48+(i%6)*5.2,z:-121+Math.floor(i/6)*5.2,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
+export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
 export function validateNewMapLayout() {
  const errors:string[]=[];
