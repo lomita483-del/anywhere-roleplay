@@ -83,7 +83,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:140,z:160,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-132,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
  {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
- ...[0,1,2,3,4,5,6,7,8].map(i=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-42,-14,42][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
+ ...Array.from({length:18},(_,i)=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-70,-42,-14,14,42,70][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
 ];
 export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
  const doorOffset= b.doorSide==="north" ? -b.d/2-1.4 : b.doorSide==="south" ? b.d/2+1.4 : b.doorSide==="east" ? b.w/2+1.4 : -b.w/2-1.4;
