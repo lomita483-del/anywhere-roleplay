@@ -416,13 +416,13 @@ function AirportDistrict() {
       <mesh position={[59, 0.85, -96]} castShadow><boxGeometry args={[2.5, 0.12, 5]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
       {/* Parked passenger aircraft with fuselage, swept wings, tail, engines and cabin windows. */}
       <group position={[34, 0.9, -96]} rotation-y={Math.PI / 2}>
-        <mesh position={[0, 0.18, 0]} castShadow><cylinderGeometry args={[0.48, 0.56, 8.8, 14]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#f0f2f3" metalness={0.18} roughness={0.38} /></mesh>
+        <mesh position={[0, 0.18, 0]} rotation-x={Math.PI / 2} castShadow><cylinderGeometry args={[0.48, 0.56, 8.8, 14]} /><meshStandardMaterial color="#f0f2f3" metalness={0.18} roughness={0.38} /></mesh>
         <mesh position={[0, 0.18, 4.45]} rotation-x={-Math.PI / 2} castShadow><coneGeometry args={[0.48, 1.5, 14]} /><meshStandardMaterial color="#f0f2f3" metalness={0.18} roughness={0.38} /></mesh>
         <mesh position={[0, 0.2, -4.5]} castShadow><boxGeometry args={[2.7, 0.12, 1.35]} /><meshStandardMaterial color="#f0f2f3" metalness={0.15} roughness={0.4} /></mesh>
         <mesh position={[0, 0.08, 0.3]} rotation-y={0.06} castShadow><boxGeometry args={[11.5, 0.18, 1.75]} /><meshStandardMaterial color="#e7ebee" metalness={0.2} roughness={0.4} /></mesh>
         {[-3.35, 3.35].map((x) => <group key={x} position={[x, -0.28, 0.25]}>
-          <mesh castShadow><cylinderGeometry args={[0.48, 0.48, 1.25, 12]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#52616c" metalness={0.45} roughness={0.35} /></mesh>
-          <mesh position={[0, 0, 0.05]}><cylinderGeometry args={[0.32, 0.32, 1.28, 12]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#d8e0e4" metalness={0.35} roughness={0.35} /></mesh>
+          <mesh rotation-x={Math.PI / 2} castShadow><cylinderGeometry args={[0.48, 0.48, 1.25, 12]} /><meshStandardMaterial color="#52616c" metalness={0.45} roughness={0.35} /></mesh>
+          <mesh position={[0, 0, 0.05]} rotation-x={Math.PI / 2}><cylinderGeometry args={[0.32, 0.32, 1.28, 12]} /><meshStandardMaterial color="#d8e0e4" metalness={0.35} roughness={0.35} /></mesh>
         </group>)}
         {Array.from({ length: 8 }, (_, i) => <mesh key={i} position={[0.505, 0.3, -3.1 + i * 0.82]}><boxGeometry args={[0.035, 0.16, 0.28]} /><meshStandardMaterial color="#31566c" emissive="#17394d" emissiveIntensity={0.18} /></mesh>)}
         <mesh position={[0, 1.25, -3.8]}><boxGeometry args={[0.08, 2.3, 0.08]} /><meshStandardMaterial color="#d8e0e4" /></mesh>
