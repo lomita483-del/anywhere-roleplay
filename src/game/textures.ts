@@ -54,7 +54,7 @@ export function groundTexture() {
   ctx.fillStyle = "#8f9b62";
   ctx.fillRect(0, 0, 128, 128);
   for (let i = 0; i < 400; i++) {
-    ctx.fillStyle = ["#7f8b55", "#98a46c", "#86925f"][Math.floor(Math.random() * 3)];
+    ctx.fillStyle = ["#7f8b55", "#98a46c", "#86925f"][Math.floor(Math.random() * 3)] ?? "#7f8b55";
     ctx.fillRect(Math.random() * 128, Math.random() * 128, 3, 3);
   }
   return tex(c, 30);
