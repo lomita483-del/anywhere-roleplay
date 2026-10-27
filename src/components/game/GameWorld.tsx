@@ -838,7 +838,7 @@ export default function GameWorld() {
     const dt = Math.min(rawDelta, 0.05);
     const k = keys.current;
     const st = useGame.getState();
-    const controlsBlocked = st.phoneOpen;
+    const controlsBlocked = st.phoneOpen || st.stadiumMode;
     if (controlsBlocked) { g.joy.x = 0; g.joy.y = 0; }
     const active = st.activeJob;
     if (active?.startedAt && active.timeLimitSeconds && Date.now() - active.startedAt >= active.timeLimitSeconds * 1000) {
