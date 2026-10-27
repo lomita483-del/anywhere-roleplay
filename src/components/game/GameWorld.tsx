@@ -944,7 +944,8 @@ export default function GameWorld() {
     const pg = playerGroup.current;
     if (pg) {
       pg.visible = !g.ridingPassenger && !st.stadiumMode;
-      pg.position.set(g.playerPos.x, 0, g.playerPos.z);
+      const renderScale = isNewMap && !st.stadiumMode ? NEW_MAP_SCALE : 1;
+      pg.position.set(g.playerPos.x * renderScale, 0, g.playerPos.z * renderScale);
       pg.rotation.y = g.playerYaw;
     }
 
@@ -967,8 +968,10 @@ export default function GameWorld() {
       camera.fov += (targetFov - camera.fov) * Math.min(1, 5 * dt);
       camera.updateProjectionMatrix();
     } else {
-      _target.set(g.playerPos.x, driving ? 1.5 : 1.1, g.playerPos.z);
-      const dist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
+      _target.set(g.playerPos.x * (isNewMap ? NEW_MAP_SCALE : 1), driving ? 1.5 : 1.1, g.playerPos.z * (isNewMap ? NEW_MAP_SCALE : 1));
+      const worldScale = isNewMap ? NEW_MAP_SCALE : 1;
+      const requestedDist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
+      const dist = g.camSatellite && isNewMap ? 168 * NEW_MAP_SCALE : isNewMap ? Math.max(4.2, requestedDist * worldScale) : requestedDist;
       const pitch = driving ? Math.min(g.camPitch, 0.85) : g.camPitch;
       _ideal.set(
         _target.x + Math.sin(g.camYaw) * dist * Math.cos(pitch),
