@@ -552,30 +552,53 @@ function CurvedRoadNetwork() {
 }
 
 function CityTraffic() {
-  const refs = useRef<(THREE.Group | null)[]>([]);
-  const routes = useMemo(() => CITY_ROAD_PATHS.map((path) => new THREE.CatmullRomCurve3(
-    path.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, "catmullrom", 0.22,
-  )), []);
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    refs.current.forEach((car, i) => {
-      if (!car) return;
-      const route = routes[i % routes.length]!;
-      const length = route.getLength();
-      const distance = (t * (5.5 + (i % 3) * 1.2) + i * (length / 12)) % length;
-      const u = distance / length;
-      const point = route.getPointAt(u);
-      const tangent = route.getTangentAt(u);
-      car.position.set(point.x, 0.16, point.z);
-      car.rotation.y = Math.atan2(-tangent.z, tangent.x);
-    });
+  const bodyRef=useRef<THREE.InstancedMesh>(null);
+  const glassRef=useRef<THREE.InstancedMesh>(null);
+  const wheelRef=useRef<THREE.InstancedMesh>(null);
+  const quality=useGame(s=>s.graphicsQuality);
+  const count=quality==="low"?14:quality==="high"?40:26;
+  const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
+  useEffect(()=>{
+    const body=bodyRef.current;if(!body)return;
+    const colors=["#e2d9c8","#d7b14d","#39799a","#b7473c","#31553e","#f0eee5","#444d51","#c9c7bd"];
+    for(let i=0;i<count;i++)body.setColorAt(i,new THREE.Color(colors[i%colors.length]!));
+    if(body.instanceColor)body.instanceColor.needsUpdate=true;
+  },[count]);
+  useFrame((state)=>{
+    const body=bodyRef.current,glass=glassRef.current,wheels=wheelRef.current;if(!body||!glass||!wheels)return;
+    const t=state.clock.elapsedTime,dummy=new THREE.Object3D();
+    for(let i=0;i<count;i++){
+      const route=routes[i%routes.length]!,length=route.getLength();
+      const startDistance=i*(length/count);
+      const baseSpeed=quality==="low"?4.8:5.8+(i%4)*.7;
+      let distance=(t*baseSpeed+startDistance)%length;
+      let point=route.getPointAt(distance/length);
+      const nearStadium=Math.hypot(point.x,point.z)<32;
+      const nearPort=Math.hypot(point.x-116,point.z-120)<32;
+      if(nearStadium||nearPort)distance=(t*baseSpeed*.56+startDistance)%length;
+      point=route.getPointAt(distance/length);
+      const tangent=route.getTangentAt(distance/length),yaw=Math.atan2(-tangent.z,tangent.x);
+      const isBus=i%7===0,isVan=i%5===0&&!isBus;
+      const lengthScale=isBus?1.75:isVan?1.35:1;
+      const heightScale=isBus?1.15:1;
+      dummy.position.set(point.x,.34,point.z);dummy.rotation.set(0,yaw,0);dummy.scale.set(lengthScale,heightScale,1);dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
+      dummy.position.set(point.x,.66,point.z);dummy.rotation.set(0,yaw,0);dummy.scale.set(lengthScale*.48,.35,.78);dummy.updateMatrix();glass.setMatrixAt(i,dummy.matrix);
+      // Four small shared wheels per vehicle.
+      for(let w=0;w<4;w++){
+        const side=w<2?-1:1,front=w%2===0?1:-1;
+        const ox=Math.cos(yaw)*front*.78-Math.sin(yaw)*side*.52;
+        const oz=Math.sin(yaw)*front*.78+Math.cos(yaw)*side*.52;
+        dummy.position.set(point.x+ox,.13,point.z+oz);dummy.rotation.set(0,yaw,0);dummy.scale.set(.36,.28,.18);dummy.updateMatrix();wheels.setMatrixAt(i*4+w,dummy.matrix);
+      }
+    }
+    body.instanceMatrix.needsUpdate=true;glass.instanceMatrix.needsUpdate=true;wheels.instanceMatrix.needsUpdate=true;
   });
-  return <>{Array.from({ length: 12 }, (_, i) => <group key={i} ref={(el) => { refs.current[i] = el; }}>
-    <mesh castShadow><boxGeometry args={[2.6, 0.75, 1.25]} /><meshStandardMaterial color={["#d9dfe0", "#d9ad4d", "#376a8a", "#a83d35", "#263b32"][i % 5]!} roughness={0.65} /></mesh>
-    <mesh position={[0, 0.43, 0]}><boxGeometry args={[1.25, 0.42, 1.05]} /><meshStandardMaterial color="#8eb0bb" metalness={0.2} roughness={0.25} /></mesh>
-  </group>)}</>;
+  return <>
+    <instancedMesh ref={bodyRef} args={[undefined,undefined,count]} frustumCulled={false} castShadow><boxGeometry args={[2.6,.75,1.25]}/><meshStandardMaterial color="#e2d9c8" roughness={.68}/></instancedMesh>
+    <instancedMesh ref={glassRef} args={[undefined,undefined,count]} frustumCulled={false}><boxGeometry args={[1.25,.42,1.05]}/><meshStandardMaterial color="#8eb0bb" metalness={.2} roughness={.25}/></instancedMesh>
+    <instancedMesh ref={wheelRef} args={[undefined,undefined,count*4]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#24282a" roughness={.95}/></instancedMesh>
+  </>;
 }
-
 
 function TerrainDetails() {
   const patchRef=useRef<THREE.InstancedMesh>(null);
