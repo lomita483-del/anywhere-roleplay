@@ -41,9 +41,17 @@ export function interact() {
   else if (p.kind === "vehicle" && p.vehicleId) enterVehicle(p.vehicleId);
   else if (p.kind === "atm") s.openPhone("bank");
   else if (p.kind === "dealer") s.setModal("dealer");
-  else if (p.kind === "home") s.setModal("home");
+  else if (p.kind === "home") {
+    if ((s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0) {
+      g.playerPos.set(104, 0, 104);
+      s.setInterior(true);
+      s.setWaypoint(null);
+      s.radio("🏠 Welcome home. Your apartment storage is safe here.");
+    } else s.setModal("home");
+  }
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
   else if (p.kind === "jobboard") s.openPhone("jobs");
+  else if (p.kind === "police") { s.setOutfit({ top: "uniform" }); s.acceptJob("security"); s.radio("🚔 Police duty started. Patrol uniform equipped."); }
 }
 
 // Spawn an owned vehicle on the nearest road lane to the player.
@@ -72,4 +80,12 @@ export function deliverOwnedVehicle(model: string) {
   s.addSpawned({ id, model, x: best.x, z: best.z, rotY: best.yaw });
   s.radio(`🚗 Your ${VEHICLE_CATALOG[model]?.name} is waiting on the road nearby.`);
   s.openPhone("garage");
+}
+
+export function exitApartment() {
+  const s = useGame.getState();
+  if (!s.interior) return;
+  g.playerPos.set(42, 0, 38);
+  s.setInterior(false);
+  s.radio("🏠 You left your apartment.");
 }
