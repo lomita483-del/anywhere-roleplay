@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt } from "./city";
 import { g } from "./state";
 
-export type JobType = "courier" | "driver" | "trader" | "security";
+export type JobType = "courier" | "driver" | "trader" | "security" | "construction" | "retail" | "airport" | "estate-agent";
 
 export const DISTRICT_INFO = [
   { name: "Yaba / Surulere", price: 0, description: "Starter mainland: tech hustlers, students and buka stalls." },
@@ -93,6 +93,10 @@ export const JOB_INFO: Record<JobType, { title: string; desc: string; payout: nu
   driver: { title: "Transport Driver", desc: "Drive a vehicle: pick up a passenger and drop them off.", payout: 3200 },
   trader: { title: "Street Hustle", desc: "Buy goods at Balogun Market, sell at the Trade Depot for profit.", payout: 4500 },
   security: { title: "Security Patrol", desc: "Walk 3 checkpoints across the city on foot.", payout: 2600 },
+  construction: { title: "Construction Crew", desc: "Report to the worksite, then deliver materials to the foreman.", payout: 5200 },
+  retail: { title: "Shop Assistant", desc: "Check in at a Lagos boutique and restock a nearby market stall.", payout: 2800 },
+  airport: { title: "Airport Ground Crew", desc: "Report to cargo operations and move a shipment to the terminal.", payout: 6200 },
+  "estate-agent": { title: "Property Viewing Agent", desc: "Meet a client at the estate office and show them a property.", payout: 7000 },
 };
 
 function pick<T>(arr: readonly T[]): T {
@@ -139,6 +143,17 @@ export function makeJob(type: JobType): ActiveJob {
       hint: "Buy goods at the market, sell at the Trade Depot.",
     };
   }
+  const districtJobs: Partial<Record<JobType, { targets: [number, number][]; hint: string }>> = {
+    construction: { targets: [[86, 78], [78, 84]], hint: "Check in at the construction site, then report to the foreman." },
+    retail: { targets: [[2, 42], [-40, 32]], hint: "Clock in at Lagos Boutique, then restock a market stall." },
+    airport: { targets: [[140, -132], [91, -96]], hint: "Check in at cargo operations, then report to the terminal." },
+    "estate-agent": { targets: [[151, 88], [112, 76]], hint: "Meet your client at the gated estate, then show the business plaza." },
+  };
+  const districtJob = districtJobs[type];
+  if (districtJob) return {
+    type, stage: 0, targets: districtJob.targets,
+    payout: JOB_INFO[type].payout, title: JOB_INFO[type].title, hint: districtJob.hint,
+  };
   const pts = [...JOB_POINTS.checkpoints].sort(() => Math.random() - 0.5).slice(0, 3) as [number, number][];
   return {
     type: "security", stage: 0,
