@@ -12,7 +12,7 @@
 - [x] Authenticated cloud-save synchronization wired to the player_save table
 - [x] Local browser save fallback for guest play and temporary network failures
 - [x] Save data includes active job and spawned owned vehicles
-- [x] Transaction amount validation and tests for money movement/save restoration added
+- [x] Transaction amount validation and tests for money movement, job progression and save restoration added
 - [x] Signup trigger execute privileges revoked from public, anon and authenticated roles; verified by SQL privilege check
 - [x] Optimized profile/save RLS policies with scalar auth.uid() checks; Supabase security and performance advisors now return no findings
 - [x] Recorded the RLS policy optimization in supabase/migrations/
