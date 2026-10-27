@@ -200,6 +200,7 @@ export default function LivingCity() {
       </group>)}
       <Html position={[-145, 5.8, 133]} center distanceFactor={38}><div className="rounded border border-cyan-200/30 bg-[#102326]/90 px-3 py-1.5 text-[10px] font-black tracking-widest text-cyan-100">MAKOKO WATERFRONT COMMUNITY</div></Html>
     </group>
-\n        <InteriorLife />
+
+    <InteriorLife />
   </group>;
 }
