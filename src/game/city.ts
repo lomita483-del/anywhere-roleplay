@@ -57,6 +57,13 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 65, z: 45, w: 10, d: 10, h: 11, color: "#c2b39c" },
   { x: 12, z: 42, w: 10, d: 10, h: 7, color: "#b9c4ba" },
   { x: 2, z: 42, w: 18, d: 14, h: 8, color: "#d2b46b", kind: "clothing", label: "LAGOS BOUTIQUE" },
+  // Civic and education landmarks — shared by the 3D world, collisions and minimap.
+  { x: -94, z: -36, w: 19, d: 13, h: 8, color: "#e6d3a5", label: "PRIMARY SCHOOL" },
+  { x: -92, z: -12, w: 22, d: 14, h: 10, color: "#d6c7b0", label: "SECONDARY SCHOOL" },
+  { x: 92, z: -42, w: 20, d: 16, h: 13, color: "#d9d2bd", label: "LAGOS UNIVERSITY" },
+  { x: 92, z: -16, w: 17, d: 13, h: 9, color: "#d8d2c8", label: "COURT OF JUSTICE" },
+  { x: 92, z: 10, w: 20, d: 15, h: 12, color: "#d8c8a6", label: "GOVERNMENT HOUSE" },
+  { x: -92, z: 12, w: 17, d: 13, h: 8, color: "#d5c2a5", label: "REAL ESTATE & PROPERTY" },
 ];
 
 export interface Poi {
