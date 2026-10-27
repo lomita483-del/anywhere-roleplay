@@ -5,6 +5,7 @@ import {
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
+import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS } from "@/game/city";
 
 type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
@@ -396,28 +397,48 @@ function WardrobeApp() {
 
 function RadioApp() {
   const [msgs, setMsgs] = useState<string[]>(["📻 Wazobia FM 99.5 — live from Lagos"]);
+  const [draft, setDraft] = useState("");
   const feedRef = useRef<HTMLDivElement>(null);
+  const chatChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
   useEffect(() => {
     const onMsg = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
       setMsgs((m) => [...m.slice(-40), detail]);
     };
     window.addEventListener("city-radio", onMsg);
-    return () => window.removeEventListener("city-radio", onMsg);
+    const channel = supabase.channel("lagos-life-chat", { config: { broadcast: { self: false } } })
+      .on("broadcast", { event: "chat_message" }, ({ payload }) => {
+        const p = payload as { name?: string; message?: string };
+        if (p.message) setMsgs((m) => [...m.slice(-40), "💬 " + (p.name || "Hustler") + ": " + p.message]);
+      });
+    chatChannel.current = channel;
+    void channel.subscribe();
+    return () => {
+      window.removeEventListener("city-radio", onMsg);
+      chatChannel.current = null;
+      void supabase.removeChannel(channel);
+    };
   }, []);
-  useEffect(() => {
-    feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight });
-  }, [msgs]);
+  useEffect(() => { feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight }); }, [msgs]);
+  const sendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = draft.trim().slice(0, 180);
+    if (!message) return;
+    const name = useGame.getState().name || "Hustler";
+    setMsgs((m) => [...m.slice(-40), "💬 You: " + message]);
+    setDraft("");
+    if (chatChannel.current) void chatChannel.current.send({ type: "broadcast", event: "chat_message", payload: { name, message, at: Date.now() } });
+  };
   return (
     <div className="flex h-full flex-col p-3">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">City radio — live feed</div>
+      <div className="text-[10px] uppercase tracking-widest text-hud-muted">City radio · live player chat</div>
       <div ref={feedRef} className="mt-2 flex-1 space-y-1.5 overflow-y-auto pr-1">
-        {msgs.map((m, i) => (
-          <div key={i} className="rounded-xl bg-white/5 px-2.5 py-1.5 text-xs text-hud-bright">
-            {m}
-          </div>
-        ))}
+        {msgs.map((m, i) => <div key={i} className="rounded-xl bg-white/5 px-2.5 py-1.5 text-xs text-hud-bright">{m}</div>)}
       </div>
+      <form onSubmit={sendChat} className="mt-2 flex gap-2 border-t border-hud-line pt-2">
+        <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={180} placeholder="Message players online…" className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-xs text-white placeholder:text-hud-muted" />
+        <button type="submit" className="rounded-lg bg-[#eab308]/20 px-3 text-xs font-bold text-[#f4d16a]">Send</button>
+      </form>
     </div>
   );
 }
