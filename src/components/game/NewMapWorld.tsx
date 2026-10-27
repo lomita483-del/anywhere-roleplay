@@ -272,7 +272,7 @@ function CityTraffic() {
     });
   });
   return <>{Array.from({ length: 12 }, (_, i) => <group key={i} ref={(el) => { refs.current[i] = el; }}>
-    <mesh castShadow><boxGeometry args={[2.6, 0.75, 1.25]} /><meshStandardMaterial color={["#d9dfe0", "#d9ad4d", "#376a8a", "#a83d35", "#263b32"][i % 5]} roughness={0.65} /></mesh>
+    <mesh castShadow><boxGeometry args={[2.6, 0.75, 1.25]} /><meshStandardMaterial color={["#d9dfe0", "#d9ad4d", "#376a8a", "#a83d35", "#263b32"][i % 5]!} roughness={0.65} /></mesh>
     <mesh position={[0, 0.43, 0]}><boxGeometry args={[1.25, 0.42, 1.05]} /><meshStandardMaterial color="#8eb0bb" metalness={0.2} roughness={0.25} /></mesh>
   </group>)}</>;
 }
@@ -281,12 +281,12 @@ function CityEcosystem() {
   const buildings = useMemo<CityBlock[]>(() => {
     const out: CityBlock[] = [];
     // Industrial and corporate skyline, north-west.
-    for (let i = 0; i < 10; i++) out.push({ x: -145 + (i % 5) * 14, z: -88 + Math.floor(i / 5) * 17, w: 9 + (i % 3) * 2, d: 9, h: 18 + ((i * 7) % 28), color: ["#8daab5", "#b3b9b7", "#d0c4ad", "#728d9b"][i % 4], label: i === 2 ? "CORPORATE DISTRICT" : undefined });
-    for (let i = 0; i < 8; i++) out.push({ x: -151 + (i % 4) * 12, z: -55 + Math.floor(i / 4) * 13, w: 8, d: 8, h: 6 + (i % 3), color: ["#a8a69a", "#b5a18b", "#c8bca5"][i % 3] });
+    for (let i = 0; i < 10; i++) out.push({ x: -145 + (i % 5) * 14, z: -88 + Math.floor(i / 5) * 17, w: 9 + (i % 3) * 2, d: 9, h: 18 + ((i * 7) % 28), color: ["#8daab5", "#b3b9b7", "#d0c4ad", "#728d9b"][i % 4]!, ...(i === 2 ? { label: "CORPORATE DISTRICT" } : {}) });
+    for (let i = 0; i < 8; i++) out.push({ x: -151 + (i % 4) * 12, z: -55 + Math.floor(i / 4) * 13, w: 8, d: 8, h: 6 + (i % 3), color: ["#a8a69a", "#b5a18b", "#c8bca5"][i % 3]! });
     // Residential streets, north-east.
-    for (let row = 0; row < 4; row++) for (let col = 0; col < 5; col++) out.push({ x: 64 + col * 16, z: -77 + row * 14, w: 10, d: 8, h: 4.2 + ((row + col) % 2) * 0.7, color: ["#dfd3bb", "#d9c8a7", "#bfc9bb", "#d7b6a0"][(row + col) % 4]!, label: row === 0 && col === 2 ? "RESIDENTIAL DISTRICT" : undefined });
+    for (let row = 0; row < 4; row++) for (let col = 0; col < 5; col++) out.push({ x: 64 + col * 16, z: -77 + row * 14, w: 10, d: 8, h: 4.2 + ((row + col) % 2) * 0.7, color: ["#dfd3bb", "#d9c8a7", "#bfc9bb", "#d7b6a0"][(row + col) % 4]!, ...(row === 0 && col === 2 ? { label: "RESIDENTIAL DISTRICT" } : {}) });
     // Commercial blocks around the centre, leaving a clear stadium ring.
-    for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4] });
+    for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4]! });
     // University district and civic campus, west.
     out.push({ x: -125, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
     out.push({ x: -95, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
@@ -316,7 +316,7 @@ function CityEcosystem() {
       <mesh position={[0, 3.3, 48]}><boxGeometry args={[34, 0.5, 9]} /><meshStandardMaterial color="#7ea9b6" metalness={0.25} roughness={0.3} /></mesh>
       <mesh position={[27, 5, 48]}><cylinderGeometry args={[1.2, 1.5, 10, 8]} /><meshStandardMaterial color="#d0d4d2" /></mesh>
       <mesh position={[27, 10, 48]}><boxGeometry args={[4, 2.4, 4]} /><meshStandardMaterial color="#7194a2" metalness={0.2} /></mesh>
-      {[[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4]].map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
+      {([[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
         <mesh><boxGeometry args={[9, 1.1, 1.8]} /><meshStandardMaterial color={i%2?"#e9e8df":"#d4d9d8"} /></mesh>
         <mesh position={[0, 0.15, 0]}><boxGeometry args={[2.5, 0.16, 12]} /><meshStandardMaterial color="#d6dbd9" /></mesh>
         <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
@@ -341,8 +341,8 @@ function CityEcosystem() {
     <group position={[116, 0, 120]}>
       <mesh rotation-x={-Math.PI / 2} position={[5, 0, 0]}><planeGeometry args={[88, 64]} /><meshStandardMaterial color="#267b9c" roughness={0.34} metalness={0.1} /></mesh>
       <mesh position={[-22, 0.28, -1]}><boxGeometry args={[47, 0.55, 17]} /><meshStandardMaterial color="#777e7e" roughness={0.9} /></mesh>
-      {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]} roughness={0.8} /></mesh>)}
-      {[[-27, -11], [8, -12]].map(([x,z],i) => <group key={i} position={[x, 0, z]}>
+      {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]!} roughness={0.8} /></mesh>)}
+      {([[-27, -11], [8, -12]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0, z]}>
         <mesh position={[0, 7, 0]}><boxGeometry args={[1, 14, 1]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
         <mesh position={[4, 13, 0]}><boxGeometry args={[9, 0.8, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
         <mesh position={[7, 6, 0]}><boxGeometry args={[0.8, 12, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
