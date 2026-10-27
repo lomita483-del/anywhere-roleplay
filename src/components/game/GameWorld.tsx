@@ -383,7 +383,6 @@ function Traffic() {
       const green = c.t.lane.axis === "x" ? horizontalGreen : !horizontalGreen;
       // A simple alternating signal phase creates visible go-slows at busy junctions.
       if (nextCrossing && !green) {
-        const grp = refs.current[i];
         if (grp) {
           if (c.t.lane.axis === "x") { grp.position.set(c.p, 0, c.t.lane.fixed); grp.rotation.y = c.dir > 0 ? Math.PI / 2 : -Math.PI / 2; }
           else { grp.position.set(c.t.lane.fixed, 0, c.p); grp.rotation.y = c.dir > 0 ? 0 : Math.PI; }
@@ -393,7 +392,6 @@ function Traffic() {
       c.p += c.dir * c.t.speed * dt;
       if (c.p > c.t.lane.to) c.p = c.t.lane.from;
       if (c.p < c.t.lane.from) c.p = c.t.lane.to;
-      const grp = refs.current[i];
       if (!grp) return;
       if (c.t.lane.axis === "x") {
         grp.position.set(c.p, 0, c.t.lane.fixed);
@@ -458,7 +456,6 @@ function Pedestrians() {
       }
       p.x += (dx / d) * p.speed * dt;
       p.z += (dz / d) * p.speed * dt;
-      const grp = refs.current[i];
       if (grp) {
         grp.position.set(p.x, 0, p.z);
         grp.rotation.y = Math.atan2(dx, dz);
