@@ -26,7 +26,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
 };
 
 function atAtm() {
-  const p = POIS.find((p) => p.kind === "atm" && Math.hypot(p.x - g.playerPos.x, p.z - g.playerPos.z) < 5);
+  const p = POIS.find((p) => (p.kind === "atm" || p.kind === "bank") && Math.hypot(p.x - g.playerPos.x, p.z - g.playerPos.z) < 8);
   return !!p;
 }
 
