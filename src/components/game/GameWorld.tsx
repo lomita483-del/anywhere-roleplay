@@ -337,6 +337,43 @@ function JobMarker() {
   );
 }
 
+function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
+  const route = useRef<THREE.Line>(null);
+  const glow = useRef<THREE.Line>(null);
+  const beacon = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (!waypoint) return;
+    const points = [new THREE.Vector3(g.playerPos.x, 0.16, g.playerPos.z), new THREE.Vector3(waypoint.x, 0.16, waypoint.z)];
+    route.current?.geometry.setFromPoints(points);
+    glow.current?.geometry.setFromPoints(points);
+    if (beacon.current) {
+      beacon.current.position.set(waypoint.x, 0, waypoint.z);
+      beacon.current.children[0]!.rotation.y = state.clock.elapsedTime * 0.8;
+      beacon.current.children[1]!.position.y = 2.4 + Math.sin(state.clock.elapsedTime * 2.4) * 0.18;
+    }
+  });
+  if (!waypoint) return null;
+  const start = new THREE.Vector3(g.playerPos.x, 0.16, g.playerPos.z);
+  const end = new THREE.Vector3(waypoint.x, 0.16, waypoint.z);
+  const distance = Math.round(start.distanceTo(end));
+  return (
+    <>
+      <line ref={glow}><bufferGeometry /><lineBasicMaterial color="#eab308" transparent opacity={0.2} linewidth={7} /></line>
+      <line ref={route}><bufferGeometry /><lineBasicMaterial color="#ffe38a" transparent opacity={0.95} linewidth={2} /></line>
+      <group ref={beacon} position={[waypoint.x, 0, waypoint.z]}>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
+          <ringGeometry args={[1.2, 1.8, 32]} />
+          <meshBasicMaterial color="#ff5757" transparent opacity={0.9} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh position={[0, 2.4, 0]}>
+          <cylinderGeometry args={[0.12, 0.42, 4.8, 10, 1, true]} />
+          <meshBasicMaterial color="#ff5757" transparent opacity={0.28} side={THREE.DoubleSide} depthWrite={false} />
+        </mesh>
+      </group>
+    </>
+  );
+}
+
 export default function GameWorld() {
   const keys = useKeys();
   const playerGroup = useRef<THREE.Group>(null);
@@ -344,6 +381,7 @@ export default function GameWorld() {
   const vehRefs = useRef(new Map<string, THREE.Group | null>());
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
   const spawned = useGame((s) => s.spawnedVehicles);
+  const waypoint = useGame((s) => s.waypoint);
 
   const register = (id: string, grp: THREE.Group | null) => {
     vehRefs.current.set(id, grp);
@@ -519,6 +557,7 @@ export default function GameWorld() {
       <Traffic />
       <Pedestrians />
       <JobMarker />
+      <GpsRoute waypoint={waypoint} />
     </>
   );
 }
