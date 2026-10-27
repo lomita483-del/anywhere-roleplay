@@ -111,7 +111,7 @@ export function deliverOwnedVehicle(model: string) {
   if (!best) return;
   const id = `own-${model}-${Date.now()}`;
   g.vehicles.set(id, {
-    id, model, px: best.x, pz: best.z, vx: 0, vz: 0, yaw: best.yaw, speed: 0, color: "#c94a3c",
+    id, model, px: best.x, pz: best.z, vx: 0, vz: 0, yaw: best.yaw, speed: 0, color: "#c94a3c", fuel: 100,
   });
   s.addSpawned({ id, model, x: best.x, z: best.z, rotY: best.yaw });
   s.radio(`🚗 Your ${VEHICLE_CATALOG[model]?.name} is waiting on the road nearby.`);
