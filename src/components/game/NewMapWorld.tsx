@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Html } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_SCALE } from "@/game/newMap";
+import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -307,18 +307,7 @@ function CityTrees() {
   const crownRef = useRef<THREE.InstancedMesh>(null);
   const palmTrunkRef = useRef<THREE.InstancedMesh>(null);
   const palmFrondRef = useRef<THREE.InstancedMesh>(null);
-  const spots = useMemo(() => {
-    const out: {x:number;z:number;type:"round"|"palm";h:number}[] = [];
-    // Cluster trees at district edges and green corridors rather than making a bare perimeter ring.
-    for (let i=0;i<150;i++) {
-      const angle=i*2.399963;
-      const radius=34+(i%7)*10;
-      out.push({x:Math.cos(angle)*radius,z:Math.sin(angle)*radius,type:i%4===0?"palm":"round",h:2.1+(i%4)*0.28});
-    }
-    for (let i=0;i<28;i++) out.push({x:-112+(i%7)*7,z:96+Math.floor(i/7)*8,type:i%2?"palm":"round",h:2.4});
-    for (let i=0;i<24;i++) out.push({x:100+(i%6)*8,z:94+Math.floor(i/6)*8,type:i%3?"round":"palm",h:2.2});
-    return out;
-  }, []);
+  const spots = useMemo(() => NEW_MAP_TREES, []);
   const palms = useMemo(()=>spots.map((p,i)=>({...p,i})).filter(p=>p.type==="palm"),[spots]);
   const roundTrees = useMemo(()=>spots.filter(p=>p.type==="round"),[spots]);
   useEffect(() => {
@@ -367,14 +356,7 @@ function LagosResidentialDistrict() {
   const shopFronts = useRef<THREE.InstancedMesh>(null);
   const rollerDoors = useRef<THREE.InstancedMesh>(null);
   const shopSigns = useRef<THREE.InstancedMesh>(null);
-  const homes = useMemo(() => Array.from({ length: 64 }, (_, i) => ({
-    x: 82 + (i % 8) * 13.2,
-    z: -63 + Math.floor(i / 8) * 13.2,
-    w: 6.1 + (i % 3) * 0.35,
-    d: 6.1 + (i % 2) * 0.5,
-    h: 6.2 + ((i * 7) % 8) * 1.25,
-    color: ["#d9c9a8", "#d7d4c8", "#c9b39a", "#d7b8a5", "#b9c9bd", "#d8cdbb", "#c3b7a6", "#e0d1b4"][i % 8]!,
-  })), []);
+  const homes = useMemo(() => NEW_MAP_BUILDINGS.filter(b => b.district === "residential"), []);
   const windowData = useMemo(() => homes.flatMap((b, i) => {
     const floors = Math.max(2, Math.floor(b.h / 2.5));
     return Array.from({ length: floors * 3 }, (_, j) => ({
@@ -521,9 +503,9 @@ function createRoadGeometry(path: [number, number][], width: number, y: number) 
 
 function CurvedRoadNetwork() {
   const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
-    const isLocal = index >= NEW_MAP_LOCAL_ROAD_START_INDEX && index < NEW_MAP_ROADS.length-1;
-    const isNarrowConnector = index === 1 || index === NEW_MAP_LOCAL_ROAD_START_INDEX-1;
-    const width = index === NEW_MAP_ROADS.length-1 ? 8.8 : (isLocal || isNarrowConnector) ? 4.2 : index < 3 ? 8.2 : 6.4;
+    const width = NEW_MAP_ROAD_WIDTHS[index] ?? 5;
+    const isLocal = width === 5;
+    const isNarrowConnector = false;
     const sidewalkWidth = (isLocal || isNarrowConnector) ? width + 0.8 : width + 2.8;
     return { index, ...createRoadGeometry(path, width, 0.05), sidewalk: createRoadGeometry(path, sidewalkWidth, 0.03) };
   }), []);
@@ -532,12 +514,12 @@ function CurvedRoadNetwork() {
     roadData.forEach((road, roadIndex) => {
       const length = road.curve.getLength();
       const isLocal = roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX && roadIndex < NEW_MAP_ROADS.length-1;
-      const spacing = roadIndex === NEW_MAP_ROADS.length-1 ? 9.2 : isLocal ? 16 : 10.5;
+      const spacing = isLocal ? 16 : 10.5;
       for (let d = 4; d < length - 4; d += spacing) {
         const t = road.curve.getUtoTmapping(0, d);
         const p = road.curve.getPointAt(t);
         const tangent = road.curve.getTangentAt(t);
-        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : (roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX || roadIndex === 1 || roadIndex === NEW_MAP_LOCAL_ROAD_START_INDEX-1) ? 1.8 : 3.2 });
+        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: isLocal ? 1.8 : 3.2 });
       }
     });
     return out;
@@ -546,7 +528,7 @@ function CurvedRoadNetwork() {
   const edgeRef = useRef<THREE.InstancedMesh>(null);
   const edgeData = useMemo(() => {
     const out:{x:number;z:number;yaw:number}[]=[];
-    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:(road.index>=NEW_MAP_LOCAL_ROAD_START_INDEX||road.index===1||road.index===NEW_MAP_LOCAL_ROAD_START_INDEX-1)?4.2:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
+    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(NEW_MAP_ROAD_WIDTHS[road.index]??5)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
     return out;
   },[roadData]);
   useEffect(() => {
@@ -675,26 +657,15 @@ function CityTraffic() {
 }
 
 function TerrainDetails() {
-  const patchRef=useRef<THREE.InstancedMesh>(null);
-  const farmRef=useRef<THREE.InstancedMesh>(null);
-  const pitchRef=useRef<THREE.InstancedMesh>(null);
-  const hillRef=useRef<THREE.InstancedMesh>(null);
-  const patches=useMemo(()=>Array.from({length:42},(_,i)=>({x:-155+(i%7)*43,z:-135+Math.floor(i/7)*43,w:12+(i%3)*3,d:10+(i%4)*2})),[]);
-  useEffect(()=>{
-    const dummy=new THREE.Object3D();
-    const patch=patchRef.current,farm=farmRef.current,pitch=pitchRef.current,hills=hillRef.current;
-    if(patch) patches.forEach((p,i)=>{dummy.position.set(p.x,-0.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%5)*0.12;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);if(i%2===0)patch.setColorAt(i,new THREE.Color("#718657"));else patch.setColorAt(i,new THREE.Color("#92975f"));});
-    if(farm) for(let i=0;i<12;i++){dummy.position.set(-145+(i%4)*13,0.01,70+Math.floor(i/4)*12);dummy.scale.set(10,0.1,8);dummy.rotation.y=0;dummy.updateMatrix();farm.setMatrixAt(i,dummy.matrix);}
-    if(pitch) for(let i=0;i<2;i++){dummy.position.set(-112+i*26,0.025,34);dummy.scale.set(20,0.1,12);dummy.rotation.y=0;dummy.updateMatrix();pitch.setMatrixAt(i,dummy.matrix);}
-    if(hills) for(let i=0;i<18;i++){const a=i*2.399963,r=122+(i%4)*10;dummy.position.set(Math.cos(a)*r,.42,Math.sin(a)*r);dummy.scale.set(11+(i%3)*4,1.2+(i%2)*.7,8+(i%4)*2);dummy.rotation.y=a;dummy.updateMatrix();hills.setMatrixAt(i,dummy.matrix);if(i%2===0)hills.setColorAt(i,new THREE.Color("#7d8e58"));else hills.setColorAt(i,new THREE.Color("#969960"));}
-    for(const mesh of [patch,farm,pitch,hills])if(mesh){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
-  },[patches]);
-  return <>
-    <instancedMesh ref={patchRef} args={[undefined,undefined,patches.length]} receiveShadow><boxGeometry args={[1,0.03,1]} /><meshStandardMaterial color="#89935e" roughness={1} /></instancedMesh>
-    <instancedMesh ref={farmRef} args={[undefined,undefined,12]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#8a7048" roughness={1} /></instancedMesh>
-    <instancedMesh ref={pitchRef} args={[undefined,undefined,2]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#3a8549" roughness={1} /></instancedMesh>
-    <instancedMesh ref={hillRef} args={[undefined,undefined,18]} receiveShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial color="#89935e" roughness={1}/></instancedMesh>
-  </>;
+  const patchRef=useRef<THREE.InstancedMesh>(null); const hillRef=useRef<THREE.InstancedMesh>(null);
+  const patches=useMemo(()=>[{x:-151,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}],[]);
+  const hills=useMemo(()=>[{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}],[]);
+  useEffect(()=>{const dummy=new THREE.Object3D(),patch=patchRef.current,hill=hillRef.current;
+    if(patch)patches.forEach((p,i)=>{dummy.position.set(p.x,-.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%3)*.08;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);patch.setColorAt(i,new THREE.Color(i%2?"#92975f":"#718657"));});
+    if(hill)hills.forEach((p,i)=>{dummy.position.set(p.x,p.h*.35,p.z);dummy.scale.set(p.w,p.h,p.d);dummy.rotation.y=i*.35;dummy.updateMatrix();hill.setMatrixAt(i,dummy.matrix);hill.setColorAt(i,new THREE.Color(i%2?"#969960":"#7d8e58"));});
+    for(const mesh of [patch,hill])if(mesh){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
+  },[patches,hills]);
+  return <><instancedMesh ref={patchRef} args={[undefined,undefined,patches.length]} receiveShadow><boxGeometry args={[1,.03,1]}/><meshStandardMaterial color="#ffffff" roughness={1}/></instancedMesh><instancedMesh ref={hillRef} args={[undefined,undefined,hills.length]} receiveShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial color="#ffffff" roughness={1}/></instancedMesh></>;
 }
 
 function MarketStreetLife() {
@@ -704,7 +675,7 @@ function MarketStreetLife() {
   const umbrellas=useRef<THREE.InstancedMesh>(null);
   const billboards=useRef<THREE.InstancedMesh>(null);
   const poles=useRef<THREE.InstancedMesh>(null);
-  const stalls=useMemo(()=>Array.from({length:36},(_,i)=>({x:-59+(i%9)*5.2,z:-82+Math.floor(i/9)*5.2,color:["#d84f3f","#e2b74f","#347c9d","#4e8052","#eee0bf"][i%5]!})),[]);
+  const stalls=useMemo(()=>NEW_MAP_MARKET_STALLS,[]);
   const vendorSpots=useMemo(()=>Array.from({length:14},(_,i)=>({x:-42+(i%7)*13,z:28+Math.floor(i/7)*7})),[]);
   const poleSpots=useMemo(()=>Array.from({length:18},(_,i)=>({x:-150+(i%9)*34,z:-20+Math.floor(i/9)*44})),[]);
   useEffect(()=>{
@@ -714,20 +685,20 @@ function MarketStreetLife() {
       items.forEach((p,i)=>{dummy.position.set(p.x,p.h??0.8,p.z);dummy.scale.set(p.w??defaults[0],p.h??defaults[1],p.d??defaults[2]);dummy.rotation.set(0,0,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(p.color)mesh.setColorAt(i,new THREE.Color(p.color));});
       mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();
     };
-    write(tables,stalls.map(s=>({...s,h:0.7,w:3.8,d:2.2})),[3.8,.7,2.2]);
-    write(canopies,stalls.map(s=>({...s,h:2.5,w:4.3,d:2.7})),[4.3,.25,2.7]);
+    write(tables,stalls.map(s=>({...s,h:0.7,w:s.w,d:s.d})),[3.4,.7,2.4]);
+    write(canopies,stalls.map(s=>({...s,h:2.5,w:s.w+0.5,d:s.d+0.3})),[3.9,.25,2.7]);
     write(generators,vendorSpots.map((p,i)=>({...p,h:.55,w:1.4,d:.9,color:i%2?"#3b4547":"#697071"})),[1.4,.55,.9]);
     write(umbrellas,vendorSpots.map((p,i)=>({...p,x:p.x+2.5,h:2.5,w:2.5,d:2.5,color:["#db5546","#e1b548","#4387a0","#4d8054"][i%4]!})),[2.5,.25,2.5]);
     write(billboards,[{x:-82,z:-88,h:8,w:1,d:12,color:"#203d4b"},{x:8,z:-100,h:7,w:1,d:12,color:"#9c3d35"},{x:44,z:20,h:6,w:1,d:10,color:"#2c5145"},{x:110,z:83,h:6,w:1,d:10,color:"#b98a3f"}],[1,8,12]);
     write(poles,poleSpots.map(p=>({...p,h:5,w:.18,d:.18,color:"#464b49"})),[.18,5,.18]);
   },[stalls,vendorSpots,poleSpots]);
   return <>
-    <instancedMesh ref={tables} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#a48b67" roughness={.9}/></instancedMesh>
-    <instancedMesh ref={canopies} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d84f3f" roughness={.85}/></instancedMesh>
-    <instancedMesh ref={generators} args={[undefined,undefined,vendorSpots.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#3b4547" roughness={.85}/></instancedMesh>
-    <instancedMesh ref={umbrellas} args={[undefined,undefined,vendorSpots.length]} castShadow><coneGeometry args={[.5,.22,8]}/><meshStandardMaterial color="#db5546" roughness={.85}/></instancedMesh>
-    <instancedMesh ref={billboards} args={[undefined,undefined,4]} castShadow><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#203d4b" roughness={.8}/></instancedMesh>
-    <instancedMesh ref={poles} args={[undefined,undefined,poleSpots.length]}><cylinderGeometry args={[.5,.5,1,6]}/><meshStandardMaterial color="#464b49" roughness={.7}/></instancedMesh>
+    <instancedMesh ref={tables} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.9}/></instancedMesh>
+    <instancedMesh ref={canopies} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={generators} args={[undefined,undefined,vendorSpots.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={umbrellas} args={[undefined,undefined,vendorSpots.length]} castShadow><coneGeometry args={[.5,.22,8]}/><meshStandardMaterial color="#ffffff" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={billboards} args={[undefined,undefined,4]} castShadow><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#ffffff" roughness={.8}/></instancedMesh>
+    <instancedMesh ref={poles} args={[undefined,undefined,poleSpots.length]}><cylinderGeometry args={[.5,.5,1,6]}/><meshStandardMaterial color="#ffffff" roughness={.7}/></instancedMesh>
     {poleSpots.slice(0,8).map((p,i)=><mesh key={"wire-"+i} position={[p.x+16,6,p.z+10]} rotation-y={.4}><boxGeometry args={[36,.06,.06]}/><meshBasicMaterial color="#282d30"/></mesh>)}
     <Html position={[-39,4,-61]} center distanceFactor={32} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#532c18e8",border:"1px solid #e0b85d",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.2}}>CENTRAL MARKET & DEPOT</div></Html>
   </>;
@@ -847,32 +818,7 @@ function CityEcosystem() {
   const quality=useGame(s=>s.graphicsQuality);
   const parkedAircraftCount=quality==="low"?3:quality==="medium"?5:8;
   useFrame((state)=>{craneRefs.current.forEach((crane,i)=>{if(crane)crane.rotation.y=Math.sin(state.clock.elapsedTime*.32+i*1.4)*.08;});});
-  const buildings = useMemo<CityBlock[]>(() => {
-    const out: CityBlock[] = [];
-    // Industrial and corporate skyline, north-west.
-    for (let i = 0; i < 10; i++) out.push({ x: -145 + (i % 5) * 14, z: -88 + Math.floor(i / 5) * 17, w: 9 + (i % 3) * 2, d: 9, h: 18 + ((i * 7) % 28), color: ["#8daab5", "#b3b9b7", "#d0c4ad", "#728d9b"][i % 4]!, ...(i === 2 ? { label: "CORPORATE DISTRICT" } : {}) });
-    for (let i = 0; i < 8; i++) out.push({ x: -151 + (i % 4) * 12, z: -55 + Math.floor(i / 4) * 13, w: 8, d: 8, h: 6 + (i % 3), color: ["#a8a69a", "#b5a18b", "#c8bca5"][i % 3]! });
-    // Dense Lagos residential grid is rendered by instanced meshes below (64 varied low-rise buildings).
-    // Commercial blocks around the centre, leaving a clear stadium ring.
-    for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4]! });
-    // Named everyday services, scaled and styled as low-rise Lagos commercial buildings.
-    out.push({ x: 38, z: 18, w: 12, d: 10, h: 9, color: "#c8b78c", label: "COMMUNITY BANK & ATM" });
-    out.push({ x: 78, z: 24, w: 16, d: 12, h: 10, color: "#d9d2bd", label: "CITY HOSPITAL" });
-    out.push({ x: -130, z: -42, w: 14, d: 12, h: 8, color: "#8ba2b4", label: "POLICE STATION" });
-    out.push({ x: -36, z: 2, w: 9, d: 8, h: 5, color: "#b8c7b9", label: "NEIGHBOURHOOD PHARMACY" });
-    out.push({ x: -88, z: 52, w: 18, d: 13, h: 7, color: "#d8c7a5", label: "COMMUNITY SECONDARY SCHOOL" });
-    out.push({ x: 58, z: -40, w: 13, d: 10, h: 5, color: "#d7bd65", label: "FUEL STATION" });
-    out.push({ x: 96, z: 40, w: 14, d: 10, h: 7, color: "#b5b6a7", label: "CAR DEALERSHIP" });
-    out.push({ x: 110, z: 58, w: 12, d: 9, h: 7, color: "#c7b89c", label: "REAL ESTATE OFFICE" });
-    // University district and civic campus, west.
-    out.push({ x: -128, z: 33, w: 9, d: 28, h: 8, color: "#d8d0bd" });
-    out.push({ x: -94, z: 33, w: 9, d: 28, h: 8, color: "#c1b8a7" });
-    out.push({ x: -111, z: 49, w: 27, d: 8, h: 9, color: "#b4c4b7", label: "UNIVERSITY DISTRICT" });
-    // Port logistics buildings, east/south.
-    out.push({ x: 124, z: 91, w: 23, d: 15, h: 8, color: "#b7a58a", label: "PORT OF LAGOS" });
-    out.push({ x: 148, z: 75, w: 14, d: 12, h: 7, color: "#c8bca6" });
-    return out;
-  }, []);
+  const buildings = useMemo<CityBlock[]>(() => NEW_MAP_BUILDINGS.map((b) => ({ x:b.x,z:b.z,w:b.w,d:b.d,h:b.h,color:b.color,label:b.label })), []);
   return <>
     {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
     <CurvedRoadNetwork />
@@ -980,6 +926,7 @@ function StadiumPlaza() {
   </>;
 }
 
+function NewMapSky() { return <mesh frustumCulled={false} renderOrder={-1000}><sphereGeometry args={[480,32,20]}/><shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={`varying float vSkyY; void main(){vSkyY=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`} fragmentShader={`varying float vSkyY; void main(){float t=smoothstep(-0.08,0.72,vSkyY);vec3 horizon=vec3(0.78,0.86,0.87);vec3 zenith=vec3(0.20,0.43,0.66);vec3 col=mix(horizon,zenith,t);gl_FragColor=vec4(col,1.0);}`}/></mesh>; }
 export default function NewMapWorld() {
   const players = useMemo<MatchPlayerData[]>(() => {
     const home: [number, number][] = [
@@ -996,6 +943,7 @@ export default function NewMapWorld() {
 
   return (
     <group>
+      <NewMapSky />
       {/* The entire city is intentionally compact so destinations are close together. */}
       <group scale={[NEW_MAP_SCALE, NEW_MAP_SCALE, NEW_MAP_SCALE]}>
         {/* Named, connected districts with S-curves and a U-shaped stadium boulevard. */}
