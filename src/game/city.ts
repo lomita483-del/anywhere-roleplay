@@ -112,6 +112,40 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 122, z: 63, w: 14, d: 12, h: 12, color: "#d8c6a6", label: "ESTATE MANAGEMENT OFFICE", kind: "civic" },
   { x: 48, z: 72, w: 16, d: 12, h: 8, color: "#d5c4a4", label: "IKOYI RESIDENTS CLUB" },
   { x: 28, z: 72, w: 14, d: 12, h: 10, color: "#a8bdb4", kind: "apartments", label: "IKOYI COURTYARD APARTMENTS" },
+  // Named, purpose-built localities with their own street identities.
+  // Government Avenue: civic buildings, assembly complex and formal landscaped compounds.
+  { x: -34, z: -124, w: 22, d: 16, h: 13, color: "#d9c7a6", kind: "civic", label: "LAGOS HOUSE OF ASSEMBLY" },
+  { x: -5, z: -124, w: 24, d: 18, h: 16, color: "#d8d2c4", kind: "civic", label: "GOVERNMENT HOUSE" },
+  { x: 27, z: -124, w: 22, d: 16, h: 12, color: "#c8b89d", kind: "civic", label: "LAGOS CITY HALL" },
+  { x: -33, z: -101, w: 17, d: 13, h: 9, color: "#d8d0be", kind: "civic", label: "HIGH COURT OF LAGOS" },
+  { x: 0, z: -101, w: 20, d: 14, h: 10, color: "#c9d0d1", kind: "civic", label: "CIVIL SERVICE SECRETARIAT" },
+  { x: 31, z: -101, w: 18, d: 14, h: 11, color: "#c7c9c4", kind: "civic", label: "LAGOS POLICE COMMAND" },
+  // Estate Drive: gated low-rise estates, duplexes and apartment blocks.
+  { x: 49, z: 119, w: 15, d: 13, h: 7, color: "#d6c3a1", label: "PALM COURT DUPLEXES" },
+  { x: 72, z: 119, w: 15, d: 13, h: 7, color: "#c7d0c2", label: "GARDEN VIEW ESTATE" },
+  { x: 95, z: 119, w: 18, d: 14, h: 10, color: "#d7d0c3", kind: "apartments", label: "LEKKI RESIDENCES" },
+  { x: 49, z: 143, w: 17, d: 14, h: 8, color: "#d2b99a", label: "OLIVE GARDEN BUNGALOWS" },
+  { x: 75, z: 143, w: 17, d: 14, h: 8, color: "#bfcbbd", label: "PALM GROVE ESTATE" },
+  { x: 100, z: 143, w: 17, d: 14, h: 8, color: "#d7c4a6", label: "ESTATE CLUBHOUSE" },
+  // Village Road: compounds, family bungalows, local shops and community services.
+  { x: -154, z: 119, w: 13, d: 11, h: 4.5, color: "#c69c73", label: "UMU-NA VILLAGE COMPOUND" },
+  { x: -132, z: 119, w: 14, d: 12, h: 4.8, color: "#d4b58a", label: "VILLAGE FAMILY HOUSE" },
+  { x: -154, z: 143, w: 13, d: 11, h: 4.5, color: "#b9c5a6", label: "COMMUNITY BUNGALOW" },
+  { x: -131, z: 143, w: 14, d: 12, h: 4.8, color: "#d0a87d", label: "VILLAGE PROVISIONS SHOP" },
+  { x: -105, z: 119, w: 15, d: 12, h: 5, color: "#c9b18f", label: "COMMUNITY HEALTH POST" },
+  { x: -104, z: 143, w: 15, d: 12, h: 5, color: "#d3c5a7", label: "VILLAGE PRIMARY SCHOOL" },
+  // Market Square Road: covered stalls, traders' blocks, produce sheds and motor loading bay.
+  { x: -78, z: 119, w: 24, d: 16, h: 6, color: "#d79b51", kind: "market", label: "NEW LAGOS MARKET SQUARE" },
+  { x: -48, z: 119, w: 20, d: 14, h: 7, color: "#c8a477", kind: "market", label: "TRADERS' ARCADE" },
+  { x: -78, z: 143, w: 22, d: 14, h: 5.5, color: "#c8b08a", kind: "market", label: "FRESH PRODUCE MARKET" },
+  { x: -49, z: 143, w: 19, d: 14, h: 6, color: "#d4a15c", kind: "market", label: "MAMA PUT FOOD COURT" },
+  { x: -20, z: 119, w: 16, d: 12, h: 6, color: "#c5a27a", kind: "depot", label: "MARKET MOTOR PARK" },
+  // Big City commercial skyline and workplaces.
+  { x: -25, z: 82, w: 18, d: 14, h: 27, color: "#8fb5c8", label: "BIG CITY FINANCIAL TOWER" },
+  { x: 1, z: 82, w: 20, d: 15, h: 32, color: "#c7d2d6", label: "BIG CITY BUSINESS CENTRE" },
+  { x: 28, z: 82, w: 17, d: 14, h: 22, color: "#b7c5bd", label: "CENTRAL OFFICE PLAZA" },
+  { x: -25, z: 104, w: 18, d: 13, h: 15, color: "#d1c0a6", label: "BIG CITY APARTMENTS", kind: "apartments" },
+  { x: 2, z: 104, w: 17, d: 13, h: 11, color: "#c9b4a0", label: "COMMERCIAL COURT" },
 ];
 
 export interface Poi {
