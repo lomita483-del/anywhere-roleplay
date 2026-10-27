@@ -25,6 +25,7 @@ export interface ActiveJob {
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
+export interface PlayerOutfit { skinTone: string; hair: string; top: string; bottom: string; accessory: string; }
 
 export interface JobStats {
   deliveries: number;
@@ -44,6 +45,7 @@ export interface SaveData {
   x: number;
   z: number;
   activeJob?: ActiveJob | null;
+  outfit?: PlayerOutfit;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
 
@@ -135,10 +137,12 @@ interface GameStore {
   jobStats: JobStats;
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
+  outfit: PlayerOutfit;
+  setOutfit: (outfit: Partial<PlayerOutfit>) => void;
   waypoint: GpsWaypoint | null;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
-  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market";
+  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
   prompt: { kind: PromptKind; label: string; vehicleId?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
@@ -196,6 +200,7 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
+  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
   waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
   prompt: null as GameStore["prompt"],
@@ -224,6 +229,7 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
+        outfit: saved.outfit ?? DEFAULTS.outfit,
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
         hasSave: true,
@@ -244,7 +250,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, outfit: s.outfit, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
@@ -326,6 +332,7 @@ export const useGame = create<GameStore>((set, get) => ({
   cancelJob: () => set({ activeJob: null }),
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
+  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
