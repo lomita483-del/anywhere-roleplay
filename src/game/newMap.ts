@@ -68,7 +68,7 @@ export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
  {id:"residential",label:"RESIDENTIAL GRID",x:135,z:0,w:78,d:145,color:"#bdb79c"},
  {id:"civic",label:"CIVIC & OFFICE STRIP",x:112,z:98,w:72,d:72,color:"#b3a895"},
  {id:"port",label:"PORT & LOGISTICS",x:132,z:126,w:55,d:42,color:"#9c9e91"},
- {id:"lake-park",label:"LAKE PARK & RESORT",x:-112,z:126,w:62,d:54,color:"#789b76"},
+ {id:"lake-park",label:"LAKE PARK & RESORT",x:-120,z:142,w:62,d:54,color:"#789b76"},
  {id:"airport",label:"INTERNATIONAL AIRPORT",x:34,z:-112,w:68,d:100,color:"#9ba9a5"}
 ];
 
@@ -86,7 +86,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:14,d:12,h:10,color:"#b8a28d",doorSide:"south"},
  {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:14,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
- {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-125,z:126,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
+ {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-151,z:113,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-92,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"north"},
  {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
  {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
@@ -104,7 +104,7 @@ export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
 export const NEW_MAP_POIS: NewMapPoi[] = [
  ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
  {id:"stadium",label:"CITY STADIUM",kind:"stadium",x:0,z:0},
- {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-112,z:118},
+ {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-120,z:142},
  {id:"atm-market",label:"MARKET ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorZ!,buildingId:"market"},
  {id:"atm-university",label:"UNIVERSITY ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.doorZ!,buildingId:"university"}
 ];
@@ -114,17 +114,53 @@ export interface NewMapTree {x:number;z:number;type:"round"|"palm";h:number;park
 export interface NewMapStall {x:number;z:number;w:number;d:number;id:string;color:string}
 export interface NewMapHill {x:number;z:number;w:number;d:number;h:number}
 const treeCandidates: NewMapTree[] = [
- ...Array.from({length:14},(_,i)=>({x:-137+(i%7)*7,z:119+Math.floor(i/7)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.4,park:"lake-park"})),
- ...Array.from({length:12},(_,i)=>({x:104+(i%6)*9,z:112+Math.floor(i/6)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.2,park:"port"})),
+ ...Array.from({length:14},(_,i)=>({x:-164+(i%5)*4,z:103+Math.floor(i/5)*4,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.4,park:"lake-park"})),
+ ...Array.from({length:12},(_,i)=>({x:132+(i%3)*5,z:164+Math.floor(i/3)*3,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.2,park:"port"})),
  ...Array.from({length:12},(_,i)=>({x:75+(i%6)*8,z:94+Math.floor(i/6)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.1,park:"civic"})),
 
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:112,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
-export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
-export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,4.5)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
+export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-78,z:160,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:112,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-80,z:166,w:9,d:8}];
+export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-164,z:112,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
+export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,4.5)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88&&Math.hypot(t.x+120,t.z-142)>36);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
+
+
+export const NEW_MAP_LAKE_LAYOUT = { x: -120, z: 142, radius: 27, beachRadius: 32 } as const;
+export const NEW_MAP_PORT_WATER = { x: 168, z: 128, w: 24, d: 26 } as const;
+export const NEW_MAP_AIRPORT_RUNWAYS = [
+  { id: "runway-west", x: 19, z: -142, w: 9, d: 50 },
+  { id: "runway-east", x: 49, z: -142, w: 9, d: 50 },
+] as const;
+export const NEW_MAP_AIRPORT_APRON = Array.from({length:8},(_,i)=>({
+  id:"parked-jet-"+i, x:[69,83,97,69,83,97,69,83][i]!, z:[-160,-160,-145,-145,-130,-130,-115,-115][i]!, livery:["#e8e9e3","#d7eee9","#d4d9d8","#e6e0d2","#d7e3ef","#e9e8df","#f0d5ba","#cce3d7"][i]!
+}));
+export const NEW_MAP_BILLBOARDS = [
+  {x:-82,z:-88,w:1,h:8,d:12,color:"#203d4b"},
+  {x:64,z:-80,w:1,h:7,d:12,color:"#9c3d35"},
+  {x:44,z:20,w:1,h:6,d:10,color:"#2c5145"},
+  {x:160,z:74,w:1,h:6,d:10,color:"#b98a3f"},
+];
+const poleCandidates = Array.from({length:30},(_,i)=>({x:-158+(i%10)*32,z:-150+Math.floor(i/10)*54,h:5,w:.18,d:.18,color:"#464b49"}));
+export const NEW_MAP_LIGHT_POLES = poleCandidates.filter(p =>
+  !newMapPointOnRoad(p.x,p.z,7) &&
+  Math.hypot(p.x,p.z)>54 &&
+  Math.hypot(p.x-NEW_MAP_LAKE_LAYOUT.x,p.z-NEW_MAP_LAKE_LAYOUT.z)>NEW_MAP_LAKE_LAYOUT.beachRadius+5 &&
+  !(p.x>NEW_MAP_PORT_WATER.x-NEW_MAP_PORT_WATER.w/2-5 && p.x<NEW_MAP_PORT_WATER.x+NEW_MAP_PORT_WATER.w/2+5 && p.z>NEW_MAP_PORT_WATER.z-NEW_MAP_PORT_WATER.d/2-5 && p.z<NEW_MAP_PORT_WATER.z+NEW_MAP_PORT_WATER.d/2+5) &&
+  !NEW_MAP_BUILDINGS.some(b=>Math.abs(p.x-b.x)<b.w/2+3&&Math.abs(p.z-b.z)<b.d/2+3)
+);
+export const NEW_MAP_PEDESTRIAN_ANCHORS: [number,number][] = [
+  [-80,-128],[-70,-128],[-76,-120],[-66,-120],
+  [-119,82],[-116,85],[-142,87],
+  [94,114],[102,118],[116,106],
+  [-137,113],[-143,116],
+  [16,12],[26,16],
+].filter(([x,z]) => !newMapPointOnRoad(x,z,2.5) &&
+  !NEW_MAP_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w/2+1.2&&Math.abs(z-b.z)<b.d/2+1.2) &&
+  Math.hypot(x,z)>50 &&
+  Math.hypot(x-NEW_MAP_LAKE_LAYOUT.x,z-NEW_MAP_LAKE_LAYOUT.z)>NEW_MAP_LAKE_LAYOUT.radius+2
+);
 
 export function validateNewMapLayout() {
  const errors:string[]=[];
