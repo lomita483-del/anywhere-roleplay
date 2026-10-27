@@ -22,7 +22,7 @@ export interface ActiveJob {
   hint: string;
 }
 
-export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | null;
+export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface PlayerOutfit { skinTone: string; hair: string; top: string; bottom: string; accessory: string; }
