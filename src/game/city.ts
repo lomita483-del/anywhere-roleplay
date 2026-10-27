@@ -10,7 +10,7 @@ export interface Box {
 
 export interface BuildingDef extends Box {
   color: string;
-  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot";
+  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing";
   label?: string;
 }
 
@@ -45,11 +45,12 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 62, z: 24, w: 16, d: 14, h: 9, color: "#c4d1a3" },
   { x: 24, z: 26, w: 14, d: 12, h: 11, color: "#d1bfa3" },
   { x: 22, z: 58, w: 14, d: 16, h: 8, color: "#a3b8d1", kind: "depot", label: "TRADE DEPOT" },
+  { x: 2, z: 42, w: 18, d: 14, h: 8, color: "#d2b46b", kind: "clothing", label: "LAGOS BOUTIQUE" },
 ];
 
 export interface Poi {
   id: string;
-  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot";
+  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard";
   x: number;
   z: number;
   label: string;
@@ -66,6 +67,8 @@ export const POIS: Poi[] = [
   { id: "home", kind: "apartments", x: 42, z: 38, label: "Ikoyi Towers" },
   { id: "market", kind: "market", x: -40, z: 32, label: "Balogun Market" },
   { id: "depot", kind: "depot", x: 22, z: 47, label: "Trade Depot" },
+  { id: "boutique", kind: "clothing", x: 2, z: 32, label: "Lagos Boutique" },
+  { id: "job-board", kind: "jobboard", x: 0, z: -14, label: "City Job Board" },
 ];
 
 // Collision boxes for every building (slightly padded)
