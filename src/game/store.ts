@@ -52,6 +52,7 @@ export interface JobStats {
 }
 
 export interface BankTransaction { id: string; at: string; type: string; amount: number; note: string; }
+export interface OnlinePlayer { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string }; }
 
 export interface SaveData {
   name: string;
@@ -173,6 +174,8 @@ export function makeJob(type: JobType): ActiveJob {
 
 interface GameStore {
   started: boolean;
+  onlinePlayers: Record<string, OnlinePlayer>;
+  setOnlinePlayers: (players: Record<string, OnlinePlayer>) => void;
   xp: number;
   level: number;
   addXp: (amount: number) => void;
@@ -264,6 +267,7 @@ function loadSave(): SaveData | null {
 
 const DEFAULTS = {
   started: false,
+  onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
   graphicsQuality: (typeof window !== "undefined" && ["low","medium","high"].includes(localStorage.getItem("lagos-graphics-quality") ?? "") ? localStorage.getItem("lagos-graphics-quality") : "medium") as "low" | "medium" | "high",
@@ -299,6 +303,7 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
+  setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
     const current = get();
