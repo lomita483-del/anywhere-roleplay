@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -20,6 +20,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   radio: { icon: RadioIcon, label: "Radio", tint: "#9db8c9" },
   market: { icon: ShoppingBag, label: "Market", tint: "#59d6a2" },
   wardrobe: { icon: Shirt, label: "Wardrobe", tint: "#eab308" },
+  rides: { icon: MapPin, label: "Ride & GPS", tint: "#63c7f0" },
 };
 
 function atAtm() {
@@ -558,6 +559,86 @@ function RadioApp() {
   );
 }
 
+
+function RideApp() {
+  const waypoint = useGame((s) => s.waypoint);
+  const cash = useGame((s) => s.cash);
+  const bank = useGame((s) => s.bank);
+  const spend = useGame((s) => s.spend);
+  const driving = useGame((s) => s.driving);
+  const [notice, setNotice] = useState("");
+  const [booking, setBooking] = useState(false);
+
+  const book = (service: "ride" | "bike" | "private") => {
+    if (!waypoint) {
+      setNotice("Open the Map app and tap a destination first. Your GPS route will appear here.");
+      return;
+    }
+    if (driving) {
+      setNotice("Park your vehicle before booking a passenger service.");
+      return;
+    }
+    const fare = service === "bike" ? 700 : service === "private" ? 4200 : 1600;
+    const paid = spend(fare, "cash") || spend(fare, "bank");
+    if (!paid) {
+      setNotice("Insufficient funds. You need " + naira(fare) + " in cash or bank.");
+      return;
+    }
+    const destination = { ...waypoint };
+    const startX = g.playerPos.x;
+    const startZ = g.playerPos.z;
+    setBooking(true);
+    setNotice(service === "bike" ? "Okada rider assigned — heading to " + destination.label + "." : service === "private" ? "Private driver confirmed — heading to " + destination.label + "." : "Ride booked — your driver is taking you to " + destination.label + ".");
+    useGame.getState().radio(service === "bike" ? "🏍️ Okada rider accepted your trip. Hold tight!" : service === "private" ? "🚘 Private driver confirmed your GPS destination." : "🚕 Ride confirmed. Driver is following your GPS destination.");
+    const started = Date.now();
+    const duration = 6500;
+    const timer = window.setInterval(() => {
+      const t = Math.min(1, (Date.now() - started) / duration);
+      const eased = t * t * (3 - 2 * t);
+      g.playerPos.set(startX + (destination.x - startX) * eased, 0, startZ + (destination.z - startZ) * eased);
+      if (t >= 1) {
+        window.clearInterval(timer);
+        useGame.getState().setWaypoint(null);
+        useGame.getState().radio("📍 Arrived at " + destination.label + ". Fare paid: " + naira(fare) + ".");
+        setBooking(false);
+        setNotice("You have arrived at " + destination.label + ". Fare: " + naira(fare) + ".");
+      }
+    }, 50);
+    useGame.getState().closePhone();
+  };
+
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-sky-300/20 bg-gradient-to-br from-[#123346] to-[#111923] p-4">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200"><MapPin className="h-3.5 w-3.5" /> Lagos Ride</div>
+      <div className="mt-1 text-lg font-bold text-white">Where to?</div>
+      <div className="mt-1 text-[11px] text-slate-300">Choose how you want to travel around the city.</div>
+      <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
+        <div className="text-[9px] uppercase tracking-widest text-slate-400">GPS destination</div>
+        <div className="mt-1 text-sm font-semibold text-white">{waypoint?.label ?? "No destination set"}</div>
+        {waypoint && <div className="mt-1 text-[10px] text-slate-400">Map coordinates {Math.round(waypoint.x)}, {Math.round(waypoint.z)}</div>}
+      </div>
+    </div>
+    {notice && <div role="status" className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2 text-xs text-sky-100">{notice}</div>}
+    {booking && <div className="rounded-xl bg-emerald-300/10 p-2 text-xs text-emerald-100">Your trip is in progress…</div>}
+    {[
+      { id: "ride" as const, title: "Book a ride", desc: "Comfortable city car", fare: 1600, Icon: Car },
+      { id: "bike" as const, title: "Call Bike Man", desc: "Okada — faster through busy streets", fare: 700, Icon: Bike },
+      { id: "private" as const, title: "Hire private driver", desc: "Premium chauffeur service", fare: 4200, Icon: User },
+    ].map(({ id, title, desc, fare, Icon }) => <button key={id} disabled={!waypoint || booking || driving} onClick={() => book(id)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left transition hover:bg-white/10 disabled:opacity-45">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Icon className="h-5 w-5" /></span>
+      <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">{title}</span><span className="mt-0.5 block text-[10px] text-hud-muted">{desc}</span></span>
+      <span className="text-xs font-bold text-emerald-200">{naira(fare)}</span>
+    </button>)}
+    <button onClick={() => { if (waypoint) { setNotice("GPS route active. Follow the waypoint on your map or choose a transport service."); useGame.getState().closePhone(); } else setNotice("Set a destination in the Map app first."); }} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-hud-bright"><Footprints className="h-5 w-5" /></span>
+      <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">Walk there</span><span className="mt-0.5 block text-[10px] text-hud-muted">Free — follow your GPS waypoint</span></span>
+      <span className="text-xs font-bold text-emerald-200">FREE</span>
+    </button>
+    <button onClick={() => { useGame.getState().openPhone("garage"); }} className="rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">Drive myself · Open Garage</button>
+    <div className="text-[10px] text-hud-muted">Cash: {naira(cash)} · Bank: {naira(bank)}. Ride fares are charged before the trip starts.</div>
+  </div>;
+}
+
 export default function Phone() {
   const open = useGame((s) => s.phoneOpen);
   const [app, setApp] = useState<App>("home");
@@ -579,6 +660,7 @@ export default function Phone() {
     app === "radio" ? <RadioApp /> :
     app === "market" ? <MarketplaceApp /> :
     app === "wardrobe" ? <WardrobeApp /> :
+    app === "rides" ? <RideApp /> :
     <HomeApp />;
 
   return (
