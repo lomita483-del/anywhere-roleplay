@@ -25,7 +25,7 @@ function CloudSaveSync() {
         const state = JSON.parse(raw) as Record<string, unknown>;
         const { error } = await supabase.from("player_save").upsert({
           user_id: userId,
-          state,
+          state: state as unknown as import('@/integrations/supabase/types').Json,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
         if (error) console.warn("[Anywhere Roleplay] Cloud save failed:", error.message);
