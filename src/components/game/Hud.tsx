@@ -217,8 +217,8 @@ export default function Hud() {
 
       {/* Touch-friendly camera controls: drag the world to look around, pinch to zoom. */}
       <div className="pointer-events-auto absolute right-3 top-[4.1rem] flex items-center gap-1.5 rounded-2xl border border-white/10 bg-[#07100f]/75 p-1.5 shadow-lg backdrop-blur-md">
-        <button aria-label="Zoom out" title="Zoom out" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.min(95, g.camDistance + 5); }}><ZoomOut className="h-4 w-4" /></button>
-        <button aria-label="Zoom in" title="Zoom in" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.max(4, g.camDistance - 5); }}><ZoomIn className="h-4 w-4" /></button>
+        <button aria-label="Zoom out" title="Zoom out" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.min(500, g.camDistance + Math.max(5, g.camDistance * 0.22)); }}><ZoomOut className="h-4 w-4" /></button>
+        <button aria-label="Zoom in" title="Zoom in" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.max(2.5, g.camDistance - Math.max(3, g.camDistance * 0.22)); }}><ZoomIn className="h-4 w-4" /></button>
         <button aria-label="Toggle satellite view" title={satelliteMode ? "Return to street view" : "Satellite view"} className={`flex h-8 min-w-[58px] items-center justify-center gap-1 whitespace-nowrap rounded-xl px-2 text-[9px] font-bold ${satelliteMode ? "bg-[#eab308]/25 text-[#ffe38a]" : "text-white/85"}`} onClick={() => {
           if (!g.camSatellite) {
             g.camBeforeSatellite = { pitch: g.camPitch, distance: g.camDistance };
