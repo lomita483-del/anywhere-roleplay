@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt } from "./city";
+import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt, setCityWorld, type CityId } from "./city";
 import { g } from "./state";
 
 export type JobType = "courier" | "driver" | "trader" | "security" | "construction" | "retail" | "airport" | "estate-agent";
@@ -56,6 +56,7 @@ export interface OnlinePlayer { name: string; x: number; y: number; z: number; y
 
 export interface SaveData {
   name: string;
+  city?: CityId;
   xp?: number;
   cash: number;
   bank: number;
@@ -174,6 +175,8 @@ export function makeJob(type: JobType): ActiveJob {
 
 interface GameStore {
   started: boolean;
+  city: CityId;
+  setCity: (city: CityId) => void;
   onlinePlayers: Record<string, OnlinePlayer>;
   setOnlinePlayers: (players: Record<string, OnlinePlayer>) => void;
   xp: number;
@@ -267,6 +270,7 @@ function loadSave(): SaveData | null {
 
 const DEFAULTS = {
   started: false,
+  city: "lagos" as CityId,
   onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
@@ -303,6 +307,7 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
+  setCity: (city) => { setCityWorld(city); g.playerPos.set(-14, 0, -14); g.drivingId = null; g.vehicles.clear(); set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null }); get().save(); },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -326,10 +331,12 @@ export const useGame = create<GameStore>((set, get) => ({
   start: (fresh) => {
     const saved = fresh ? null : loadSave();
     if (saved) {
+      const savedCity = saved.city ?? "lagos";
+      setCityWorld(savedCity);
       g.playerPos.set(saved.x, 0, saved.z);
       g.time = saved.time;
       set({
-        started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        started: true, city: savedCity, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
@@ -345,6 +352,7 @@ export const useGame = create<GameStore>((set, get) => ({
         hasSave: true,
       });
     } else {
+      setCityWorld(get().city);
       g.playerPos.set(-14, 0, -14);
       g.time = 8;
       localStorage.removeItem(SAVE_KEY);
@@ -360,7 +368,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     if (!s.started) return;
     const data: SaveData = {
-      name: s.name, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
+      name: s.name, city: s.city, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
