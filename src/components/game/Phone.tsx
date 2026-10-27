@@ -658,9 +658,9 @@ function RideApp() {
   const driving = useGame((s) => s.driving);
   const rideRequest = useGame((s) => s.rideRequest);
   const requestRide = useGame((s) => s.requestRide);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState("");\n  const [skipFade, setSkipFade] = useState(false);\n  const distance = waypoint ? Math.hypot(waypoint.x-g.playerPos.x, waypoint.z-g.playerPos.z) : 0;
 
-  const book = (service: "ride" | "bike" | "private") => {
+  const book = (service: "ride" | "bike" | "private" | "danfo" | "keke") => {
     if (!waypoint) { setNotice("Open the Map app and tap a destination first."); return; }
     if (driving) { setNotice("Park your vehicle before booking a passenger service."); return; }
     if (rideRequest) { setNotice("You already have a driver assigned. Finish or cancel that trip first."); return; }
@@ -669,7 +669,7 @@ function RideApp() {
     useGame.getState().closePhone();
   };
 
-  return <div className="flex flex-col gap-3 p-3 text-sm">
+  return <div className="relative flex flex-col gap-3 p-3 text-sm">\n    {skipFade && <div className="fixed inset-0 z-[100] bg-black" aria-label="Arriving at destination" />}
     <div className="rounded-2xl border border-sky-300/20 bg-gradient-to-br from-[#123346] to-[#111923] p-4">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-200"><MapPin className="h-3.5 w-3.5" /> Lagos Ride</div>
       <div className="mt-1 text-lg font-bold text-white">Where to?</div>
@@ -681,11 +681,13 @@ function RideApp() {
       </div>
     </div>
     {notice && <div role="status" className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2 text-xs text-sky-100">{notice}</div>}
-    {rideRequest && <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-2 text-xs text-emerald-100">{rideRequest.status === "approaching" ? "Driver is travelling to your pickup point…" : "You are on the way to " + rideRequest.destination.label + "."}</div>}
+    {rideRequest && <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-2 text-xs text-emerald-100"><div>{rideRequest.status === "approaching" ? "Driver arriving at pickup…" : "On the way to " + rideRequest.destination.label + "."}</div><div className="mt-2 flex gap-2">{rideRequest.status === "approaching" && <button onClick={() => { useGame.getState().earn(rideRequest.fare,"cash"); useGame.getState().setRideRequest(null); setNotice("Ride cancelled. Fare refunded."); }} className="min-h-10 rounded-lg border border-white/15 px-3 font-bold">Cancel</button>}{rideRequest.status === "travelling" && <button onClick={() => { setSkipFade(true); window.setTimeout(() => { g.playerPos.set(rideRequest.destination.x,0,rideRequest.destination.z); g.ridingPassenger=false; useGame.getState().setRideRequest(null); useGame.getState().setWaypoint(null); setSkipFade(false); },450); }} className="min-h-10 rounded-lg bg-emerald-300 px-3 font-extrabold text-[#05231b]">Skip</button>}</div></div>}
     {[
-      { id: "ride" as const, title: "Book a ride", desc: "Comfortable city car", fare: 1600, Icon: Car },
-      { id: "bike" as const, title: "Call Bike Man", desc: "Okada — faster through busy streets", fare: 700, Icon: Bike },
-      { id: "private" as const, title: "Hire private driver", desc: "Premium chauffeur service", fare: 4200, Icon: User },
+      { id: "ride" as const, title: "Book taxi", desc: "City taxi · base ₦1,600 + distance", fare: 1600+Math.ceil(distance*4.5), Icon: Car },
+      { id: "bike" as const, title: "Book bike man / okada", desc: "Fastest through traffic · base ₦700 + distance", fare: 700+Math.ceil(distance*3.2), Icon: Bike },
+      { id: "private" as const, title: "My private driver", desc: "Premium sedan · base ₦4,200 + distance", fare: 4200+Math.ceil(distance*10), Icon: User },
+      { id: "danfo" as const, title: "Book danfo", desc: "Cheapest shared ride · base ₦300 + distance", fare: 300+Math.ceil(distance*1.1), Icon: Car },
+      { id: "keke" as const, title: "Book keke", desc: "Local three-wheeler · base ₦500 + distance", fare: 500+Math.ceil(distance*1.8), Icon: Car },
     ].map(({ id, title, desc, fare, Icon }) => <button key={id} disabled={!waypoint || !!rideRequest || driving} onClick={() => book(id)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left transition hover:bg-white/10 disabled:opacity-45">
       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Icon className="h-5 w-5" /></span>
       <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">{title}</span><span className="mt-0.5 block text-[10px] text-hud-muted">{desc}</span></span>
