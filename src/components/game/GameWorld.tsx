@@ -890,7 +890,7 @@ export default function GameWorld() {
           v.vx *= -0.15;
           v.vz *= -0.15;
         }
-        const cw = clampWorld(v.px, v.pz, 2);
+        const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(v.px, -88, 88), THREE.MathUtils.clamp(v.pz, -88, 88)] : clampWorld(v.px, v.pz, 2);
         v.px = cw[0];
         v.pz = cw[1];
         v.fuel = Math.max(0, fuelAvailable - (Math.abs(vLong) > 1 ? dt * (0.05 + Math.abs(vLong) * 0.006) : 0));
@@ -929,7 +929,7 @@ export default function GameWorld() {
           g.playerPos.x = THREE.MathUtils.clamp(g.playerPos.x, 98.8, 109.2);
           g.playerPos.z = THREE.MathUtils.clamp(g.playerPos.z, 99.2, 108.5);
         } else {
-          const cw = clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
+          const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(g.playerPos.x, -88, 88), THREE.MathUtils.clamp(g.playerPos.z, -88, 88)] : clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
           g.playerPos.x = cw[0];
           g.playerPos.z = cw[1];
         }
@@ -1019,7 +1019,7 @@ export default function GameWorld() {
 
   return (
     <>
-      <group ref={playerGroup} position={[-14, 0, -14]} scale={isNewMap ? 0.85 : 1}>
+      <group ref={playerGroup} position={[-14, 0, -14]} scale={isNewMap ? 0.45 : 1}>
         <CharacterBody />
       </group>
       {!isNewMap && Object.entries(remotePlayers).map(([id, player], index) => (
