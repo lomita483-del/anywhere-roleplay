@@ -363,6 +363,7 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "trader") stats.trades++;
       if (job.type === "security") stats.patrols++;
       get().earn(job.payout, "bank");
+      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
       set({ activeJob: null, jobStats: stats, waypoint: null });
       get().radio(`✅ Job complete — ${N(job.payout)} paid into your bank account.`);
     } else {
