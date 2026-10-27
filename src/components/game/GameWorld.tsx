@@ -576,7 +576,7 @@ export default function GameWorld() {
   const playerGroup = useRef<THREE.Group>(null);
   const camLook = useRef(new THREE.Vector3(-14, 1, -14));
   const vehRefs = useRef(new Map<string, THREE.Group | null>());
-  const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
+  const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20, needs: 0 });
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
   const activeJob = useGame((s) => s.activeJob);
@@ -777,7 +777,8 @@ export default function GameWorld() {
         dx /= mag;
         dz /= mag;
         const sprint = k.has("ShiftLeft") || k.has("ShiftRight");
-        const speed = sprint ? 6.2 : 3.2;
+        const exhausted = st.needs.hunger < 20 || st.needs.energy < 15;
+        const speed = (sprint ? 6.2 : 3.2) * (exhausted ? 0.6 : 1);
         const step = speed * dt;
         const nx = g.playerPos.x + dx * step;
         if (!isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
@@ -835,7 +836,7 @@ export default function GameWorld() {
     T.prox += dt;
     T.clock += dt;
     T.save += dt;
-    T.radio += dt;
+    T.radio += dt;\n    T.needs += dt;\n    if (T.needs >= 1) { st.tickNeeds(T.needs); T.needs = 0; }
     if (T.prox > 0.15) {
       T.prox = 0;
       proximityTick(st);
