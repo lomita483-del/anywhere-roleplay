@@ -139,7 +139,7 @@ function Stall({ s }: { s: (typeof STALLS)[number] }) {
       {[-0.6, 0, 0.6].map((px, i) => (
         <mesh key={"c" + i} position={[px, 1.05, 0.3]} castShadow>
           <boxGeometry args={[0.5, 0.45, 0.9]} />
-          <meshStandardMaterial color={["#e2574c", "#e2a13c", "#3fa37a"][i]} roughness={0.9} />
+          <meshStandardMaterial color={["#e2574c", "#e2a13c", "#3fa37a"][i] ?? "#e2574c"} roughness={0.9} />
         </mesh>
       ))}
     </group>
