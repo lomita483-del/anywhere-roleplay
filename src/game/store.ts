@@ -133,7 +133,7 @@ interface GameStore {
   jobStats: JobStats;
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
-  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio";
+  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market";
   prompt: { kind: PromptKind; label: string; vehicleId?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
