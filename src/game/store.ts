@@ -38,6 +38,7 @@ export interface RideRequest { id: string; service: "ride" | "bike" | "private";
 export interface PlayerOutfit { gender?: "male" | "female"; skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
 export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
+export interface CharacterBackground { family: string; education: string; neighborhood: string; }
 
 export const DEFAULT_NEEDS: PlayerNeeds = { hunger: 100, energy: 100, health: 100, stress: 8, hygiene: 100 };
 
@@ -63,6 +64,8 @@ export interface SaveData {
   outfit?: PlayerOutfit;
   needs?: PlayerNeeds;
   unlockedDistricts?: string[];
+  background?: CharacterBackground;
+  characterTraits?: string[];
   rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
@@ -158,6 +161,10 @@ interface GameStore {
   phoneOpen: boolean;
   outfit: PlayerOutfit;
   needs: PlayerNeeds;
+  background: CharacterBackground;
+  characterTraits: string[];
+  setBackground: (background: Partial<CharacterBackground>) => void;
+  setCharacterTraits: (traits: string[]) => void;
   unlockedDistricts: string[];
   unlockDistrict: (district: string) => boolean;
   tickNeeds: (seconds: number) => void;
@@ -237,6 +244,8 @@ const DEFAULTS = {
   phoneOpen: false,
   outfit: { gender: "male", skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
   needs: { ...DEFAULT_NEEDS },
+  background: { family: "Mainland family", education: "Secondary school", neighborhood: "Yaba / Surulere" },
+  characterTraits: ["Street smart"],
   unlockedDistricts: ["Yaba / Surulere"],
   rentals: {} as Record<string, number>,
   interior: false,
@@ -273,6 +282,8 @@ export const useGame = create<GameStore>((set, get) => ({
         activeJob: saved.activeJob ?? null,
         outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
         needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
+        background: { ...DEFAULTS.background, ...(saved.background ?? {}) },
+        characterTraits: saved.characterTraits ?? DEFAULTS.characterTraits,
         unlockedDistricts: saved.unlockedDistricts ?? ["Yaba / Surulere"],
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
@@ -287,7 +298,9 @@ export const useGame = create<GameStore>((set, get) => ({
     }
     g.started = true;
   },
-  setName: (name) => set({ name: name.slice(0, 16) }),
+  setName: (name) => { set({ name: name.slice(0, 16) }); get().save(); },
+  setBackground: (background) => { set({ background: { ...get().background, ...background } }); get().save(); },
+  setCharacterTraits: (characterTraits) => { set({ characterTraits: [...new Set(characterTraits)].slice(0, 3) }); get().save(); },
 
   save: () => {
     const s = get();
@@ -295,7 +308,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
