@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -418,7 +418,7 @@ function LagosResidentialDistrict() {
     <instancedMesh ref={rollerDoors} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.2} roughness={.68} /></instancedMesh>
     <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.7} /></instancedMesh>
     <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.8} /></instancedMesh>
-    <Html position={[128, 22, -18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
+    <Html position={[residentialDistrict.x, 22, residentialDistrict.z-18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
   </>;
 }
 
@@ -817,6 +817,11 @@ function CityBirdsAndFlags() {
 }
 
 function CityEcosystem() {
+  const industrialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="industrial")!;
+  const civicDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="civic")!;
+  const lakeDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="lake-park")!;
+  const residentialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!;
+  const portDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="port")!;
   const craneRefs=useRef<(THREE.Group|null)[]>([]);
   const quality=useGame(s=>s.graphicsQuality);
   const parkedAircraftCount=quality==="low"?3:quality==="medium"?5:8;
@@ -835,9 +840,9 @@ function CityEcosystem() {
     <CityBirdsAndFlags />
     <RoadFurniture />
     <DrainCovers />
-    <Html position={[-143,12,-46]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>INDUSTRIAL DISTRICT</div></Html>
-    <Html position={[112,12,78]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
-    <Html position={[-112,8,84]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
+    <Html position={[industrialDistrict.x,12,industrialDistrict.z]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>INDUSTRIAL DISTRICT</div></Html>
+    <Html position={[civicDistrict.x,12,civicDistrict.z-20]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
+    <Html position={[lakeDistrict.x,8,lakeDistrict.z-35]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[airportTerminal.x, 0, airportTerminal.z-48]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]} rotation-y={x < 0 ? -0.16 : 0.16}>
@@ -871,11 +876,11 @@ function CityEcosystem() {
         <mesh position={[4, 13, 0]}><boxGeometry args={[9, 0.8, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
         <mesh position={[7, 6, 0]}><boxGeometry args={[0.8, 12, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
       </group>)}
-      {[-10, 18].map((x,i) => <group key={i} position={[x, 0.5, 20]}>
+      {[40, 65].map((x,i) => <group key={i} position={[x, 0.5, 30]}>
         <mesh><boxGeometry args={[19, 1.3, 5]} /><meshStandardMaterial color="#263b49" metalness={0.35} roughness={0.4} /></mesh>
         <mesh position={[0, 1.4, -1]}><boxGeometry args={[7, 1.2, 3]} /><meshStandardMaterial color="#e4e3d8" /></mesh>
       </group>)}
-      <Html position={[8, 8, 28]} center distanceFactor={35} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>PORT OF LAGOS</div></Html>
+      <Html position={[portDistrict.x-22, 8, portDistrict.z-16]} center distanceFactor={35} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>PORT OF LAGOS</div></Html>
     </group>
     {/* Scenic lake and sandy recreational edge, south-west. */}
     <group position={[NEW_MAP_POIS.find(p=>p.id==="lake")!.x, 0, NEW_MAP_POIS.find(p=>p.id==="lake")!.z]}>
