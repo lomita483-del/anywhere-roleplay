@@ -462,7 +462,7 @@ function RoadFurniture() {
     });
     // Zebra crossings belong at real junctions, not at arbitrary road midpoints.
     const junctionCrossings:{x:number;z:number;yaw:number}[]=[
-      {x:-130,z:-46,yaw:0},{x:-20,z:-96,yaw:Math.PI/2},{x:-100,z:43,yaw:0},
+      {x:-105,z:-46,yaw:0},{x:-20,z:-96,yaw:Math.PI/2},{x:-70,z:43,yaw:0},
       {x:-72,z:126,yaw:0},{x:-20,z:-82,yaw:0},{x:-47,z:-52,yaw:Math.PI/4},
       {x:-72,z:1,yaw:0},{x:72,z:3,yaw:0},{x:38,z:24,yaw:Math.PI/2},
       {x:92,z:24,yaw:Math.PI/2},{x:70,z:103,yaw:0},{x:36,z:-94,yaw:Math.PI/2}
@@ -522,9 +522,9 @@ function createRoadGeometry(path: [number, number][], width: number, y: number) 
 function CurvedRoadNetwork() {
   const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
     const isLocal = index >= NEW_MAP_LOCAL_ROAD_START_INDEX && index < NEW_MAP_ROADS.length-1;
-    const isAirportConnector = index === 1;
-    const width = index === NEW_MAP_ROADS.length-1 ? 8.8 : (isLocal || isAirportConnector) ? 4.2 : index < 3 ? 8.2 : 6.4;
-    const sidewalkWidth = (isLocal || isAirportConnector) ? width + 0.8 : width + 2.8;
+    const isNarrowConnector = index === 1 || index === NEW_MAP_LOCAL_ROAD_START_INDEX-1;
+    const width = index === NEW_MAP_ROADS.length-1 ? 8.8 : (isLocal || isNarrowConnector) ? 4.2 : index < 3 ? 8.2 : 6.4;
+    const sidewalkWidth = (isLocal || isNarrowConnector) ? width + 0.8 : width + 2.8;
     return { index, ...createRoadGeometry(path, width, 0.05), sidewalk: createRoadGeometry(path, sidewalkWidth, 0.03) };
   }), []);
   const dashData = useMemo(() => {
@@ -537,7 +537,7 @@ function CurvedRoadNetwork() {
         const t = road.curve.getUtoTmapping(0, d);
         const p = road.curve.getPointAt(t);
         const tangent = road.curve.getTangentAt(t);
-        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : (roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX || roadIndex === 1) ? 1.8 : 3.2 });
+        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : (roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX || roadIndex === 1 || roadIndex === NEW_MAP_LOCAL_ROAD_START_INDEX-1) ? 1.8 : 3.2 });
       }
     });
     return out;
@@ -546,7 +546,7 @@ function CurvedRoadNetwork() {
   const edgeRef = useRef<THREE.InstancedMesh>(null);
   const edgeData = useMemo(() => {
     const out:{x:number;z:number;yaw:number}[]=[];
-    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:(road.index>=NEW_MAP_LOCAL_ROAD_START_INDEX||road.index===1)?4.2:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
+    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:(road.index>=NEW_MAP_LOCAL_ROAD_START_INDEX||road.index===1||road.index===NEW_MAP_LOCAL_ROAD_START_INDEX-1)?4.2:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
     return out;
   },[roadData]);
   useEffect(() => {
