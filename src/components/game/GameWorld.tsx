@@ -57,6 +57,7 @@ function CharacterBody() {
   const leftLeg = useRef<THREE.Group>(null);
   const rightLeg = useRef<THREE.Group>(null);
   const skin = outfit.skinTone || "#986344";
+  const female = outfit.gender === "female";
   const tops: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
   const bottoms: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
   const top = tops[outfit.top] ?? tops["streetwear"]!;
@@ -77,7 +78,8 @@ function CharacterBody() {
     <group>
       {/* Neck and layered torso */}
       <mesh position={[0, 1.36, 0]} castShadow><cylinderGeometry args={[0.085, 0.1, 0.18, 9]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
-      <mesh position={[0, 1.04, 0]} castShadow receiveShadow><capsuleGeometry args={[0.26, 0.43, 5, 10]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
+      <mesh position={[0, 1.04, 0]} castShadow receiveShadow><capsuleGeometry args={[female ? 0.235 : 0.26, 0.43, 5, 10]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
+      <mesh position={[0, 0.68, 0]} castShadow><capsuleGeometry args={[female ? 0.22 : 0.19, 0.18, 4, 8]} /><meshStandardMaterial color={bottom} roughness={0.9} /></mesh>
       <mesh position={[0, 1.27, 0.015]}><torusGeometry args={[0.105, 0.022, 5, 12]} /><meshStandardMaterial color={outfit.top === "formal" ? "#e6e6e3" : top} roughness={0.8} /></mesh>
       {outfit.accessory === "chain" && <mesh position={[0, 1.245, 0.18]}><torusGeometry args={[0.13, 0.012, 6, 18]} /><meshStandardMaterial color="#eab308" metalness={0.82} roughness={0.24} /></mesh>}
       <mesh position={[0.13, 1.12, 0.245]}><boxGeometry args={[0.075, 0.1, 0.016]} /><meshStandardMaterial color={outfit.top === "formal" ? "#d8dce2" : "#c5c8c8"} roughness={0.9} /></mesh>
@@ -121,6 +123,11 @@ function CharacterBody() {
         </group>}
         <mesh position={[0,-0.155,0.176]}><boxGeometry args={[0.06,0.01,0.01]} /><meshStandardMaterial color="#603a2c" roughness={0.9} /></mesh>
         <mesh position={[0,0.14,-0.005]} scale={[0.21,0.14,0.2]}><sphereGeometry args={[1,12,8]} /><meshStandardMaterial color={hair} roughness={0.92} /></mesh>
+        {female && <group>
+          <mesh position={[-0.18,-0.13,-0.035]} rotation-z={-0.12}><capsuleGeometry args={[0.055,0.28,4,7]} /><meshStandardMaterial color={hair} roughness={0.94} /></mesh>
+          <mesh position={[0.18,-0.13,-0.035]} rotation-z={0.12}><capsuleGeometry args={[0.055,0.28,4,7]} /><meshStandardMaterial color={hair} roughness={0.94} /></mesh>
+          {[-1,1].map(side => <mesh key={"earring"+side} position={[side*0.215,-0.095,0.03]}><torusGeometry args={[0.035,0.009,5,10]} /><meshStandardMaterial color="#eab308" metalness={0.8} roughness={0.25} /></mesh>)}
+        </group>}
         {outfit.hair === "locs" && Array.from({length:13},(_,i)=>{
           const a=i/13*Math.PI*2;
           return <mesh key={"loc"+i} position={[Math.cos(a)*0.17,0.16+(i%3)*0.02,Math.sin(a)*0.15]} rotation-z={Math.cos(a)*0.25} rotation-x={Math.sin(a)*0.22} castShadow><cylinderGeometry args={[0.027,0.038,0.17+(i%2)*0.04,6]} /><meshStandardMaterial color={hair} roughness={0.95} /></mesh>;
@@ -148,7 +155,7 @@ function CharacterBody() {
   );
 }
 
-function PedBody({ variant = 0, skinTone, topColor, hairColor }: { variant?: number; skinTone?: string; topColor?: string; hairColor?: string }) {
+function PedBody({ variant = 0, skinTone, topColor, hairColor, gender }: { variant?: number; skinTone?: string; topColor?: string; hairColor?: string; gender?: "male" | "female" }) {
   const { scene, animations } = useGLTF("/models/character.glb");
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { actions } = useAnimations(animations, clone);
@@ -174,7 +181,7 @@ function PedBody({ variant = 0, skinTone, topColor, hairColor }: { variant?: num
     actions["walk"]?.reset().play();
   }, [clone, actions, variant, skinTone, topColor, hairColor]);
   const isChild = variant % 6 === 0;
-  return <primitive object={clone} scale={isChild ? 1.35 : 2.2} />;
+  return <primitive object={clone} scale={isChild ? 1.35 : gender === "female" ? [2.08, 2.2, 2.2] : 2.2} />;
 }
 
 function KekeMesh() {
@@ -550,7 +557,7 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   );
 }
 
-function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone?: string; top?: string; hairColor?: string } }; variant: number }) {
+function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }; variant: number }) {
   const ref = useRef<THREE.Group>(null);
   const topColors: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
   useFrame((_, delta) => {
@@ -561,7 +568,7 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
   });
   return (
     <group ref={ref} position={[player.x, player.y, player.z]} rotation-y={player.yaw}>
-      {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} skinTone={player.outfit?.skinTone} topColor={topColors[player.outfit?.top ?? ""]} hairColor={player.outfit?.hairColor} />}
+      {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} gender={player.outfit?.gender} skinTone={player.outfit?.skinTone} topColor={topColors[player.outfit?.top ?? ""]} hairColor={player.outfit?.hairColor} />}
       <Html position={[0, player.vehicle ? 2.8 : 3.05, 0]} center distanceFactor={12} occlude={false}>
         <div className="pointer-events-none whitespace-nowrap rounded-full border border-[#eab308]/55 bg-[#07131d]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg shadow-black/30">
           <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -636,7 +643,7 @@ export default function GameWorld() {
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
   const activeJob = useGame((s) => s.activeJob);
-  const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone: string; top: string } }>>({});
+  const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }>>({});
 
   useEffect(() => {
     const canvas = document.querySelector("canvas");
@@ -717,7 +724,7 @@ export default function GameWorld() {
         channel = supabase.channel("lagos-life-world", { config: { presence: { key: playerId }, broadcast: { self: false } } });
         channel
           .on("broadcast", { event: "player_state" }, ({ payload }) => {
-            const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { skinTone?: string; top?: string; hairColor?: string } };
+            const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } };
             if (!p.id || p.id === playerId || typeof p.x !== "number" || typeof p.z !== "number") return;
             setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, y: p.y ?? 0, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null, ...(p.outfit ? { outfit: p.outfit } : {}) } }));
           })
