@@ -99,6 +99,8 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
 export default function Hud() {
   const city = useGame((s) => s.city);
   const setCity = useGame((s) => s.setCity);
+  const stadiumMode = useGame((s) => s.stadiumMode);
+  const exitStadium = useGame((s) => s.exitStadium);
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
   const needs = useGame((s) => s.needs);
@@ -259,7 +261,7 @@ export default function Hud() {
       )}
 
       {/* Sprint toggle (mobile) */}
-      {!phoneOpen && <button
+      {!phoneOpen && !stadiumMode && <button
         className={`pointer-events-auto absolute bottom-40 left-10 flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-sm active:scale-95 ${
           run ? "border-hud-accent bg-hud-accent/30" : "border-hud-line bg-hud-dim"
         }`}
@@ -295,7 +297,8 @@ export default function Hud() {
         </button>
       )}
 
-      {!phoneOpen && <Joystick />}
+      {!phoneOpen && !stadiumMode && <Joystick />}
+      {stadiumMode && <div className="pointer-events-auto absolute bottom-7 left-1/2 z-30 -translate-x-1/2"><button type="button" onClick={exitStadium} className="rounded-full border border-amber-200/70 bg-[#101820]/95 px-6 py-3 text-sm font-black tracking-wide text-amber-100 shadow-2xl shadow-black/50 active:scale-95">↗ EXIT STADIUM</button><div className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Spectator mode · Free entry</div></div>}
       <Phone />
       {interiorTransition && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[60] bg-black" style={{ animation: "lagosInteriorFade 520ms ease-in-out forwards" }}><style>{`@keyframes lagosInteriorFade { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }`}</style></div>}
     </div>
