@@ -67,8 +67,8 @@ function CloudSaveSync() {
             active_vehicle: g.drivingId,
             outfit: current.outfit,
             needs: current.needs,
-            background: { neighbourhood: "Yaba / Surulere", family: "Mainland family", education: "Secondary school" },
-            character_traits: [],
+            background: current.background,
+            character_traits: current.characterTraits,
             skills: {
               driving: 1 + current.jobStats.drives,
               trading: 1 + current.jobStats.trades,
