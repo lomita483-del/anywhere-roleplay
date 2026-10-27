@@ -138,7 +138,8 @@ export default function CityMapApp() {
   const selectAt=(e:React.PointerEvent<HTMLCanvasElement>)=>{
     const rect=e.currentTarget.getBoundingClientRect();const sx=(e.clientX-rect.left)*720/rect.width,sy=(e.clientY-rect.top)*720/rect.height;
     const w=worldAt(sx,sy,720);
-    const hit=[...places].sort((a,b)=>Math.hypot(a.x-w.x,a.z-w.z)-Math.hypot(b.x-w.x,b.z-w.z)).find(p=>Math.abs(p.x-w.x)<p.w/2+4&&Math.abs(p.z-w.z)<p.d/2+4);
+    const labelHit=[...places].map(p=>{const a=screen(p.x,p.z,720);const px=360+pan.x+(a.x-360)*zoom;const py=360+pan.y+(a.y-360)*zoom;const width=Math.min(270,p.label.length*7.2+32);return {p,hit:Math.abs(sx-px)<width/2&&sy>=py-31*zoom&&sy<=py-3*zoom}}).find(item=>item.hit)?.p;
+    const hit=labelHit??[...places].sort((a,b)=>Math.hypot(a.x-w.x,a.z-w.z)-Math.hypot(b.x-w.x,b.z-w.z)).find(p=>Math.abs(p.x-w.x)<p.w/2+4&&Math.abs(p.z-w.z)<p.d/2+4);
     if(hit){setSelected(hit);setRides(false);setNotice("");return}
     setSelected(null);setWaypoint({x:Math.max(-BOUND,Math.min(BOUND,w.x)),z:Math.max(-BOUND,Math.min(BOUND,w.z)),label:"Custom GPS destination",kind:"custom"});
   };
