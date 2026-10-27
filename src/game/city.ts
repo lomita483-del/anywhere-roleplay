@@ -160,7 +160,7 @@ export const PED_WALKS: { pts: [number, number][] }[] = [
 ];
 
 // POI points used by job generators
-export const JOB_POINTS: Record<string, [number, number][]> = {
+export const JOB_POINTS: { pickups: [number, number][]; dropoffs: [number, number][]; checkpoints: [number, number][] } = {
   pickups: [
     [-40, 28], [-30, 28], [-52, 24], [-19, -40], [40, -61], [-44, -64], [62, 10], [30, 9], [42, 38],
   ],
