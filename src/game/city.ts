@@ -84,7 +84,7 @@ export const BUILDINGS: BuildingDef[] = [
 
 export interface Poi {
   id: string;
-  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food";
+  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport";
   x: number;
   z: number;
   label: string;
