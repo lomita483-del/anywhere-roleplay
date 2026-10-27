@@ -1119,7 +1119,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
     else if (poi.kind === "bank") st.setPrompt(useGame.getState().city === "newmap" ? { kind: "building", label: "Enter Community Bank", buildingLabel: poi.label } : { kind: "atm", label: "Enter Bank / Use ATM" });
     else if (poi.kind === "dealership") st.setPrompt({ kind: "dealer", label: "Browse Ojoto Motors" });
-    else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
+    else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: useGame.getState().city === "newmap" ? "Enter " + poi.label : "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
     else if (poi.kind === "food") st.setPrompt({ kind: "food", label: "Order at " + poi.label });
     else if (poi.kind === "fuel") st.setPrompt({ kind: "fuel", label: "Use " + poi.label });
