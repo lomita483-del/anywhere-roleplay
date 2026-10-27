@@ -52,11 +52,11 @@ describe("Anywhere Roleplay game store", () => {
     useGame.getState().start(true);
     useGame.getState().acceptJob("courier");
     const job = useGame.getState().activeJob!;
-    const [x, z] = job.targets[0];
+    const [x, z] = job.targets[0]!;
 
     tryJobProgress(x, z);
     expect(useGame.getState().activeJob?.stage).toBe(1);
-    expect(useGame.getState().inventory.package).toBe(1);
+    expect(useGame.getState().inventory["package"]).toBe(1);
 
     // Repeated ticks at the old pickup must not advance the delivery stage.
     tryJobProgress(x, z);
