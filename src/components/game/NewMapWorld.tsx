@@ -1,11 +1,11 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { WORLD } from "@/game/city";
 import { useGame } from "@/game/store";
 
-/** A compact, deep oval stadium with a large open pitch, animated match and cheering crowd. */
+/** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
 type MatchPlayerData = { x: number; z: number; team: number; index: number };
 
 function MatchPlayer({ player }: { player: MatchPlayerData }) {
@@ -60,21 +60,68 @@ function MatchBall() {
   return <mesh ref={ball} position={[0, 0.4, 0]} castShadow><sphereGeometry args={[0.42, 18, 14]} /><meshStandardMaterial color="#f7f5e9" roughness={0.58} /></mesh>;
 }
 
-function Supporter({ x, z, y, angle, color, index }: { x: number; z: number; y: number; angle: number; color: string; index: number }) {
-  const group = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    if (!group.current) return;
-    const cheer = Math.max(0, Math.sin(clock.elapsedTime * 3 + index * 1.91));
-    group.current.rotation.z = Math.sin(clock.elapsedTime * 2.3 + index) * 0.035;
-    group.current.position.y = y + cheer * 0.12;
-  });
+function InstancedCrowd() {
+  const bodyRef = useRef<THREE.InstancedMesh>(null);
+  const headRef = useRef<THREE.InstancedMesh>(null);
+  const leftArmRef = useRef<THREE.InstancedMesh>(null);
+  const rightArmRef = useRef<THREE.InstancedMesh>(null);
+  const people = useMemo(() => {
+    const colors = ["#f2f0e7", "#d53d4c", "#24579a", "#e2b84f", "#243c35", "#b9c6d1", "#8a4d37", "#f6f6f2", "#1c2633"];
+    const crowd: { x: number; z: number; y: number; angle: number; color: string; index: number }[] = [];
+    let index = 0;
+    for (let row = 0; row < 4; row++) {
+      const rx = 45 + row * 3.1;
+      const rz = 28 + row * 2.05;
+      const y = 4.8 + row * 3.15;
+      const count = 88;
+      for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2 + (row % 2) * 0.018;
+        crowd.push({ x: Math.cos(angle) * rx, z: Math.sin(angle) * rz, y, angle: -angle, color: colors[index % colors.length]!, index });
+        index++;
+      }
+    }
+    return crowd;
+  }, []);
+
+  useEffect(() => {
+    const body = bodyRef.current, head = headRef.current, left = leftArmRef.current, right = rightArmRef.current;
+    if (!body || !head || !left || !right) return;
+    const dummy = new THREE.Object3D();
+    people.forEach((p, i) => {
+      dummy.position.set(p.x, p.y + 0.56, p.z); dummy.rotation.set(0, p.angle, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
+      body.setMatrixAt(i, dummy.matrix);
+      body.setColorAt(i, new THREE.Color(p.color));
+      dummy.position.set(p.x, p.y + 1.18, p.z); dummy.updateMatrix(); head.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(p.x - Math.cos(p.angle) * 0.42, p.y + 0.73, p.z + Math.sin(p.angle) * 0.42);
+      dummy.rotation.set(0, p.angle, -0.65); dummy.updateMatrix(); left.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(p.x + Math.cos(p.angle) * 0.42, p.y + 0.73, p.z - Math.sin(p.angle) * 0.42);
+      dummy.rotation.set(0, p.angle, 0.65); dummy.updateMatrix(); right.setMatrixAt(i, dummy.matrix);
+    });
+    body.instanceMatrix.needsUpdate = true; head.instanceMatrix.needsUpdate = true;
+    left.instanceMatrix.needsUpdate = true; right.instanceMatrix.needsUpdate = true;
+    if (body.instanceColor) body.instanceColor.needsUpdate = true;
+    body.computeBoundingSphere(); head.computeBoundingSphere(); left.computeBoundingSphere(); right.computeBoundingSphere();
+  }, [people]);
+
   return (
-    <group ref={group} position={[x, y, z]} rotation-y={angle}>
-      <mesh position={[0, 0.58, 0]}><capsuleGeometry args={[0.2, 0.28, 3, 6]} /><meshStandardMaterial color={color} roughness={0.9} /></mesh>
-      <mesh position={[0, 0.94, 0]}><sphereGeometry args={[0.145, 8, 7]} /><meshStandardMaterial color="#986747" roughness={0.9} /></mesh>
-      <mesh position={[-0.24, 0.78, 0]} rotation-z={-0.58}><capsuleGeometry args={[0.055, 0.34, 3, 5]} /><meshStandardMaterial color="#986747" /></mesh>
-      <mesh position={[0.24, 0.78, 0]} rotation-z={0.58}><capsuleGeometry args={[0.055, 0.34, 3, 5]} /><meshStandardMaterial color="#986747" /></mesh>
-    </group>
+    <>
+      <instancedMesh ref={bodyRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
+        <capsuleGeometry args={[0.58, 0.72, 2, 5]} />
+        <meshStandardMaterial roughness={0.9} />
+      </instancedMesh>
+      <instancedMesh ref={headRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
+        <sphereGeometry args={[0.42, 6, 5]} />
+        <meshStandardMaterial color="#986747" roughness={0.95} />
+      </instancedMesh>
+      <instancedMesh ref={leftArmRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
+        <capsuleGeometry args={[0.16, 0.48, 2, 4]} />
+        <meshStandardMaterial color="#986747" roughness={0.95} />
+      </instancedMesh>
+      <instancedMesh ref={rightArmRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
+        <capsuleGeometry args={[0.16, 0.48, 2, 4]} />
+        <meshStandardMaterial color="#986747" roughness={0.95} />
+      </instancedMesh>
+    </>
   );
 }
 
@@ -84,7 +131,7 @@ function Floodlight({ x, z }: { x: number; z: number }) {
       <mesh position={[0, 15, 0]} castShadow><cylinderGeometry args={[0.28, 0.48, 30, 8]} /><meshStandardMaterial color="#5d6870" metalness={0.6} roughness={0.4} /></mesh>
       <mesh position={[0, 30, 0]}><boxGeometry args={[4.6, 1.5, 1.3]} /><meshStandardMaterial color="#e8e7dc" emissive="#fff1c0" emissiveIntensity={1.1} /></mesh>
       {[-1.5, -0.5, 0.5, 1.5].map((dx) => <mesh key={dx} position={[dx, 30, 0.72]}><planeGeometry args={[0.55, 0.75]} /><meshBasicMaterial color="#fff5cf" /></mesh>)}
-      <pointLight position={[0, 29, 0]} color="#fff0ca" intensity={12} distance={58} decay={2} />
+
     </group>
   );
 }
@@ -137,6 +184,7 @@ export default function NewMapWorld() {
   }, []);
 
   const enterStadium = () => useGame.getState().enterStadium();
+  const stadiumMode = useGame((s) => s.stadiumMode);
 
   return (
     <group>
@@ -147,7 +195,7 @@ export default function NewMapWorld() {
       </mesh>
 
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
-      <group scale={[0.45, 0.45, 0.45]}>
+      <group scale={[0.28, 0.28, 0.28]}>
         {/* Thick outer shell walls; these sit outside the open pitch rather than over the player */}
         <mesh position={[0, 5.2, 0]} scale={[60, 1, 40]} castShadow receiveShadow>
           <cylinderGeometry args={[1, 0.96, 10.4, 96, 1, true]} />
@@ -217,16 +265,16 @@ export default function NewMapWorld() {
           </group>
         ))}
 
-        {/* 22 animated footballers and a moving match ball */}
-        {players.map((player) => <MatchPlayer key={player.index} player={player} />)}
-        <MatchBall />
-
-        {/* Cheering crowd throughout the three visible seating tiers */}
-        {supporters.map((person) => <Supporter key={person.index} {...person} />)}
-
-        {/* Stadium screens face the seats from both ends */}
-        <BigScreen z={-26} />
-        <BigScreen z={26} rotate />
+        {/* Only mount match actors and the dense instanced crowd after entry. */}
+        {stadiumMode && (
+          <group>
+            {players.map((player) => <MatchPlayer key={player.index} player={player} />)}
+            <MatchBall />
+            <InstancedCrowd />
+            <BigScreen z={-26} />
+            <BigScreen z={26} rotate />
+          </group>
+        )}
 
         {/* Floodlights and visible lighting fixtures */}
         {([[-53, -35], [53, -35], [-53, 35], [53, 35]] as [number, number][]).map(([x, z], index) => <Floodlight key={index} x={x} z={z} />)}
@@ -267,18 +315,18 @@ export default function NewMapWorld() {
       {/* Premium forecourt outside the compact stadium */}
       <group>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
-          <circleGeometry args={[43, 96]} />
+          <circleGeometry args={[25, 64]} />
           <meshStandardMaterial color="#a9b0b0" roughness={0.92} />
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 0]} receiveShadow>
-          <ringGeometry args={[31, 33, 96]} />
+          <ringGeometry args={[18, 20, 64]} />
           <meshStandardMaterial color="#d1b16c" metalness={0.15} roughness={0.55} side={THREE.DoubleSide} />
         </mesh>
         {[
-          { x: -34, z: -22, title: "MATCH DAY GRILL", color: "#9e3e35" },
-          { x: 34, z: -22, title: "FAN SHOP", color: "#0c615b" },
-          { x: -34, z: 22, title: "CHILL & DRINKS", color: "#263d58" },
-          { x: 34, z: 22, title: "SPORTS STORE", color: "#72532d" },
+          { x: -19, z: -12, title: "MATCH DAY GRILL", color: "#9e3e35" },
+          { x: 19, z: -12, title: "FAN SHOP", color: "#0c615b" },
+          { x: -19, z: 12, title: "CHILL & DRINKS", color: "#263d58" },
+          { x: 19, z: 12, title: "SPORTS STORE", color: "#72532d" },
         ].map((shop) => (
           <group key={shop.title} position={[shop.x, 0, shop.z]}>
             <mesh position={[0, 2.1, 0]} castShadow receiveShadow>
@@ -305,8 +353,8 @@ export default function NewMapWorld() {
         ))}
         {Array.from({ length: 12 }, (_, i) => {
           const a = (i / 12) * Math.PI * 2;
-          const x = Math.cos(a) * 39;
-          const z = Math.sin(a) * 39;
+          const x = Math.cos(a) * 22;
+          const z = Math.sin(a) * 22;
           return (
             <group key={i} position={[x, 0, z]}>
               <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
@@ -314,7 +362,7 @@ export default function NewMapWorld() {
               {[0, 1, 2, 3, 4].map((leaf) => <mesh key={leaf} position={[Math.cos(leaf * 1.25) * 0.8, 3.3 + (leaf % 2) * 0.25, Math.sin(leaf * 1.25) * 0.8]} rotation-z={Math.cos(leaf * 1.25) * 0.65} rotation-x={Math.sin(leaf * 1.25) * 0.45}><coneGeometry args={[0.35, 2.1, 5]} /><meshStandardMaterial color="#23664d" roughness={0.85} /></mesh>)}
               <mesh position={[1.8, 1.25, 0]}><cylinderGeometry args={[0.13, 0.17, 2.5, 8]} /><meshStandardMaterial color="#303a42" metalness={0.55} /></mesh>
               <mesh position={[1.8, 2.5, 0]}><sphereGeometry args={[0.23, 10, 8]} /><meshStandardMaterial color="#ffe8a5" emissive="#ffcb66" emissiveIntensity={0.8} /></mesh>
-              <pointLight position={[1.8, 2.6, 0]} color="#ffd88b" intensity={1.2} distance={8} />
+  
             </group>
           );
         })}
