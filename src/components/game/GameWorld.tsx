@@ -836,7 +836,9 @@ export default function GameWorld() {
     T.prox += dt;
     T.clock += dt;
     T.save += dt;
-    T.radio += dt;\n    T.needs += dt;\n    if (T.needs >= 1) { st.tickNeeds(T.needs); T.needs = 0; }
+    T.radio += dt;
+    T.needs += dt;
+    if (T.needs >= 1) { st.tickNeeds(T.needs); T.needs = 0; }
     if (T.prox > 0.15) {
       T.prox = 0;
       proximityTick(st);
