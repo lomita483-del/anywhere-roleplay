@@ -345,6 +345,29 @@ function MapApp() {
         ctx.lineWidth = 1;
         ctx.strokeRect(x1, z1, x2 - x1, z2 - z1);
       }
+      // Airport runway and live construction parcel are drawn at the same coordinates as the 3D world props.
+      {
+        const [rx1, rz1] = to(24, -101, S);
+        const [rx2, rz2] = to(78, -91, S);
+        ctx.fillStyle = "#363d46";
+        ctx.fillRect(rx1, rz1, rx2 - rx1, rz2 - rz1);
+        ctx.strokeStyle = "#f4f0dc"; ctx.lineWidth = 1;
+        for (const z of [-100, -96, -92]) {
+          const [, py] = to(0, z, S);
+          ctx.beginPath(); ctx.moveTo(rx1, py); ctx.lineTo(rx2, py); ctx.stroke();
+        }
+      }
+      {
+        const [cx1, cz1] = to(72, 66, S);
+        const [cx2, cz2] = to(100, 90, S);
+        ctx.fillStyle = "#b59a69";
+        ctx.fillRect(cx1, cz1, cx2 - cx1, cz2 - cz1);
+        ctx.strokeStyle = "#eab308"; ctx.lineWidth = 1.5; ctx.setLineDash([3, 2]);
+        ctx.strokeRect(cx1, cz1, cx2 - cx1, cz2 - cz1); ctx.setLineDash([]);
+        ctx.fillStyle = "#f6d66b";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("CONSTRUCTION", cx1 + 3, cz1 + 10);
+      }
       // Landmark pins
       for (const p of POIS) {
         const [px, pz] = to(p.x, p.z, S);
