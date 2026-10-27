@@ -70,6 +70,7 @@ function CloudSaveSync() {
               vehicle_type: model,
               plate_number: "LR-" + userId!.slice(0, 4).toUpperCase() + "-" + model.toUpperCase(),
               color: model === "danfo" ? "#f2c230" : model === "police" ? "#263d66" : "#eab308",
+              fuel_level: 100,
             }));
             const vehicleSync = await (supabase as any).from("vehicles").upsert(vehicleRows, { onConflict: "owner_id,plate_number" });
             if (vehicleSync.error) console.warn("[Anywhere Roleplay] Vehicle sync skipped:", vehicleSync.error.message);
@@ -92,6 +93,17 @@ function CloudSaveSync() {
             const propertySync = await (supabase as any).from("properties").upsert(propertyRows, { onConflict: "owner_id,property_key" });
             if (propertySync.error) console.warn("[Anywhere Roleplay] Property sync skipped:", propertySync.error.message);
           }
+          const housingRows = [
+            ...(current.inventory["mainland-studio"] ? [{ owner_id: userId, house_type: "mainland-studio", rent_due: null, has_generator: false, has_solar: false, stored_cash: 0 }] : []),
+            ...(current.inventory["ikoyi-apartment"] ? [{ owner_id: userId, house_type: "ikoyi-apartment", rent_due: null, has_generator: false, has_solar: false, stored_cash: 0 }] : []),
+            ...Object.entries(current.rentals).filter(([, expiry]) => expiry > Date.now()).map(([house_type, expiry]) => ({
+              owner_id: userId, house_type, rent_due: new Date(expiry).toISOString(), has_generator: false, has_solar: false, stored_cash: 0,
+            })),
+          ];
+          if (housingRows.length) {
+            const housingSync = await (supabase as any).from("housing").upsert(housingRows, { onConflict: "owner_id,house_type" });
+            if (housingSync.error) console.warn("[Anywhere Roleplay] Housing sync skipped:", housingSync.error.message);
+          }
         } catch (profileError) {
           console.warn("[Anywhere Roleplay] Profile sync unavailable:", profileError);
         }
@@ -102,6 +114,19 @@ function CloudSaveSync() {
       }
     };
 
+    const onJobCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ job_type?: string; earnings?: number; title?: string }>).detail;
+      if (!userId || !detail?.job_type) return;
+      void (supabase as any).from("jobs_history").insert({
+        player_id: userId,
+        job_type: detail.job_type,
+        earnings: Math.max(0, Math.round(detail.earnings ?? 0)),
+        metadata: { title: detail.title ?? detail.job_type },
+      }).then(({ error }: { error: { message: string } | null }) => {
+        if (error) console.warn("[Anywhere Roleplay] Job history sync skipped:", error.message);
+      });
+    };
+    window.addEventListener("roleplay-job-completed", onJobCompleted);
     const timer = window.setInterval(() => { void sync(); }, 12000);
     const onPageHide = () => { void sync(); };
     window.addEventListener("pagehide", onPageHide);
@@ -110,6 +135,7 @@ function CloudSaveSync() {
       stopped = true;
       window.clearInterval(timer);
       window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("roleplay-job-completed", onJobCompleted);
     };
   }, []);
 
