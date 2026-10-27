@@ -4,6 +4,15 @@ import { g } from "./state";
 
 export type JobType = "courier" | "driver" | "trader" | "security";
 
+export const DISTRICT_INFO = [
+  { name: "Yaba / Surulere", price: 0, description: "Starter mainland: tech hustlers, students and buka stalls." },
+  { name: "Oshodi / Mushin", price: 25000, description: "Transport terminals, spare-parts lanes and street trade." },
+  { name: "Ajegunle / Makoko", price: 20000, description: "Waterfront communities, fish markets and neighbourhood life." },
+  { name: "Ikeja / Airport", price: 50000, description: "Airport terminals, logistics yards and government offices." },
+  { name: "Lekki / Victoria Island", price: 100000, description: "High-rise offices, gated estates and premium business." },
+  { name: "Eko Atlantic", price: 500000, description: "Aspirational future-city skyline and luxury towers." },
+] as const;
+
 export const MARKET_ITEMS = [
   { id: "streetwear-fit", name: "Lagos Streetwear Fit", category: "Clothing", description: "A fresh street-ready look.", price: 4500 },
   { id: "emerald-luxury-fit", name: "Emerald Luxury Fit", category: "Clothing", description: "Premium emerald-and-gold outfit.", price: 12000 },
@@ -52,6 +61,7 @@ export interface SaveData {
   activeJob?: ActiveJob | null;
   outfit?: PlayerOutfit;
   needs?: PlayerNeeds;
+  unlockedDistricts?: string[];
   rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
@@ -221,6 +231,7 @@ const DEFAULTS = {
   phoneOpen: false,
   outfit: { gender: "male", skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
   needs: { ...DEFAULT_NEEDS },
+  unlockedDistricts: ["Yaba / Surulere"],
   rentals: {} as Record<string, number>,
   interior: false,
   interiorLabel: "Ikoyi Apartment",
@@ -255,6 +266,7 @@ export const useGame = create<GameStore>((set, get) => ({
         activeJob: saved.activeJob ?? null,
         outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
         needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
+        unlockedDistricts: saved.unlockedDistricts ?? ["Yaba / Surulere"],
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
@@ -276,7 +288,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
@@ -371,6 +383,15 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
   setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  unlockDistrict: (district) => {
+    const item = DISTRICT_INFO.find((d) => d.name === district);
+    if (!item || get().unlockedDistricts.includes(district)) return false;
+    if (!get().spend(item.price, "bank") && !get().spend(item.price, "cash")) return false;
+    set({ unlockedDistricts: [...get().unlockedDistricts, district] });
+    get().radio("🗺️ District unlocked: " + district + ". New streets are open to you.");
+    get().save();
+    return true;
+  },
   tickNeeds: (seconds) => {
     if (!Number.isFinite(seconds) || seconds <= 0 || !get().started) return;
     const n = get().needs;
