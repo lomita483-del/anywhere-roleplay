@@ -381,7 +381,9 @@ export default function GameWorld() {
         g.drivingId = null;
         st.setDriving(false);
       } else {
-        const cat = VEHICLE_CATALOG[v.model] ?? VEHICLE_CATALOG["sedan"]!;
+        const baseCat = VEHICLE_CATALOG[v.model] ?? VEHICLE_CATALOG["sedan"]!;
+        const tuned = (st.inventory["engine-tune"] ?? 0) > 0;
+        const cat = tuned ? { ...baseCat, maxSpeed: baseCat.maxSpeed * 1.2, accel: baseCat.accel * 1.15 } : baseCat;
         const kf = (k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0);
         const ks = (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0);
         const forward = Math.max(-1, Math.min(1, kf - g.joy.y));
