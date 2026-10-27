@@ -354,6 +354,8 @@ function ParkedVehicle({ id, model, register }: { id: string; model: string; reg
 
 function Traffic() {
   const refs = useRef<(THREE.Group | null)[]>([]);
+  const graphicsQuality = useGame((s) => s.graphicsQuality);
+  const trafficCount = graphicsQuality === "low" ? 8 : graphicsQuality === "medium" ? 18 : TRAFFIC.length;
   const cars = useMemo(
     () =>
       TRAFFIC.map((t, i) => ({
@@ -367,6 +369,12 @@ function Traffic() {
     const dt = Math.min(rawDelta, 0.05);
     const horizontalGreen = Math.floor(state.clock.elapsedTime / 12) % 2 === 0;
     cars.forEach((c, i) => {
+      const grp = refs.current[i];
+      if (i >= trafficCount || Math.hypot(g.playerPos.x - (c.t.lane.axis === "x" ? c.p : c.t.lane.fixed), g.playerPos.z - (c.t.lane.axis === "x" ? c.t.lane.fixed : c.p)) > 125) {
+        if (grp) grp.visible = false;
+        return;
+      }
+      if (grp) grp.visible = true;
       const crossings = c.t.lane.axis === "x" ? ROADS_X : ROADS_Z;
       const nextCrossing = crossings
         .map((point) => ({ point, ahead: (point - c.p) * c.dir }))
@@ -398,7 +406,7 @@ function Traffic() {
   });
   return (
     <>
-      {TRAFFIC.map((t, i) => (
+      {TRAFFIC.slice(0, trafficCount).map((t, i) => (
         <group
           key={i}
           ref={(o) => {
@@ -414,6 +422,8 @@ function Traffic() {
 
 function Pedestrians() {
   const refs = useRef<(THREE.Group | null)[]>([]);
+  const graphicsQuality = useGame((s) => s.graphicsQuality);
+  const pedestrianCount = graphicsQuality === "low" ? 12 : graphicsQuality === "medium" ? 28 : PED_WALKS.length;
   const peds = useMemo(
     () =>
       PED_WALKS.map((w, i) => {
@@ -431,6 +441,12 @@ function Pedestrians() {
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
     peds.forEach((p, i) => {
+      const grp = refs.current[i];
+      if (i >= pedestrianCount || Math.hypot(g.playerPos.x - p.x, g.playerPos.z - p.z) > 95) {
+        if (grp) grp.visible = false;
+        return;
+      }
+      if (grp) grp.visible = true;
       const wp = p.pts[p.wi];
       if (!wp) return;
       const dx = wp[0] - p.x;
@@ -451,7 +467,7 @@ function Pedestrians() {
   });
   return (
     <>
-      {PED_WALKS.map((w, i) => (
+      {PED_WALKS.slice(0, pedestrianCount).map((w, i) => (
         <group
           key={i}
           ref={(o) => {
