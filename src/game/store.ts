@@ -36,7 +36,7 @@ export interface ActiveJob {
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | "fuel" | "vendor" | "interior-hotspot" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
-export interface RideRequest { id: string; service: "ride" | "bike" | "private"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
+export interface RideRequest { id: string; service: "ride" | "bike" | "private" | "danfo" | "keke"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
 export interface PlayerOutfit { gender?: "male" | "female"; skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
 export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
@@ -576,13 +576,23 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!s.waypoint || s.driving || s.rideRequest) return false;
     const destinationDistrict = districtAt(s.waypoint.x, s.waypoint.z);
     if (destinationDistrict && (!s.unlockedDistricts.includes(destinationDistrict) || (destinationDistrict === "Eko Atlantic" && !s.unlockedDistricts.includes("Lekki / Victoria Island")))) return false;
-    const fare = service === "bike" ? 700 : service === "private" ? 4200 : 1600;
-    if (!s.spend(fare, "cash") && !s.spend(fare, "bank")) return false;
-    const offset = service === "bike" ? 10 : 16;
+    const distance = Math.hypot(g.playerPos.x - s.waypoint.x, g.playerPos.z - s.waypoint.z);
+    const baseFare = service === "bike" ? 700 : service === "private" ? 4200 : service === "danfo" ? 300 : service === "keke" ? 500 : 1600;
+    const rate = service === "bike" ? 3.2 : service === "private" ? 10 : service === "danfo" ? 1.1 : service === "keke" ? 1.8 : 4.5;
+    const fare = Math.ceil(baseFare + distance * rate);
+    // Split payment: use available cash first, then debit only the remainder from the bank.
+    const cashPart = Math.min(s.cash, fare);
+    if (cashPart > 0 && !s.spend(cashPart, "cash")) return false;
+    const bankPart = fare - cashPart;
+    if (bankPart > 0 && !get().spend(bankPart, "bank")) {
+      if (cashPart > 0) get().earn(cashPart, "cash");
+      return false;
+    }
+    const offset = service === "bike" ? 10 : service === "danfo" ? 20 : 16;
     const x = clampWorld(g.playerPos.x + offset, g.playerPos.z - offset, 2)[0];
     const z = clampWorld(g.playerPos.x + offset, g.playerPos.z - offset, 2)[1];
     set({ rideRequest: { id: `ride-${Date.now()}`, service, status: "approaching", destination: { ...s.waypoint }, fare, x, z, yaw: Math.atan2(-offset, offset) } });
-    get().radio(service === "bike" ? "🏍️ Okada rider accepted the trip and is coming to your location." : service === "private" ? "🚘 Private driver confirmed and is on the way." : "🚕 Ride accepted. Your driver is on the way.");
+    get().radio(service === "bike" ? "🏍️ Okada rider accepted the trip and is coming to your location." : service === "private" ? "🚘 Private driver confirmed and is on the way." : service === "danfo" ? "🚌 Danfo driver accepted your trip." : service === "keke" ? "🛺 Keke driver accepted your trip." : "🚕 Ride accepted. Your driver is on the way.");
     get().save();
     return true;
   },
