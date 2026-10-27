@@ -52,19 +52,34 @@ function useKeys() {
 }
 
 function CharacterBody() {
+  const outfit = useGame((s) => s.outfit);
   const { scene, animations } = useGLTF("/models/character.glb");
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { actions } = useAnimations(animations, clone);
   const current = useRef("");
 
   useEffect(() => {
+    const topColors: Record<string, string> = { streetwear: "#2d8b67", formal: "#24334c", agbada: "#d4a72c", uniform: "#263d66" };
+    const bottomColors: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
     clone.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
+      const name = mesh.name.toLowerCase();
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const material of materials) {
+        const standard = material as THREE.MeshStandardMaterial;
+        if (!standard.color) continue;
+        if (/skin|face|head|body/.test(name)) standard.color.set(outfit.skinTone);
+        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(topColors[outfit.top] ?? topColors.streetwear!);
+        else if (/pants|trouser|bottom|leg/.test(name)) standard.color.set(bottomColors[outfit.bottom] ?? bottomColors.jeans!);
+        else if (/hair/.test(name)) standard.color.set(outfit.hair === "locs" ? "#171411" : outfit.hair === "braids" ? "#231a17" : "#2b211c");
+        else if (/hat|cap|accessory/.test(name) && outfit.accessory === "cap") standard.color.set("#d4a72c");
       }
     });
-  }, [clone]);
+  }, [clone, outfit]);
 
   useFrame(() => {
     const speed = g.playerSpeed;
@@ -407,7 +422,6 @@ export default function GameWorld() {
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
-  const outfit = useGame((s) => s.outfit);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; z: number; yaw: number; vehicle: string | null }>>({});
 
   const register = (id: string, grp: THREE.Group | null) => {
