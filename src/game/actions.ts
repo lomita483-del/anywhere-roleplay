@@ -42,7 +42,7 @@ export function interact() {
   else if (p.kind === "atm") s.openPhone("bank");
   else if (p.kind === "dealer") s.setModal("dealer");
   else if (p.kind === "home") {
-    if ((s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0) {
+    if ((s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0 || (s.rentals["mainland-studio"] ?? 0) > Date.now() || (s.rentals["ikoyi-apartment"] ?? 0) > Date.now()) {
       g.playerPos.set(104, 0, 104);
       s.setInterior(true);
       s.setWaypoint(null);
