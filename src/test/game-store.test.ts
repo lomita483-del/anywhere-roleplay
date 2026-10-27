@@ -62,7 +62,7 @@ describe("Anywhere Roleplay game store", () => {
     tryJobProgress(x, z);
     tryJobProgress(x, z);
     expect(useGame.getState().activeJob?.stage).toBe(1);
-    expect(useGame.getState().inventory.package).toBe(1);
+    expect(useGame.getState().inventory["package"]).toBe(1);
   });
 
   it("saves and restores active job and spawned vehicle state", () => {
