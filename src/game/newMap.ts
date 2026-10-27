@@ -10,7 +10,7 @@ const ringPoints: [number,number][] = [...ring, ring[0]!];
 const roadEdges: NewMapRoadEdge[] = [
  {id:"stadium-boulevard",from:"boulevard-west",to:"boulevard-west",type:"boulevard",width:8,points:ringPoints},
  {id:"outer-perimeter",from:"perimeter-nw",to:"perimeter-nw",type:"perimeter",width:8,points:[[-178,-178],[178,-178],[178,178],[-178,178],[-178,-178]]},
- {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},
+ {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},\n {id:"airport-terminal-access",from:"airport-avenue",to:"airport-terminal",type:"street",width:5,points:[[0,-106],[17,-106],[34,-106]]},
  {id:"port-avenue",from:"boulevard-south-east",to:"perimeter-south-east",type:"avenue",width:8,points:[[55,55],[78,78],[104,104],[132,132],[178,178]]},
  {id:"university-avenue",from:"boulevard-west",to:"perimeter-west",type:"avenue",width:8,points:[[-78,0],[-104,0],[-132,0],[-178,0]]},
  {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[178,0]]},
@@ -56,7 +56,7 @@ export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
  {id:"civic",label:"CIVIC & OFFICE STRIP",x:112,z:52,w:52,d:34,color:"#b3a895"},
  {id:"port",label:"PORT & LOGISTICS",x:132,z:126,w:55,d:42,color:"#9c9e91"},
  {id:"lake-park",label:"LAKE PARK & RESORT",x:-112,z:126,w:62,d:54,color:"#789b76"},
- {id:"airport",label:"INTERNATIONAL AIRPORT",x:34,z:-140,w:68,d:42,color:"#9ba9a5"}
+ {id:"airport",label:"INTERNATIONAL AIRPORT",x:34,z:-112,w:68,d:100,color:"#9ba9a5"}
 ];
 
 const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
@@ -74,7 +74,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:16,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
  {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-125,z:126,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
- {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-140,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"south"},
+ {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-92,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"north"},
  {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
  {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
  {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:138,z:110,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
@@ -108,7 +108,7 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
+export const NEW_MAP_GROUND_PATCHES = [{x:-151,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];\nexport const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
 export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
