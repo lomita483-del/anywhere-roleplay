@@ -381,8 +381,13 @@ export const useGame = create<GameStore>((set, get) => ({
       });
     } else {
       setCityWorld(get().city);
-      g.playerPos.set(0, 0, 18.2);
-      g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16;
+      if (get().city === "newmap") {
+        g.playerPos.set(0, 0, 29);
+        g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8;
+      } else {
+        g.playerPos.set(0, 0, 18.2);
+        g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16;
+      }
       g.time = get().city === "newmap" ? 9.5 : 8;
       localStorage.removeItem(SAVE_KEY);
       set({ ...DEFAULTS, started: true, cash: get().city === "newmap" ? 5_000 : DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
