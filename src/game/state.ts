@@ -24,6 +24,7 @@ export const g = {
   playerSpeed: 0, // horizontal speed, for anim blend
   joy: { x: 0, y: 0 }, // virtual joystick (-1..1)
   drivingId: null as string | null,
+  sirenOn: false,
   vehicles: new Map<string, VehicleRuntime>(),
   sprint: false,
 };
