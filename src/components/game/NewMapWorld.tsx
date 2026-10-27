@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -550,6 +550,10 @@ function CurvedRoadNetwork() {
       {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
         <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-road.index - 1} polygonOffsetUnits={-1} />
       </mesh>)}
+      {NEW_MAP_ROAD_ENDPOINTS.map((p,i)=><group key={"road-cap-"+i}>
+        <mesh rotation-x={-Math.PI/2} position={[p.x,.034,p.z]}><circleGeometry args={[(p.width+2.4)/2,16]}/><meshStandardMaterial color="#aeb1ab" roughness={.98}/></mesh>
+        <mesh rotation-x={-Math.PI/2} position={[p.x,.051,p.z]}><circleGeometry args={[p.width/2,16]}/><meshStandardMaterial color="#3d454b" roughness={.96}/></mesh>
+      </group>)}
       {NEW_MAP_JUNCTIONS.map(([x,z],i)=><group key={"junction-"+i}>
         <mesh rotation-x={-Math.PI/2} position={[x,.035,z]}><circleGeometry args={[5.2,20]}/><meshStandardMaterial color="#aeb1ab" roughness={.98}/></mesh>
         <mesh rotation-x={-Math.PI/2} position={[x,.052,z]}><circleGeometry args={[4.05,20]}/><meshStandardMaterial color="#3d454b" roughness={.96}/></mesh>
