@@ -373,12 +373,15 @@ export function treePositions(): [number, number][] {
 
 // Current world is switched by the in-game city selector. Existing Lagos data
 // stays intact and is restored when players return to Lagos.
-export type CityId = "lagos" | "umuahia";
-export let currentCity: CityId = "lagos";
+export type CityId = "newmap" | "lagos" | "umuahia";
+export let currentCity: CityId = "newmap";
 
 export function setCityWorld(city: CityId) {
   currentCity = city;
-  BUILDINGS = city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
-  POIS = city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
+  BUILDINGS = city === "newmap" ? [] : city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
+  POIS = city === "newmap" ? [] : city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
   COLLIDERS = buildingBoxes();
 }
+
+// Start in the empty sandbox before the game session begins.
+setCityWorld("newmap");
