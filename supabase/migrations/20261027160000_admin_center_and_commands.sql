@@ -15,35 +15,29 @@ create index if not exists admin_commands_target_pending_idx
   on public.admin_commands(target_user_id, created_at desc)
   where acknowledged_at is null;
 
-alter table public.admin_commands enable row level security;
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.admin_users enable row level security;
+drop policy if exists "Users can see their own admin grant" on public.admin_users;
+create policy "Users can see their own admin grant"
+  on public.admin_users for select to authenticated
+  using (user_id = (select auth.uid()));
+grant select on public.admin_users to authenticated;
 
-create schema if not exists private;
-grant usage on schema private to authenticated;
-create or replace function private.is_current_user_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $
-  select exists (
-    select 1 from public.profiles p
-    where p.id = (select auth.uid()) and p.is_admin = true
-  );
-$;
-revoke all on function private.is_current_user_admin() from public, anon;
-grant execute on function private.is_current_user_admin() to authenticated;
+alter table public.admin_commands enable row level security;
 
 drop policy if exists "Admins can read all player profiles" on public.profiles;
 create policy "Admins can read all player profiles"
   on public.profiles for select to authenticated
-  using (id = (select auth.uid()) or private.is_current_user_admin());
+  using (id = (select auth.uid()) or exists (select 1 from public.admin_users a where a.user_id = (select auth.uid())));
 
 
 drop policy if exists "Admins can read admin commands" on public.admin_commands;
 create policy "Admins can read admin commands"
   on public.admin_commands for select to authenticated
-  using (private.is_current_user_admin());
+  using (exists (select 1 from public.admin_users a where a.user_id = (select auth.uid())));
 
 drop policy if exists "Admins can issue admin commands" on public.admin_commands;
 create policy "Admins can issue admin commands"
