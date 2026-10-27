@@ -1116,7 +1116,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   const poi = nearestPoi(x, z, 3.0);
   if (poi) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
-    else if (poi.kind === "bank") st.setPrompt({ kind: "atm", label: "Enter Bank / Use ATM" });
+    else if (poi.kind === "bank") st.setPrompt(isNewMap ? { kind: "building", label: "Enter Community Bank", buildingLabel: poi.label } : { kind: "atm", label: "Enter Bank / Use ATM" });
     else if (poi.kind === "dealership") st.setPrompt({ kind: "dealer", label: "Browse Ojoto Motors" });
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
@@ -1124,7 +1124,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     else if (poi.kind === "fuel") st.setPrompt({ kind: "fuel", label: "Use " + poi.label });
     else if (poi.kind === "jobboard") st.setPrompt({ kind: "jobboard", label: "Browse City Job Board" });
     else if (poi.kind === "police") st.setPrompt({ kind: "police", label: "Clock in at Police HQ" });
-    else if (poi.kind === "market" || poi.kind === "depot" || poi.kind === "airport") st.setPrompt({ kind: "building", label: "Enter " + poi.label, buildingLabel: poi.label });
+    else if (poi.kind === "market" || poi.kind === "depot" || poi.kind === "airport" || poi.kind === "hospital" || poi.kind === "pharmacy" || poi.kind === "school" || poi.kind === "university" || poi.kind === "real-estate" || poi.kind === "shop" || poi.kind === "stadium" || poi.kind === "port" || poi.kind === "lake") st.setPrompt({ kind: "building", label: "Enter " + poi.label, buildingLabel: poi.label });
     else {
       st.setPrompt(null);
       return;
