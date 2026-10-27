@@ -209,7 +209,7 @@ export function clampWorld(x: number, z: number, r = 0.5): [number, number] {
 }
 
 export function districtAt(x: number, z: number): string | null {
-  if (currentCity === "umuahia") return null;
+  if (currentCity !== "lagos") return null;
   if (x > 110 && z > 110) return "Eko Atlantic";
   if (x > 110 && z >= -20) return "Lekki / Victoria Island";
   if (x > 110 && z < -20) return "Ikeja / Airport";
