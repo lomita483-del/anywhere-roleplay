@@ -4,7 +4,7 @@ import { ROADS_X, ROADS_Z, isBlocked, clampWorld } from "./city";
 
 export function enterVehicle(id: string) {
   const v = g.vehicles.get(id);
-  if (!v || v.ai) return;
+  if (!v) return;
   g.drivingId = id;
   g.playerSpeed = 0;
   const s = useGame.getState();
@@ -22,6 +22,7 @@ export function exitVehicle() {
   s.setDriving(false);
   s.setSpeed(0);
   if (v) {
+    // Step out to the left side of the vehicle
     const lx = v.px + Math.cos(v.yaw) * 1.8;
     const lz = v.pz - Math.sin(v.yaw) * 1.8;
     const [cx, cz] = clampWorld(lx, lz);
@@ -43,45 +44,30 @@ export function interact() {
   else if (p.kind === "home") s.setModal("home");
 }
 
-// Deliver an owned vehicle to a nearby clear road position.
+// Spawn an owned vehicle on the nearest road lane to the player.
 export function deliverOwnedVehicle(model: string) {
   const s = useGame.getState();
   if (!s.owned.includes(model)) return;
-
   const px = g.playerPos.x;
   const pz = g.playerPos.z;
-  const candidates: { x: number; z: number; yaw: number; distance: number }[] = [];
-
+  let best: { x: number; z: number; yaw: number } | null = null;
+  let bestD = Infinity;
   for (const rx of ROADS_X) {
-    const x = px < rx ? rx - 5.5 : rx + 5.5;
-    const z = Math.max(-110, Math.min(110, pz));
-    candidates.push({ x, z, yaw: 0, distance: Math.hypot(x - px, z - pz) });
+    const lane = px < rx ? rx - 5.5 : rx + 5.5;
+    const d = Math.hypot(lane - px, pz - pz);
+    if (Math.abs(pz) <= 115 && d < bestD) { bestD = d; best = { x: lane, z: Math.max(-110, Math.min(110, pz)), yaw: 0 }; }
   }
   for (const rz of ROADS_Z) {
-    const x = Math.max(-110, Math.min(110, px));
-    const z = pz < rz ? rz - 5.5 : rz + 5.5;
-    candidates.push({ x, z, yaw: Math.PI / 2, distance: Math.hypot(x - px, z - pz) });
+    const lane = pz < rz ? rz - 5.5 : rz + 5.5;
+    const d = Math.hypot(px - px, lane - pz);
+    if (Math.abs(px) <= 115 && d < bestD) { bestD = d; best = { x: Math.max(-110, Math.min(110, px)), z: lane, yaw: Math.PI / 2 }; }
   }
-
-  candidates.sort((a, b) => a.distance - b.distance);
-  const best = candidates.find((p) => {
-    if (Math.abs(p.x) > 115 || Math.abs(p.z) > 115 || isBlocked(p.x, p.z, 1.6)) return false;
-    for (const vehicle of g.vehicles.values()) {
-      if (Math.hypot(vehicle.px - p.x, vehicle.pz - p.z) < 3.8) return false;
-    }
-    return true;
-  });
-
-  if (!best) {
-    s.radio("⚠️ No clear road space nearby. Move to an open street and try again.");
-    return;
-  }
-
+  if (!best) return;
   const id = `own-${model}-${Date.now()}`;
   g.vehicles.set(id, {
     id, model, px: best.x, pz: best.z, vx: 0, vz: 0, yaw: best.yaw, speed: 0, color: "#c94a3c",
   });
   s.addSpawned({ id, model, x: best.x, z: best.z, rotY: best.yaw });
-  s.radio(`🚗 Your ${VEHICLE_CATALOG[model]?.name ?? model} is waiting on the road nearby.`);
+  s.radio(`🚗 Your ${VEHICLE_CATALOG[model]?.name} is waiting on the road nearby.`);
   s.openPhone("garage");
 }

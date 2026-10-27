@@ -1,22 +1,15 @@
-# Roadmap — Anywhere Roleplay (3D open-world Nigerian roleplay game)
+# Roadmap — Lagos Hustle RP (3D open-world web game)
 
-## Implemented in source (not yet fully browser-verified)
-- [x] React Three Fiber / Drei scene stack and 3D city layout
-- [x] City ground, roads, buildings, lamps, trees and day/night cycle
-- [x] Animated player character, camera-relative movement and collision helpers
-- [x] Vehicle catalog, arcade driving, enter/exit controls and speed HUD
-- [x] Mobile joystick, sprint toggle, keyboard controls and interaction prompts
-- [x] Phone overlay: bank, jobs, garage, inventory, map and city radio
-- [x] Cash/bank state, ATMs, dealership, job flows and localStorage save routine
-- [x] Main menu route now mounts the existing game after starting/continuing
-
-## Remaining / verification required
-- [ ] Run build, lint and automated tests against the current branch
-- [ ] Verify the first-load, new-game and continue-save flows in a browser
-- [ ] Test mobile controls, vehicle interactions, jobs, banking and asset loading
-- [ ] Add focused tests for transfers, purchases, job completion and save/load
-- [ ] Review collision/spawn edge cases and prevent repeated job-stage activation
-- [ ] Online accounts and cross-device cloud saves (previously blocked by Lovable workspace credits; localStorage remains device/browser-specific)
-
-## Save limitation
-Current progress is stored in the browser's localStorage on the current device/browser. It is not synced to a user account and does not follow the player to another device. Do not describe cloud saves or online authentication as available until a backend is configured and verified.
+## Status
+- [x] Load 3D-game skill rules, install R3F stack
+- [x] Source CC0 models (Kenney character + cars); Keke Napep procedural (no CC0 tuk-tuk found)
+- [ ] Lovable Cloud blocked: no workspace credits → persistence via localStorage
+- [x] Game data: city layout, POIs, vehicles, jobs
+- [x] Core scene: ground, roads, buildings, lamps, day/night
+- [x] Player: animated character, camera-relative movement, collisions, orbit cam
+- [x] Vehicles: arcade driving, enter/exit, speedometer
+- [x] HUD: joystick (touch), WASD, prompts, wallet
+- [x] Phone overlay: Bank, Jobs, Garage, Inventory, Map, City Radio
+- [x] RP systems: cash/bank, ATMs, dealership, jobs, saves
+- [ ] Verify in browser (screenshots, console clean)
+- [ ] Unit tests for money/job rules
