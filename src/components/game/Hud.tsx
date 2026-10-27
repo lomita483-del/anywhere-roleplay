@@ -194,7 +194,7 @@ export default function Hud() {
       )}
 
       {/* Sprint toggle (mobile) */}
-      <button
+      {!phoneOpen && <button
         className={`pointer-events-auto absolute bottom-40 left-10 flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-sm active:scale-95 ${
           run ? "border-hud-accent bg-hud-accent/30" : "border-hud-line bg-hud-dim"
         }`}
@@ -205,7 +205,7 @@ export default function Hud() {
         onPointerDown={(e) => e.stopPropagation()}
       >
         <ChevronsUp className="h-5 w-5 text-hud-bright" />
-      </button>
+      </button>}
 
       {interior && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit {interiorLabel} ↗</button>}
 
@@ -221,7 +221,7 @@ export default function Hud() {
         </button>
       )}
 
-      <Joystick />
+      {!phoneOpen && <Joystick />}
       <Phone />
     </div>
   );
