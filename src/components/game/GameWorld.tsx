@@ -59,8 +59,8 @@ function CharacterBody() {
   const skin = outfit.skinTone || "#986344";
   const tops: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
   const bottoms: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
-  const top = tops[outfit.top] ?? tops.streetwear!;
-  const bottom = bottoms[outfit.bottom] ?? bottoms.jeans!;
+  const top = tops[outfit.top] ?? tops["streetwear"]!;
+  const bottom = bottoms[outfit.bottom] ?? bottoms["jeans"]!;
   const hair = outfit.hair === "locs" ? "#211a29" : outfit.hair === "braids" ? "#241b17" : "#171513";
   const shoe = outfit.top === "formal" ? "#25252b" : "#d9dcdf";
 
