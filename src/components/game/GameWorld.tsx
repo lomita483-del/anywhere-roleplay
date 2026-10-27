@@ -173,7 +173,16 @@ function CarGlb({ name }: { name: string }) {
   const clone = useMemo(() => scene.clone(true), [scene]);
   useEffect(() => {
     clone.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      materials.forEach((material) => {
+        const standard = material as THREE.MeshStandardMaterial;
+        if (standard.roughness > 0.78) standard.roughness = 0.62;
+        if (standard.metalness > 0.92) standard.metalness = 0.72;
+      });
     });
   }, [clone]);
   return (
