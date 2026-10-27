@@ -287,7 +287,7 @@ const CITY_ROAD_PATHS: [number, number][][] = [
 ];
 
 function createRoadGeometry(path: [number, number][], width: number) {
-  const curve = new THREE.CatmullRomCurve3(path.map(([x, z]) => new THREE.Vector3(x, 0.035, z)), false, "catmullrom", 0.22);
+  const curve = new THREE.CatmullRomCurve3(path.map(([x, z]) => new THREE.Vector3(x, 0.045, z)), false, "catmullrom", 0.22);
   const samples = curve.getPoints(Math.max(80, path.length * 18));
   const positions: number[] = [];
   const indices: number[] = [];
@@ -309,9 +309,10 @@ function createRoadGeometry(path: [number, number][], width: number) {
 }
 
 function CurvedRoadNetwork() {
-  const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => ({
-    index, ...createRoadGeometry(path, index === 6 ? 8.8 : index < 2 ? 8.2 : 6.4),
-  })), []);
+  const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
+    const width = index === 6 ? 8.8 : index < 2 ? 8.2 : 6.4;
+    return { index, ...createRoadGeometry(path, width), sidewalk: createRoadGeometry(path, width + 2.8) };
+  }), []);
   const dashData = useMemo(() => {
     const out: { x: number; z: number; yaw: number; width: number }[] = [];
     roadData.forEach((road, roadIndex) => {
@@ -343,6 +344,9 @@ function CurvedRoadNetwork() {
   }, [dashData]);
   return (
     <>
+      {roadData.map((road) => <mesh key={"sidewalk-"+road.index} geometry={road.sidewalk.geometry} receiveShadow>
+        <meshStandardMaterial color="#aeb1ab" roughness={0.98} side={THREE.DoubleSide} />
+      </mesh>)}
       {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
         <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} />
       </mesh>)}
@@ -356,16 +360,21 @@ function CurvedRoadNetwork() {
 
 function CityTraffic() {
   const refs = useRef<(THREE.Group | null)[]>([]);
+  const routes = useMemo(() => CITY_ROAD_PATHS.map((path) => new THREE.CatmullRomCurve3(
+    path.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, "catmullrom", 0.22,
+  )), []);
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     refs.current.forEach((car, i) => {
       if (!car) return;
-      const lane = i % 4;
-      const p = ((t * (3.5 + (i % 3) * 0.7) + i * 27) % 300) - 150;
-      if (lane === 0) { car.position.set(p, 0.12, -42); car.rotation.y = Math.PI / 2; }
-      else if (lane === 1) { car.position.set(42, 0.12, p); car.rotation.y = 0; }
-      else if (lane === 2) { car.position.set(-82, 0.12, p); car.rotation.y = 0; }
-      else { car.position.set(p, 0.12, 82); car.rotation.y = Math.PI / 2; }
+      const route = routes[i % routes.length]!;
+      const length = route.getLength();
+      const distance = (t * (5.5 + (i % 3) * 1.2) + i * (length / 12)) % length;
+      const u = distance / length;
+      const point = route.getPointAt(u);
+      const tangent = route.getTangentAt(u);
+      car.position.set(point.x, 0.16, point.z);
+      car.rotation.y = Math.atan2(-tangent.x, -tangent.z);
     });
   });
   return <>{Array.from({ length: 12 }, (_, i) => <group key={i} ref={(el) => { refs.current[i] = el; }}>
