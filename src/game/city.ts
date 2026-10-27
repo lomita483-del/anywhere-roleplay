@@ -126,7 +126,7 @@ export const LOT_CARS: { x: number; z: number; rotY: number; color: string }[] =
 ];
 
 // Parked/drivable vehicles around the city
-export type VehicleModel = "keke" | "danfo" | "taxi" | "sedan" | "sports" | "suv" | "police";
+export type VehicleModel = "keke" | "danfo" | "bike" | "taxi" | "sedan" | "sports" | "suv" | "police";
 export interface VehicleSpawn {
   id: string;
   model: VehicleModel;
@@ -139,6 +139,7 @@ export const VEHICLE_SPAWNS: VehicleSpawn[] = [
   { id: "keke-2", model: "keke", x: 74.5, z: 30, rotY: -Math.PI / 2 },
   { id: "danfo-1", model: "danfo", x: -74.5, z: 24, rotY: Math.PI / 2 },
   { id: "danfo-2", model: "danfo", x: 20, z: 74.5, rotY: 0 },
+  { id: "bike-1", model: "bike", x: -5, z: 30, rotY: Math.PI },
   { id: "taxi-1", model: "taxi", x: 5, z: 30, rotY: Math.PI },
   { id: "sedan-1", model: "sedan", x: 85.5, z: -30, rotY: Math.PI / 2 },
   { id: "sports-1", model: "sports", x: -30, z: -74.5, rotY: 0 },
