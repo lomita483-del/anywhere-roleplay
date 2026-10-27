@@ -141,6 +141,7 @@ export default function Hud() {
   const nearTarget = useGame((s) => s.nearJobTarget);
   const openPhone = useGame((s) => s.openPhone);
   const [night, setNight] = useState(false);
+  const [weather, setWeather] = useState("CLEAR");
   const [run, setRun] = useState(false);
   const [sirenOn, setSirenOn] = useState(false);
   const [satelliteMode, setSatelliteMode] = useState(false);
@@ -234,7 +235,7 @@ export default function Hud() {
       <div className="absolute right-3 top-3 flex flex-col items-end gap-1">
         <div className="hud-panel flex items-center gap-2 px-3 py-2 text-sm">
           {night ? <Moon className="h-4 w-4 text-hud-accent" /> : <Sun className="h-4 w-4 text-hud-accent" />}
-          <span className="font-semibold text-hud-bright">{fmtTime(clock)}</span>
+          <span className="font-semibold text-hud-bright">{fmtTime(clock)}</span>{city === "newmap" && <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-black tracking-wider text-emerald-100">{weather}</span>}
         </div>
         {job && (
           <div className="hud-panel flex items-center gap-2 px-3 py-1.5 text-xs">
