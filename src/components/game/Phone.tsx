@@ -87,6 +87,10 @@ function JobsApp() {
   const accept = useGame((s) => s.acceptJob);
   const cancel = useGame((s) => s.cancelJob);
   const nearTarget = useGame((s) => s.nearJobTarget);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
+  const remaining = active?.startedAt ? Math.max(0, (active.timeLimitSeconds ?? 480) - Math.floor((now - active.startedAt) / 1000)) : 480;
+  const remainingLabel = Math.floor(remaining / 60) + ":" + String(remaining % 60).padStart(2, "0");
 
   if (active) {
     return (
@@ -101,7 +105,8 @@ function JobsApp() {
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-emerald-400" style={{width:((active.stage+1)/active.targets.length*100)+"%"}} /></div>
           <div className="mt-2 flex items-center justify-between text-xs"><span className="text-slate-200">Reward</span><span className="font-bold text-emerald-200">{naira(active.payout)}</span></div>
-          <div className="mt-1 text-xs text-slate-300">Time limit: 8 minutes · Keep moving to the red job marker.</div>
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 py-2"><span className="text-xs text-slate-200">Time remaining</span><span className={"text-sm font-black "+(remaining<90?"text-rose-300":"text-amber-200")}>{remainingLabel}</span></div>
+          <div className="mt-1 text-xs text-slate-300">Keep moving to the red job marker. The shift expires when the timer reaches 0:00.</div>
         </div>
         <button className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive" onClick={cancel}>
           Abandon job
