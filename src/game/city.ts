@@ -84,7 +84,7 @@ export const BUILDINGS: BuildingDef[] = [
 
 export interface Poi {
   id: string;
-  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport";
+  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport" | "fuel";
   x: number;
   z: number;
   label: string;
@@ -106,6 +106,9 @@ export const POIS: Poi[] = [
   { id: "mama-put", kind: "food", x: -77, z: 25, label: "Mama Put Buka" },
   { id: "suya-stand", kind: "food", x: -70, z: 15, label: "Roadside Suya" },
   { id: "oshodi-buka", kind: "food", x: -160, z: -78, label: "Oshodi Buka" },
+  { id: "oando-fuel", kind: "fuel", x: -65, z: -84, label: "Oando Fuel Station" },
+  { id: "ikeja-fuel", kind: "fuel", x: 125, z: -112, label: "Ikeja Express Fuel Stop" },
+  { id: "lekki-fuel", kind: "fuel", x: 126, z: 22, label: "Lekki Fuel Station" },
 ];
 
 // Collision boxes for every building (slightly padded)
