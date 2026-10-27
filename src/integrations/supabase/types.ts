@@ -14,7 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      player_save: {
+        Row: {
+          state: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          state: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          state?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_save_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
