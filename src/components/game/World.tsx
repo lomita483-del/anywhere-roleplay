@@ -117,6 +117,31 @@ function Lamps() {
 
 
 
+
+function TrafficSignals() {
+  const red = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const green = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const junctions = [[0, 0], [-80, 0], [80, 0], [140, -80], [140, 80], [-140, 80]] as const;
+  useFrame((state) => {
+    const horizontalGreen = Math.floor(state.clock.elapsedTime / 12) % 2 === 0;
+    red.current.forEach((material, i) => {
+      if (material) material.emissiveIntensity = horizontalGreen ? 0.12 : 1.8;
+    });
+    green.current.forEach((material, i) => {
+      if (material) material.emissiveIntensity = horizontalGreen ? 1.8 : 0.12;
+    });
+  });
+  return <group>
+    {junctions.map(([x, z], i) => <group key={i} position={[x + 9, 0, z + 9]}>
+      <mesh position={[0, 2.6, 0]} castShadow><cylinderGeometry args={[0.1, 0.13, 5.2, 6]} /><meshStandardMaterial color="#4c514d" roughness={0.9} /></mesh>
+      <mesh position={[0, 5.1, 0]} castShadow><boxGeometry args={[0.48, 1.3, 0.42]} /><meshStandardMaterial color="#171d20" roughness={0.7} /></mesh>
+      <mesh position={[0, 5.47, 0.225]}><sphereGeometry args={[0.12, 8, 6]} /><meshStandardMaterial color="#f04444" emissive="#ff2525" emissiveIntensity={0.1} ref={(m) => { red.current[i] = m; }} /></mesh>
+      <mesh position={[0, 5.1, 0.225]}><sphereGeometry args={[0.12, 8, 6]} /><meshStandardMaterial color="#e5b84e" emissive="#ffbf32" emissiveIntensity={0.15} /></mesh>
+      <mesh position={[0, 4.73, 0.225]}><sphereGeometry args={[0.12, 8, 6]} /><meshStandardMaterial color="#3fdb8c" emissive="#2cff8b" emissiveIntensity={0.1} ref={(m) => { green.current[i] = m; }} /></mesh>
+    </group>)}
+  </group>;
+}
+
 function WetRoadPuddles() {
   const materials = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const patches = [
@@ -505,6 +530,7 @@ export default function World() {
       <Lamps />
       <Trees />
       <WetRoadPuddles />
+      <TrafficSignals />
       {STALLS.map((s, i) => <Stall key={i} s={s} />)}
       {POIS.filter((p) => p.kind === "atm").map((p) => <Atm key={p.id} x={p.x} z={p.z} />)}
 
