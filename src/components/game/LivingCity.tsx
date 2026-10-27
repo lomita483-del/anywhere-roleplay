@@ -8,10 +8,58 @@ import { useGame } from "@/game/store";
 function MarketCanopy({ x, z, color, label, phase = 0 }: { x: number; z: number; color: string; label: string; phase?: number }) {
   return <group position={[x, 0, z]} rotation-y={phase}>
     {[-1.35, 1.35].map((px) => [-0.85, 0.85].map((pz) => <mesh key={px + ":" + pz} position={[px, 1.25, pz]} castShadow><cylinderGeometry args={[0.045, 0.06, 2.5, 6]} /><meshStandardMaterial color="#514638" /></mesh>))}
-    <mesh position={[0, 2.45, 0]} rotation-x={-0.08} castShadow><boxGeometry args={[3.25, 0.13, 2.35]} /><meshStandardMaterial color={color} roughness={0.92} side={THREE.DoubleSide} /></mesh>
+    <mesh position={[0, 2.42, 0]} rotation-y={Math.PI / 4} castShadow><coneGeometry args={[2.15, 0.55, 4]} /><meshStandardMaterial color={color} roughness={0.95} side={THREE.DoubleSide} /></mesh>
+    <mesh position={[0, 2.15, 1.12]} castShadow><boxGeometry args={[3.1, 0.28, 0.08]} /><meshStandardMaterial color={color} roughness={1} /></mesh>
     <mesh position={[0, 0.82, 0.2]} castShadow><boxGeometry args={[2.8, 0.22, 1.05]} /><meshStandardMaterial color="#775238" roughness={0.92} /></mesh>
     {[-0.8, 0, 0.8].map((px, i) => <mesh key={px} position={[px, 1.04, 0.3]} castShadow><boxGeometry args={[0.55, 0.32, 0.62]} /><meshStandardMaterial color={["#d9a441", "#c84f36", "#4d9a68"][i] ?? "#d9a441"} /></mesh>)}
     <Html position={[0, 2.8, 0]} center distanceFactor={24}><div className="whitespace-nowrap rounded bg-[#1b211c]/90 px-2 py-1 text-[9px] font-bold tracking-wide text-amber-100">{label}</div></Html>
+  </group>;
+}
+
+
+function StreetUmbrella({ x, z, color, label, phase = 0 }: { x: number; z: number; color: string; label: string; phase?: number }) {
+  return <group position={[x, 0, z]} rotation-y={phase}>
+    <mesh position={[0, 1.95, 0]} castShadow><cylinderGeometry args={[0.035, 0.05, 3.9, 6]} /><meshStandardMaterial color="#8a7353" roughness={0.9} /></mesh>
+    <mesh position={[0, 3.55, 0]} castShadow><coneGeometry args={[1.85, 0.5, 8]} /><meshStandardMaterial color={color} roughness={0.92} side={THREE.DoubleSide} /></mesh>
+    <mesh position={[0, 0.8, 0.25]} castShadow><boxGeometry args={[1.8, 0.18, 0.8]} /><meshStandardMaterial color="#70472d" roughness={0.95} /></mesh>
+    {[-0.55, 0, 0.55].map((px, i) => <mesh key={px} position={[px, 1.02, 0.3]} castShadow><boxGeometry args={[0.42, 0.28, 0.48]} /><meshStandardMaterial color={["#d9a441", "#be493a", "#53935a"][i]} /></mesh>)}
+    <mesh position={[0.82, 0.43, 0.82]} castShadow><cylinderGeometry args={[0.22, 0.22, 0.18, 10]} /><meshStandardMaterial color="#493a2d" /></mesh>
+    <Html position={[0, 3.9, 0]} center distanceFactor={23}><div className="whitespace-nowrap rounded-sm border border-white/20 bg-[#1a1712]/90 px-2 py-1 text-[9px] font-black uppercase text-amber-100">{label}</div></Html>
+  </group>;
+}
+
+function Shopfront({ x, z, color, title, phase = 0 }: { x: number; z: number; color: string; title: string; phase?: number }) {
+  return <group position={[x, 0, z]} rotation-y={phase}>
+    <mesh position={[0, 1.5, 0]} castShadow receiveShadow><boxGeometry args={[5.4, 3, 3.8]} /><meshStandardMaterial color="#a68b6b" roughness={0.95} /></mesh>
+    <mesh position={[0, 3.12, 0]} castShadow><boxGeometry args={[5.8, 0.22, 4.15]} /><meshStandardMaterial color="#4c4a42" roughness={0.96} /></mesh>
+    <mesh position={[0, 2.5, 1.94]}><boxGeometry args={[3.7, 0.68, 0.12]} /><meshStandardMaterial color={color} roughness={0.9} /></mesh>
+    <Html position={[0, 2.5, 2.04]} center distanceFactor={20}><div className="max-w-[105px] whitespace-nowrap text-center text-[10px] font-black uppercase tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{title}</div></Html>
+    <mesh position={[0, 1.12, 1.98]} castShadow><boxGeometry args={[4.3, 0.12, 0.5]} /><meshStandardMaterial color="#573d2b" roughness={0.95} /></mesh>
+    {[-1.35, 0, 1.35].map((px, i) => <mesh key={px} position={[px, 1.33, 2.03]}><boxGeometry args={[0.62, 0.35, 0.4]} /><meshStandardMaterial color={["#c7a33e", "#8e4a35", "#4d8756"][i]} roughness={0.9} /></mesh>)}
+  </group>;
+}
+
+function LagosStreetInfrastructure() {
+  const poles = [-78, -52, -26, 0, 26, 52, 78];
+  return <group>
+    {poles.map((x) => <group key={x} position={[x, 0, 7.5]}>
+      <mesh position={[0, 3.8, 0]} castShadow><cylinderGeometry args={[0.16, 0.23, 7.6, 7]} /><meshStandardMaterial color="#55564f" roughness={0.95} /></mesh>
+      <mesh position={[0.6, 7.15, 0]} rotation-z={-0.22}><boxGeometry args={[1.5, 0.12, 0.12]} /><meshStandardMaterial color="#55564f" /></mesh>
+      <mesh position={[0.9, 7.0, 0]}><boxGeometry args={[0.4, 0.16, 0.3]} /><meshStandardMaterial color="#d6d0b4" emissive="#f4c86b" emissiveIntensity={0.1} /></mesh>
+    </group>)}
+    {poles.slice(0, -1).map((x, i) => <mesh key={"wire" + x} position={[x + 13, 7.05, 7.5]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.025, 0.025, 26, 4]} /><meshStandardMaterial color="#252b2d" roughness={1} /></mesh>)}
+    <group position={[73, 0, 9]}>
+      <mesh position={[0, 4.1, 0]} castShadow><cylinderGeometry args={[0.12, 0.18, 8.2, 6]} /><meshStandardMaterial color="#575650" /></mesh>
+      <mesh position={[0, 1.1, 0.45]} castShadow><boxGeometry args={[1.7, 1.2, 1.3]} /><meshStandardMaterial color="#4e5352" roughness={0.9} /></mesh>
+      <mesh position={[0, 1.74, 0.45]}><boxGeometry args={[1.3, 0.08, 0.8]} /><meshStandardMaterial color="#272c2d" /></mesh>
+      <Html position={[0, 2.1, 1.15]} center distanceFactor={20}><div className="rounded bg-[#111718]/90 px-1.5 py-1 text-[8px] font-black text-amber-100">GENERATOR</div></Html>
+    </group>
+    <group position={[-78, 0, 4]}>
+      <mesh position={[0, 5.4, 0]} castShadow><cylinderGeometry args={[0.2, 0.25, 10.8, 7]} /><meshStandardMaterial color="#494c49" /></mesh>
+      <mesh position={[1.8, 8.1, 0]} castShadow><boxGeometry args={[8, 3.2, 0.3]} /><meshStandardMaterial color="#123c35" roughness={0.9} /></mesh>
+      <mesh position={[1.8, 8.1, 0.2]}><boxGeometry args={[7.55, 2.7, 0.08]} /><meshStandardMaterial color="#e0bd56" roughness={0.85} /></mesh>
+      <Html position={[1.8, 8.1, 0.28]} center distanceFactor={30}><div className="whitespace-nowrap text-center text-[11px] font-black tracking-widest text-[#17241c]">YABA · NO SHARPING NO GOING</div></Html>
+    </group>
   </group>;
 }
 
@@ -105,6 +153,15 @@ export default function LivingCity() {
   ] as [number, number][], []);
   return <group>
     {vendors.map((v, i) => <MarketCanopy key={i} x={v.x} z={v.z} color={v.color} label={v.label} phase={i % 3 * 0.15} />)}
+    <StreetUmbrella x={-70} z={15} color="#dc493b" label="SUYA" phase={0.2} />
+    <StreetUmbrella x={-26} z={15} color="#e6b638" label="COLD DRINKS" phase={0.5} />
+    <StreetUmbrella x={34} z={18} color="#3b9b66" label="FRUITS" phase={0.1} />
+    <StreetUmbrella x={48} z={19} color="#3b6fb2" label="PHONE REPAIR" phase={0.35} />
+    <Shopfront x={-77} z={30} color="#b74637" title="MAMA PUT" phase={0} />
+    <Shopfront x={-68} z={30} color="#285e46" title="PROVISIONS" phase={0} />
+    <Shopfront x={-59} z={30} color="#294b70" title="PHONE ACCESSORIES" phase={0} />
+    <Shopfront x={-50} z={30} color="#7c3b56" title="TAILOR / FASHION" phase={0} />
+    <LagosStreetInfrastructure />
     {crowd.map(([x, z], i) => <StreetPerson key={i} x={x} z={z} phase={i * 1.19} shirt={["#263f60", "#d8a63d", "#b6473e", "#3b7754", "#ded4c6", "#8c4567"][i % 6] ?? "#263f60"} scale={i % 5 === 0 ? 0.82 : 0.94} />)}
     <Flyover />
     {/* Civic/education district and property sales office. */}
