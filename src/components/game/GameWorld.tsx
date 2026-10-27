@@ -819,7 +819,8 @@ export default function GameWorld() {
         const rdx = Math.cos(v.yaw), rdz = -Math.sin(v.yaw);
         let vLong = v.vx * fdx + v.vz * fdz;
         let vLat = v.vx * rdx + v.vz * rdz;
-        vLong += forward * cat.accel * dt;
+        const fuelAvailable = v.fuel ?? 100;
+        vLong += (fuelAvailable > 0 ? forward : 0) * cat.accel * dt;
         if (brake) vLong -= Math.sign(vLong) * 18 * dt;
         vLong -= vLong * 0.9 * dt;
         vLong = Math.max(-cat.maxSpeed * 0.4, Math.min(cat.maxSpeed, vLong));
@@ -842,6 +843,7 @@ export default function GameWorld() {
         const cw = clampWorld(v.px, v.pz, 2);
         v.px = cw[0];
         v.pz = cw[1];
+        v.fuel = Math.max(0, fuelAvailable - (Math.abs(vLong) > 1 ? dt * (0.05 + Math.abs(vLong) * 0.006) : 0));
         v.speed = Math.hypot(v.vx, v.vz);
         g.playerPos.set(v.px, 0, v.pz);
         g.playerYaw = v.yaw;
@@ -935,6 +937,8 @@ export default function GameWorld() {
     if (T.clock > 1) {
       T.clock = 0;
       st.setClock(g.time);
+      const activeVehicle = g.drivingId ? g.vehicles.get(g.drivingId) : null;
+      st.setFuelLevel(activeVehicle?.fuel ?? 100);
     }
     if (T.save > 10) {
       T.save = 0;
@@ -1035,6 +1039,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
     else if (poi.kind === "food") st.setPrompt({ kind: "food", label: "Order at " + poi.label });
+    else if (poi.kind === "fuel") st.setPrompt({ kind: "fuel", label: "Use " + poi.label });
     else if (poi.kind === "jobboard") st.setPrompt({ kind: "jobboard", label: "Browse City Job Board" });
     else if (poi.kind === "police") st.setPrompt({ kind: "police", label: "Clock in at Police HQ" });
     else if (poi.kind === "market" || poi.kind === "depot" || poi.kind === "airport") st.setPrompt({ kind: "building", label: "Enter " + poi.label, buildingLabel: poi.label });
