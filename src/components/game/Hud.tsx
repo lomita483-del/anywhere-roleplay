@@ -61,6 +61,7 @@ function Joystick() {
 
 
 function MiniMap({ onOpen }: { onOpen: () => void }) {
+  const city = useGame((s) => s.city);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const waypoint = useGame((s) => s.waypoint);
   const [tick, refresh] = useState(0);
