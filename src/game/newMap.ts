@@ -3,7 +3,7 @@
  * Coordinates stay in game-space; NewMapWorld applies NEW_MAP_SCALE for rendering.
  */
 export const NEW_MAP_SCALE = 0.48;
-export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
+export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; }
 export const NEW_MAP_ROADS: [number, number][][] = [
   [[-168, 94], [-137, 74], [-116, 47], [-112, 16], [-91, -8], [-62, -22], [-36, -19], [-13, -3], [11, 12], [38, 16], [65, 4], [91, -18], [116, -47], [145, -61], [169, -54]],
@@ -28,8 +28,8 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
   { id: "lake", label: "LAKE PARK & RESORT", kind: "lake", x: -112, z: 118 },
   { id: "port", label: "PORT OF LAGOS", kind: "port", x: 116, z: 120 },
   { id: "bank", label: "COMMUNITY BANK", kind: "bank", x: 38, z: 24 },
-  { id: "atm-market", label: "MARKET ATM", kind: "bank", x: -20, z: -65 },
-  { id: "atm-university", label: "UNIVERSITY ATM", kind: "bank", x: -94, z: 26 },
+  { id: "atm-market", label: "MARKET ATM", kind: "atm", x: -20, z: -65 },
+  { id: "atm-university", label: "UNIVERSITY ATM", kind: "atm", x: -94, z: 26 },
   { id: "hospital", label: "CITY HOSPITAL", kind: "hospital", x: 78, z: 28 },
   { id: "police", label: "POLICE STATION", kind: "police", x: -130, z: -38 },
   { id: "fuel", label: "FUEL STATION", kind: "fuel", x: 58, z: -34 },
