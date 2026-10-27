@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, MessageCircle, Package, Radio as RadioIcon, User,
+  ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User,
 } from "lucide-react";
 import { g } from "@/game/state";
-import { useGame, naira, JOB_INFO, VEHICLE_CATALOG, type JobType } from "@/game/store";
+import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -17,6 +17,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   inventory: { icon: Package, label: "Items", tint: "#e2574c" },
   map: { icon: MapIcon, label: "Map", tint: "#5bb06a" },
   radio: { icon: RadioIcon, label: "Radio", tint: "#9db8c9" },
+  market: { icon: ShoppingBag, label: "Market", tint: "#59d6a2" },
 };
 
 function atAtm() {
@@ -65,6 +66,7 @@ function BankApp() {
         <Row label="- ₦1k" dir="withdraw" amount={1000} />
         <Row label="- ₦5k" dir="withdraw" amount={5000} />
         <Row label="Withdraw all" dir="withdraw" amount="all" />
+      </div>
       </div>
     </div>
   );
@@ -183,6 +185,54 @@ function HomeApp() {
       <div className="w-full rounded-xl border border-hud-line bg-white/5 p-2 text-center text-xs text-hud-muted">
         Trades: {stats.trades} · Patrols: {stats.patrols}
       </div>
+    </div>
+  );
+}
+
+function MarketplaceApp() {
+  const cash = useGame((s) => s.cash);
+  const bank = useGame((s) => s.bank);
+  const inventory = useGame((s) => s.inventory);
+  const purchase = useGame((s) => s.purchaseMarketItem);
+  const [notice, setNotice] = useState("");
+  return (
+    <div className="flex flex-col gap-3 p-3 text-sm">
+      <div className="rounded-2xl border border-[#59d6a2]/30 bg-gradient-to-br from-[#17392f] to-[#111c20] p-3">
+        <div className="text-[10px] uppercase tracking-[0.2em] text-[#8de3bf]">Lagos luxury market</div>
+        <div className="mt-1 text-lg font-bold text-hud-bright">Style your life.</div>
+        <div className="mt-1 text-[11px] text-hud-muted">Bank: {naira(bank)} · Cash: {naira(cash)}</div>
+      </div>
+      {notice && <div role="status" className="rounded-xl border border-[#59d6a2]/30 bg-[#59d6a2]/10 p-2 text-xs text-[#a6f0d0]">{notice}</div>}
+      {(["Clothing", "Car upgrade", "Property"] as const).map((category) => (
+        <section key={category} className="space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-hud-accent">{category}</div>
+          {MARKET_ITEMS.filter((item) => item.category === category).map((item) => {
+            const owned = (inventory[item.id] ?? 0) > 0;
+            return (
+              <div key={item.id} className="rounded-2xl border border-hud-line bg-white/[0.045] p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold text-hud-bright">{item.name}</div>
+                    <div className="mt-1 text-[10px] leading-relaxed text-hud-muted">{item.description}</div>
+                  </div>
+                  <div className="shrink-0 text-xs font-bold text-[#8de3bf]">{naira(item.price)}</div>
+                </div>
+                <button
+                  disabled={owned}
+                  className="mt-3 w-full rounded-xl border border-[#59d6a2]/30 bg-[#59d6a2]/15 px-3 py-2 text-xs font-bold text-[#a6f0d0] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45"
+                  onClick={() => {
+                    const ok = purchase(item.id);
+                    setNotice(ok ? `Purchased ${item.name}. It is saved in your inventory.` : "Purchase failed — check your balance or ownership.");
+                  }}
+                >
+                  {owned ? "Owned ✓" : "Purchase"}
+                </button>
+              </div>
+            );
+          })}
+        </section>
+      ))}
+      <div className="text-[10px] leading-relaxed text-hud-muted">Purchases are deducted from your bank balance first, then cash. Items remain in your saved inventory.</div>
     </div>
   );
 }
@@ -337,12 +387,15 @@ export default function Phone() {
     app === "inventory" ? <InventoryApp /> :
     app === "map" ? <MapApp /> :
     app === "radio" ? <RadioApp /> :
+    app === "market" ? <MarketplaceApp /> :
     <HomeApp />;
 
   return (
-    <div
-      className="pointer-events-auto absolute bottom-5 right-4 z-20 flex h-[68vh] max-h-[620px] w-[min(88vw,320px)] flex-col overflow-hidden rounded-[2rem] border-4 border-hud-line bg-[#10151d] shadow-2xl shadow-black/60 md:h-[72vh]"
+    <div className="pointer-events-auto absolute inset-0 z-20 bg-black/35 backdrop-blur-[2px]" onPointerDown={(e) => e.stopPropagation()} onClick={closePhone}>
+      <div
+      className="absolute bottom-5 right-4 flex h-[68vh] max-h-[620px] w-[min(88vw,360px)] flex-col overflow-hidden rounded-[2rem] border-4 border-hud-line bg-[#10151d]/95 shadow-2xl shadow-black/60 backdrop-blur-xl md:h-[72vh]"
       onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Notch bar */}
       <div className="flex items-center justify-between px-5 pt-2">
@@ -363,7 +416,7 @@ export default function Phone() {
       <div className="flex-1 overflow-y-auto">{Screen}</div>
 
       {/* App dock */}
-      <div className="grid grid-cols-6 gap-1 border-t border-hud-line bg-black/40 px-2 py-2">
+      <div className="grid grid-cols-4 gap-1 border-t border-hud-line bg-black/40 px-2 py-2">
         {(Object.keys(APP_ICONS) as App[]).map((a) => {
           const I = APP_ICONS[a].icon;
           return (
