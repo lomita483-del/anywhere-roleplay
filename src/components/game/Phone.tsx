@@ -358,6 +358,7 @@ function MapApp() {
   const [selectedPoi, setSelectedPoi] = useState<{ x: number; z: number; label: string; kind?: string } | null>(null);
   const [, setPositionTick] = useState(0);
   const [zoom, setZoom] = useState(1);
+  const [satellite, setSatellite] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ x: number; y: number; panX: number; panY: number; moved: boolean } | null>(null);
   const to = (x: number, z: number, size = 280): [number, number] => {
@@ -375,7 +376,7 @@ function MapApp() {
       const S = c.width;
       ctx.clearRect(0, 0, S, S);
       // Draw the same world bounds, road widths and building footprints used by the 3D scene.
-      ctx.fillStyle = "#87967b";
+      ctx.fillStyle = satellite ? "#314c43" : "#87967b";
       ctx.fillRect(0, 0, S, S);
       // Makoko lagoon / waterfront edge.
       {
@@ -570,7 +571,7 @@ function MapApp() {
     draw();
     const t = window.setInterval(() => { setPositionTick((v) => v + 1); draw(); }, 450);
     return () => window.clearInterval(t);
-  }, [job, waypoint, unlockedDistricts, zoom, pan.x, pan.y]);
+  }, [job, waypoint, unlockedDistricts, zoom, pan.x, pan.y, satellite]);
 
   const handleMapTap = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = e.currentTarget;
@@ -596,9 +597,9 @@ function MapApp() {
 
   return (
     <div className="flex flex-col gap-2 p-3">
-      <div className="flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest text-hud-muted">Lagos city map · live GPS</div>
-        <span className="text-[9px] text-[#7fd0ff]">● LIVE</span>
+      <div className="flex items-center justify-between gap-2">
+        <div><div className="text-xs font-bold text-white">Lagos city map</div><div className="text-xs text-slate-300">Live GPS · drag to pan</div></div>
+        <div className="flex items-center gap-2"><button onClick={()=>setSatellite(v=>!v)} className="min-h-10 rounded-lg border border-white/15 bg-white/5 px-3 text-xs font-bold text-white">{satellite?"Satellite ✓":"Street view"}</button><span className="text-xs font-bold text-sky-200">● LIVE</span></div>
       </div>
       <div className="relative">
         <canvas ref={canvasRef} width={280} height={280}
