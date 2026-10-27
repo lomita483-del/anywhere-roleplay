@@ -307,7 +307,7 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
-  setCity: (city) => { setCityWorld(city); g.playerPos.set(-14, 0, -14); g.drivingId = null; g.vehicles.clear(); set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null }); get().save(); },
+  setCity: (city) => { setCityWorld(city); g.playerPos.set(-14, 0, -14); g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
