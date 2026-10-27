@@ -60,8 +60,9 @@ export const JOB_INFO: Record<JobType, { title: string; desc: string; payout: nu
   security: { title: "Security Patrol", desc: "Walk 3 checkpoints across the city on foot.", payout: 2600 },
 };
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function pick<T>(arr: readonly T[]): T {
+  if (arr.length === 0) throw new Error("Cannot choose from an empty list.");
+  return arr[Math.floor(Math.random() * arr.length)] ?? arr[0]!;
 }
 function near(a: [number, number], b: [number, number]) {
   return Math.hypot(a[0] - b[0], a[1] - b[1]) < 30;
@@ -318,7 +319,7 @@ export function jobTargetPoint(): [number, number] | null {
   const job = useGame.getState().activeJob;
   if (!job) return null;
   if (job.type === "driver" && job.stage === 0 && !useGame.getState().driving) return null;
-  return job.targets[job.stage];
+  return job.targets[job.stage] ?? null;
 }
 
 // Called by the proximity loop when the player reaches the active job target.
