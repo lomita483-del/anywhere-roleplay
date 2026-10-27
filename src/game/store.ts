@@ -231,8 +231,7 @@ export const useGame = create<GameStore>((set, get) => ({
       activeJob: s.activeJob, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
-
-,
+  },
 
   spend: (amount, from) => {
     if (!Number.isFinite(amount) || amount <= 0) return false;
