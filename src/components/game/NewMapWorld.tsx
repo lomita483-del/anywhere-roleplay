@@ -436,7 +436,7 @@ function LagosResidentialDistrict() {
     <instancedMesh ref={rollerDoors} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#7c8585" metalness={.2} roughness={.68} /></instancedMesh>
     <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#1f5547" roughness={.7} /></instancedMesh>
     <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d9d2bf" roughness={0.8} /></instancedMesh>
-    <Html position={[115, 22, -76]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
+    <Html position={[128, 22, -18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
   </>;
 }
 
@@ -865,10 +865,9 @@ function CityEcosystem() {
     out.push({ x: 96, z: 40, w: 14, d: 10, h: 7, color: "#b5b6a7", label: "CAR DEALERSHIP" });
     out.push({ x: 110, z: 58, w: 12, d: 9, h: 7, color: "#c7b89c", label: "REAL ESTATE OFFICE" });
     // University district and civic campus, west.
-    out.push({ x: -125, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
-    out.push({ x: -95, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
-    out.push({ x: -125, z: 45, w: 17, d: 12, h: 7, color: "#b4c4b7" });
-    out.push({ x: -95, z: 45, w: 16, d: 12, h: 6, color: "#d8c7a5" });
+    out.push({ x: -128, z: 33, w: 9, d: 28, h: 8, color: "#d8d0bd" });
+    out.push({ x: -94, z: 33, w: 9, d: 28, h: 8, color: "#c1b8a7" });
+    out.push({ x: -111, z: 49, w: 27, d: 8, h: 9, color: "#b4c4b7", label: "UNIVERSITY DISTRICT" });
     // Port logistics buildings, east/south.
     out.push({ x: 124, z: 91, w: 23, d: 15, h: 8, color: "#b7a58a", label: "PORT OF LAGOS" });
     out.push({ x: 148, z: 75, w: 14, d: 12, h: 7, color: "#c8bca6" });
