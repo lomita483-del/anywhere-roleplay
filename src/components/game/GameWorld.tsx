@@ -697,6 +697,8 @@ export default function GameWorld() {
   const vehRefs = useRef(new Map<string, THREE.Group | null>());
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20, needs: 0 });
   const spawned = useGame((s) => s.spawnedVehicles);
+  const city = useGame((s) => s.city);
+  const isNewMap = city === "newmap";
   const waypoint = useGame((s) => s.waypoint);
   const activeJob = useGame((s) => s.activeJob);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }>>({});
@@ -1003,21 +1005,21 @@ export default function GameWorld() {
       <group ref={playerGroup} position={[-14, 0, -14]}>
         <CharacterBody />
       </group>
-      {Object.entries(remotePlayers).map(([id, player], index) => (
+      {!isNewMap && Object.entries(remotePlayers).map(([id, player], index) => (
         <RemotePlayerAvatar key={id} player={player} variant={index + 1} />
       ))}
-      {VEHICLE_SPAWNS.map((v) => (
+      {!isNewMap && VEHICLE_SPAWNS.map((v) => (
         <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
       ))}
-      {spawned.map((v) => (
+      {!isNewMap && spawned.map((v) => (
         <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
       ))}
-      <Traffic />
-      <Pedestrians />
-      <JobMarker />
-      <JobPickupVisual job={activeJob} />
-      <GpsRoute waypoint={waypoint} />
-      <RideDriver />
+      {!isNewMap && <Traffic />}
+      {!isNewMap && <Pedestrians />}
+      {!isNewMap && <JobMarker />}
+      {!isNewMap && <JobPickupVisual job={activeJob} />}
+      {!isNewMap && <GpsRoute waypoint={waypoint} />}
+      {!isNewMap && <RideDriver />}
     </>
   );
 }
