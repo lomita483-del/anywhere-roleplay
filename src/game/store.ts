@@ -65,7 +65,7 @@ export const VEHICLE_CATALOG: Record<
 export const JOB_INFO: Record<JobType, { title: string; desc: string; payout: number }> = {
   courier: { title: "Courier Run", desc: "Pick up a package and deliver it across town.", payout: 1800 },
   driver: { title: "Transport Driver", desc: "Drive a vehicle: pick up a passenger and drop them off.", payout: 3200 },
-  trader: { title: "Trader", desc: "Buy goods at Balogun Market, sell at the Trade Depot.", payout: 4500 },
+  trader: { title: "Street Hustle", desc: "Buy goods at Balogun Market, sell at the Trade Depot for profit.", payout: 4500 },
   security: { title: "Security Patrol", desc: "Walk 3 checkpoints across the city on foot.", payout: 2600 },
 };
 
