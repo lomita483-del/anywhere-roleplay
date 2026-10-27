@@ -48,7 +48,7 @@ function BankApp() {
   return (
     <div className="flex flex-col gap-3 p-3 text-sm">
       <div className="rounded-2xl bg-gradient-to-br from-[#1f6b4a] to-[#14503a] p-4 text-white">
-        <div className="text-[10px] uppercase tracking-widest opacity-70">Lagos Union Bank</div>
+        <div className="text-[10px] uppercase tracking-widest opacity-70">Zenith / Kuda Bank</div>
         <div className="mt-1 text-2xl font-bold">{naira(bank)}</div>
         <div className="mt-1 text-xs opacity-80">Wallet cash: {naira(cash)}</div>
       </div>
