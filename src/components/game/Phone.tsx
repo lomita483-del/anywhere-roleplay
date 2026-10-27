@@ -596,46 +596,17 @@ function RideApp() {
   const waypoint = useGame((s) => s.waypoint);
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
-  const spend = useGame((s) => s.spend);
   const driving = useGame((s) => s.driving);
+  const rideRequest = useGame((s) => s.rideRequest);
+  const requestRide = useGame((s) => s.requestRide);
   const [notice, setNotice] = useState("");
-  const [booking, setBooking] = useState(false);
 
   const book = (service: "ride" | "bike" | "private") => {
-    if (!waypoint) {
-      setNotice("Open the Map app and tap a destination first. Your GPS route will appear here.");
-      return;
-    }
-    if (driving) {
-      setNotice("Park your vehicle before booking a passenger service.");
-      return;
-    }
-    const fare = service === "bike" ? 700 : service === "private" ? 4200 : 1600;
-    const paid = spend(fare, "cash") || spend(fare, "bank");
-    if (!paid) {
-      setNotice("Insufficient funds. You need " + naira(fare) + " in cash or bank.");
-      return;
-    }
-    const destination = { ...waypoint };
-    const startX = g.playerPos.x;
-    const startZ = g.playerPos.z;
-    setBooking(true);
-    setNotice(service === "bike" ? "Okada rider assigned — heading to " + destination.label + "." : service === "private" ? "Private driver confirmed — heading to " + destination.label + "." : "Ride booked — your driver is taking you to " + destination.label + ".");
-    useGame.getState().radio(service === "bike" ? "🏍️ Okada rider accepted your trip. Hold tight!" : service === "private" ? "🚘 Private driver confirmed your GPS destination." : "🚕 Ride confirmed. Driver is following your GPS destination.");
-    const started = Date.now();
-    const duration = 6500;
-    const timer = window.setInterval(() => {
-      const t = Math.min(1, (Date.now() - started) / duration);
-      const eased = t * t * (3 - 2 * t);
-      g.playerPos.set(startX + (destination.x - startX) * eased, 0, startZ + (destination.z - startZ) * eased);
-      if (t >= 1) {
-        window.clearInterval(timer);
-        useGame.getState().setWaypoint(null);
-        useGame.getState().radio("📍 Arrived at " + destination.label + ". Fare paid: " + naira(fare) + ".");
-        setBooking(false);
-        setNotice("You have arrived at " + destination.label + ". Fare: " + naira(fare) + ".");
-      }
-    }, 50);
+    if (!waypoint) { setNotice("Open the Map app and tap a destination first."); return; }
+    if (driving) { setNotice("Park your vehicle before booking a passenger service."); return; }
+    if (rideRequest) { setNotice("You already have a driver assigned. Finish or cancel that trip first."); return; }
+    if (!requestRide(service)) { setNotice("Booking failed. Check your balance or finish your current trip."); return; }
+    setNotice("Driver assigned. Watch the road — your vehicle is physically approaching your location.");
     useGame.getState().closePhone();
   };
 
@@ -651,7 +622,7 @@ function RideApp() {
       </div>
     </div>
     {notice && <div role="status" className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2 text-xs text-sky-100">{notice}</div>}
-    {booking && <div className="rounded-xl bg-emerald-300/10 p-2 text-xs text-emerald-100">Your trip is in progress…</div>}
+    {rideRequest && <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-2 text-xs text-emerald-100">{rideRequest.status === "approaching" ? "Driver is travelling to your pickup point…" : "You are on the way to " + rideRequest.destination.label + "."}</div>}
     {[
       { id: "ride" as const, title: "Book a ride", desc: "Comfortable city car", fare: 1600, Icon: Car },
       { id: "bike" as const, title: "Call Bike Man", desc: "Okada — faster through busy streets", fare: 700, Icon: Bike },
