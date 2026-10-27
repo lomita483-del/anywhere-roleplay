@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { JOB_POINTS, POIS, isBlocked, clampWorld } from "./city";
+import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt } from "./city";
 import { g } from "./state";
 
 export type JobType = "courier" | "driver" | "trader" | "security";
@@ -407,6 +407,7 @@ export const useGame = create<GameStore>((set, get) => ({
   unlockDistrict: (district) => {
     const item = DISTRICT_INFO.find((d) => d.name === district);
     if (!item || get().unlockedDistricts.includes(district)) return false;
+    if (district === "Eko Atlantic" && !get().unlockedDistricts.includes("Lekki / Victoria Island")) return false;
     if (!get().spend(item.price, "bank") && !get().spend(item.price, "cash")) return false;
     set({ unlockedDistricts: [...get().unlockedDistricts, district] });
     get().radio("🗺️ District unlocked: " + district + ". New streets are open to you.");
@@ -436,6 +437,8 @@ export const useGame = create<GameStore>((set, get) => ({
   requestRide: (service) => {
     const s = get();
     if (!s.waypoint || s.driving || s.rideRequest) return false;
+    const destinationDistrict = districtAt(s.waypoint.x, s.waypoint.z);
+    if (destinationDistrict && (!s.unlockedDistricts.includes(destinationDistrict) || (destinationDistrict === "Eko Atlantic" && !s.unlockedDistricts.includes("Lekki / Victoria Island")))) return false;
     const fare = service === "bike" ? 700 : service === "private" ? 4200 : 1600;
     if (!s.spend(fare, "cash") && !s.spend(fare, "bank")) return false;
     const offset = service === "bike" ? 10 : 16;
