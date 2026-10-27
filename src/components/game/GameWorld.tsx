@@ -7,7 +7,7 @@ import { g } from "@/game/state";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, isBlocked, clampWorld } from "@/game/city";
+import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, isBlocked, clampWorld } from "@/game/city";
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
 const MODEL_FLIP = Math.PI;
@@ -528,6 +528,27 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   );
 }
 
+function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number }; variant: number }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((_, delta) => {
+    if (!ref.current) return;
+    const target = new THREE.Vector3(player.x, player.y, player.z);
+    ref.current.position.lerp(target, 1 - Math.exp(-Math.min(delta, 0.05) * 10));
+    ref.current.rotation.y = THREE.MathUtils.damp(ref.current.rotation.y, player.yaw, 8, delta);
+  });
+  return (
+    <group ref={ref} position={[player.x, player.y, player.z]} rotation-y={player.yaw}>
+      <PedBody variant={variant} />
+      <Html position={[0, 3.05, 0]} center distanceFactor={12} occlude={false}>
+        <div className="pointer-events-none whitespace-nowrap rounded-full border border-[#eab308]/55 bg-[#07131d]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg shadow-black/30">
+          <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          {player.name}
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 export default function GameWorld() {
   const keys = useKeys();
   const playerGroup = useRef<THREE.Group>(null);
@@ -810,6 +831,9 @@ export default function GameWorld() {
       <group ref={playerGroup} position={[-14, 0, -14]}>
         <CharacterBody />
       </group>
+      {Object.entries(remotePlayers).map(([id, player], index) => (
+        <RemotePlayerAvatar key={id} player={player} variant={index + 1} />
+      ))}
       {VEHICLE_SPAWNS.map((v) => (
         <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
       ))}
@@ -866,18 +890,35 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     return;
   }
 
+  if (s2.interior) { st.setPrompt(null); return; }
+
   const poi = nearestPoi(x, z, 4.5);
   if (poi) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
+    else if (poi.kind === "bank") st.setPrompt({ kind: "atm", label: "Enter Bank / Use ATM" });
     else if (poi.kind === "dealership") st.setPrompt({ kind: "dealer", label: "Browse Ojoto Motors" });
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
     else if (poi.kind === "jobboard") st.setPrompt({ kind: "jobboard", label: "Browse City Job Board" });
     else if (poi.kind === "police") st.setPrompt({ kind: "police", label: "Clock in at Police HQ" });
+    else if (poi.kind === "market" || poi.kind === "depot" || poi.kind === "airport") st.setPrompt({ kind: "building", label: "Enter " + poi.label, buildingLabel: poi.label });
     else {
       st.setPrompt(null);
       return;
     }
+    return;
+  }
+
+  let nearest: (typeof BUILDINGS)[number] | null = null;
+  let nearestDistance = 4.5;
+  for (const building of BUILDINGS) {
+    const dx = Math.max(Math.abs(x - building.x) - building.w / 2, 0);
+    const dz = Math.max(Math.abs(z - building.z) - building.d / 2, 0);
+    const distance = Math.hypot(dx, dz);
+    if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
+  }
+  if (nearest) {
+    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
     return;
   }
   st.setPrompt(null);
