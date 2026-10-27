@@ -299,6 +299,20 @@ function ConstructionSite() {
         <mesh position={[2, 2.65, 0]} rotation-z={0.45} castShadow><boxGeometry args={[0.28, 1.6, 0.3]} /><meshStandardMaterial color="#d79b18" /></mesh>
         {[-0.85, 0.85].map((x) => <mesh key={x} position={[x, 0.28, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.34, 0.34, 0.25, 12]} /><meshStandardMaterial color="#24272a" roughness={0.9} /></mesh>)}
       </group>
+      {/* Site crew in reflective workwear and hard hats */}
+      {[
+        { x: 82, z: 72, shirt: "#eab308" },
+        { x: 88, z: 85, shirt: "#f07824" },
+        { x: 96, z: 76, shirt: "#eab308" },
+      ].map((worker, i) => (
+        <group key={"worker" + i} position={[worker.x, 0, worker.z]} rotation-y={i * 1.4}>
+          <mesh position={[0, 0.95, 0]} castShadow><capsuleGeometry args={[0.23, 0.72, 4, 8]} /><meshStandardMaterial color={worker.shirt} roughness={0.85} /></mesh>
+          <mesh position={[0, 1.65, 0]} castShadow><sphereGeometry args={[0.22, 12, 10]} /><meshStandardMaterial color={i === 1 ? "#6f442e" : "#986344"} roughness={0.9} /></mesh>
+          <mesh position={[0, 1.83, 0]} castShadow><sphereGeometry args={[0.24, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.48]} /><meshStandardMaterial color="#f6ca42" roughness={0.6} /></mesh>
+          {[-0.13, 0.13].map((x) => <mesh key={x} position={[x, 0.3, 0]} castShadow><boxGeometry args={[0.14, 0.6, 0.16]} /><meshStandardMaterial color="#3b4850" roughness={0.9} /></mesh>)}
+          <mesh position={[0.28, 0.95, 0.05]} rotation-z={-0.4} castShadow><capsuleGeometry args={[0.09, 0.55, 3, 6]} /><meshStandardMaterial color={worker.shirt} /></mesh>
+        </group>
+      ))}
       {/* Concrete mixer and safety cones */}
       <group position={[96, 0, 85]}>
         <mesh position={[0, 0.75, 0]} castShadow><boxGeometry args={[2.3, 1, 1.2]} /><meshStandardMaterial color="#e5a51b" /></mesh>
