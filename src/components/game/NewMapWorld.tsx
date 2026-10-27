@@ -36,7 +36,7 @@ function MatchPlayer({ player }: { player: MatchPlayerData }) {
   });
 
   return (
-    <group ref={body} position={[player.x, 0, player.z]}>
+    <group ref={body} position={[player.x, 0, player.z]} scale={[2.4, 2.4, 2.4]}>
       <mesh position={[0, 1.12, 0]} castShadow><capsuleGeometry args={[0.28, 0.42, 4, 8]} /><meshStandardMaterial color={shirt} roughness={0.78} /></mesh>
       <mesh position={[0, 1.48, 0]} castShadow><sphereGeometry args={[0.19, 12, 10]} /><meshStandardMaterial color="#996747" roughness={0.9} /></mesh>
       <mesh position={[0, 0.79, 0]}><boxGeometry args={[0.4, 0.24, 0.27]} /><meshStandardMaterial color={shorts} roughness={0.85} /></mesh>
@@ -332,15 +332,15 @@ export default function NewMapWorld() {
             </Html>
           </group>
         ))}
-        {Array.from({ length: 12 }, (_, i) => {
-          const a = (i / 12) * Math.PI * 2;
+        {Array.from({ length: 8 }, (_, i) => {
+          const a = (i / 8) * Math.PI * 2;
           const x = Math.cos(a) * 22;
           const z = Math.sin(a) * 22;
           return (
             <group key={i} position={[x, 0, z]}>
               <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
               <mesh position={[0, 2.2, 0]}><cylinderGeometry args={[0.22, 0.32, 3.6, 8]} /><meshStandardMaterial color="#765638" roughness={0.9} /></mesh>
-              {[0, 1, 2, 3, 4].map((leaf) => <mesh key={leaf} position={[Math.cos(leaf * 1.25) * 0.8, 3.3 + (leaf % 2) * 0.25, Math.sin(leaf * 1.25) * 0.8]} rotation-z={Math.cos(leaf * 1.25) * 0.65} rotation-x={Math.sin(leaf * 1.25) * 0.45}><coneGeometry args={[0.35, 2.1, 5]} /><meshStandardMaterial color="#23664d" roughness={0.85} /></mesh>)}
+              {[0, 1, 2].map((leaf) => <mesh key={leaf} position={[Math.cos(leaf * 1.25) * 0.8, 3.3 + (leaf % 2) * 0.25, Math.sin(leaf * 1.25) * 0.8]} rotation-z={Math.cos(leaf * 1.25) * 0.65} rotation-x={Math.sin(leaf * 1.25) * 0.45}><coneGeometry args={[0.35, 2.1, 5]} /><meshStandardMaterial color="#23664d" roughness={0.85} /></mesh>)}
               <mesh position={[1.8, 1.25, 0]}><cylinderGeometry args={[0.13, 0.17, 2.5, 8]} /><meshStandardMaterial color="#303a42" metalness={0.55} /></mesh>
               <mesh position={[1.8, 2.5, 0]}><sphereGeometry args={[0.23, 10, 8]} /><meshStandardMaterial color="#ffe8a5" emissive="#ffcb66" emissiveIntensity={0.8} /></mesh>
   
