@@ -24,16 +24,18 @@ export const UMUAHIA_BUILDINGS: BuildingDef[] = [
   { x: 142, z: -112, w: 18, d: 14, h: 8, color: "#d9c9ae", kind: "depot", label: "UMUDIKE ROAD TRANSPORT STOP" },
   // Mixed-use urban blocks
   ...Array.from({ length: 36 }, (_, i) => {
-    const xs = [-142, -105, -42, 42, 105, 142];
-    const zs = [-142, -78, -44, 42, 78, 142];
-    const x = xs[(i * 5 + 1) % xs.length]!;
-    const z = zs[(i * 7 + 2) % zs.length]!;
-    const w = 10 + (i % 4) * 2;
-    const d = 9 + (i % 3) * 2;
-    const h = 5 + (i % 5) * 2.5;
+    const centers = [-105, -42, 42, 105];
+    const cell = Math.floor(i / 4);
+    const bx = centers[cell % 4]!;
+    const bz = centers[Math.floor(cell / 4)]!;
+    const offsets: [number, number][] = [[-20, -18], [20, -18], [-20, 18], [20, 18]];
+    const [ox, oz] = offsets[i % 4]!;
+    const w = 9 + (i % 3) * 1.5;
+    const d = 8 + (i % 2) * 2;
+    const h = 4.8 + (i % 5) * 2.2;
     const colors = ["#d2b99a", "#c5c8b7", "#d6c5ac", "#b8c9cc", "#caa27d", "#d7d0c1"];
     const labels = ["LOCAL PROVISIONS", "FAMILY BUNGALOW", "PHARMACY", "PHONE & REPAIRS", "TAILORING HOUSE", "NEIGHBOURHOOD SHOP", "SMALL OFFICE", "GUEST HOUSE"];
-    return { x: x + ((i % 3) - 1) * 7, z: z + ((i % 4) - 1.5) * 5, w, d, h, color: colors[i % colors.length]!, label: labels[i % labels.length]! };
+    return { x: bx + ox, z: bz + oz, w, d, h, color: colors[i % colors.length]!, label: labels[i % labels.length]! };
   }),
   // Outskirts village compounds, estates and Umudike approach
   { x: -145, z: 142, w: 18, d: 14, h: 5, color: "#c7a17a", label: "IBEKU FAMILY COMPOUND" },
