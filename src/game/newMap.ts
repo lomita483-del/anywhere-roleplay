@@ -96,8 +96,8 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
  ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"||b.kind==="school"||b.kind==="residential"?"shop":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
  {id:"stadium",label:"CITY STADIUM",kind:"stadium",x:0,z:0},
  {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-112,z:118},
- {id:"atm-market",label:"MARKET ATM",kind:"atm",x:-18,z:-94,buildingId:"market"},
- {id:"atm-university",label:"UNIVERSITY ATM",kind:"atm",x:-130,z:44,buildingId:"university"}
+ {id:"atm-market",label:"MARKET ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorZ!,buildingId:"market"},
+ {id:"atm-university",label:"UNIVERSITY ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.doorZ!,buildingId:"university"}
 ];
 export const NEW_MAP_BOUNDS = { minX: -180, maxX: 180, minZ: -180, maxZ: 180 };
 
@@ -112,7 +112,7 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
+export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:112,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
 export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
 export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
