@@ -307,7 +307,7 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
-  setCity: (city) => { setCityWorld(city); g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 27 : -14); if (city === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16; } g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
+  setCity: (city) => { setCityWorld(city); g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 18.2 : -14); if (city === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 10; } g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -334,7 +334,7 @@ export const useGame = create<GameStore>((set, get) => ({
       const migratedToNewMap = saved.city === "lagos" || !saved.city;
       const savedCity: CityId = migratedToNewMap ? "newmap" : (saved.city ?? "newmap");
       setCityWorld(savedCity);
-      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 27 : saved.z);
+      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 18.2 : saved.z);
       if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16; }
       g.time = saved.time;
       set({
@@ -355,7 +355,7 @@ export const useGame = create<GameStore>((set, get) => ({
       });
     } else {
       setCityWorld(get().city);
-      g.playerPos.set(0, 0, 27);
+      g.playerPos.set(0, 0, 18.2);
       g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16;
       g.time = 8;
       localStorage.removeItem(SAVE_KEY);
