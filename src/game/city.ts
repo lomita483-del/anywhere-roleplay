@@ -83,6 +83,35 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 68, z: -23, w: 14, d: 11, h: 7, color: "#d8d0b9", kind: "civic", label: "INEC POLLING UNIT" },
   { x: 67, z: -5, w: 15, d: 13, h: 8, color: "#d7c6a9", kind: "civic", label: "CHURCH OF HOPE" },
   { x: 67, z: 15, w: 15, d: 13, h: 7, color: "#d2c4a4", kind: "civic", label: "CENTRAL MOSQUE" },
+  // Dense mainland streets — mixed-use blocks, shops and walk-up apartments.
+  { x: -112, z: -44, w: 16, d: 13, h: 8, color: "#c9a27b", kind: "clothing", label: "YABA FASHION PLAZA" },
+  { x: -103, z: -24, w: 14, d: 12, h: 13, color: "#b7c8cb", label: "TECH HUB YABA" },
+  { x: -119, z: -18, w: 15, d: 12, h: 10, color: "#d6b58e", label: "COMPUTER VILLAGE ANNEX" },
+  { x: -105, z: 18, w: 17, d: 13, h: 7, color: "#d9a15a", kind: "market", label: "SURULERE DAILY MARKET" },
+  { x: -118, z: 38, w: 14, d: 12, h: 12, color: "#b7a7a0", label: "MAINLAND COURTYARD FLATS" },
+  { x: -101, z: 51, w: 17, d: 13, h: 9, color: "#d1c4a9", label: "NEIGHBOURHOOD SHOP ROW" },
+  { x: -54, z: -8, w: 12, d: 11, h: 7, color: "#c5a77f", kind: "clothing", label: "TAILORING HOUSE" },
+  { x: -38, z: 4, w: 14, d: 12, h: 10, color: "#d2b08b", label: "MAINLAND PHARMACY" },
+  { x: -22, z: 14, w: 13, d: 12, h: 8, color: "#c2b7a4", label: "ELECTRONICS & REPAIRS" },
+  { x: -55, z: 55, w: 16, d: 13, h: 11, color: "#c7b49a", label: "SURULERE FAMILY FLATS" },
+  { x: -32, z: 62, w: 15, d: 12, h: 8, color: "#d4b58a", label: "LOCAL PROVISIONS" },
+  // Oshodi / Mushin transport district.
+  { x: -164, z: -44, w: 18, d: 14, h: 9, color: "#d5ad72", kind: "market", label: "MUSHIN SPARE PARTS MARKET" },
+  { x: -123, z: -58, w: 16, d: 12, h: 12, color: "#b7b4a5", label: "OSHODI COMMERCIAL HOUSE" },
+  { x: -163, z: -22, w: 17, d: 13, h: 8, color: "#c5a27a", kind: "depot", label: "INTERSTATE BUS TICKET OFFICE" },
+  { x: -119, z: -31, w: 15, d: 12, h: 10, color: "#c4b39a", label: "MOTOR SPARES & TYRES" },
+  // Ikeja commercial skyline and airport support buildings.
+  { x: 105, z: -48, w: 16, d: 13, h: 22, color: "#a8c4d2", label: "IKEJA TECH TOWER" },
+  { x: 120, z: -28, w: 18, d: 13, h: 17, color: "#d2c3ac", label: "AIRLINE STAFF OFFICES" },
+  { x: 103, z: -13, w: 15, d: 12, h: 12, color: "#b4c5c5", label: "COMPUTER & PHONE PLAZA" },
+  { x: 121, z: -8, w: 15, d: 12, h: 9, color: "#d0b08a", label: "IKEJA FOOD COURT" },
+  // Victoria Island / Lekki: premium offices, apartments and estate services.
+  { x: 102, z: 24, w: 16, d: 14, h: 29, color: "#a6c6d5", label: "VICTORIA ISLAND FINANCE TOWER" },
+  { x: 122, z: 40, w: 15, d: 13, h: 20, color: "#d2c8b7", label: "LEKKI BUSINESS CENTRE" },
+  { x: 101, z: 57, w: 16, d: 13, h: 15, color: "#b8c7c0", kind: "apartments", label: "LEKKI RESIDENCE" },
+  { x: 122, z: 63, w: 14, d: 12, h: 12, color: "#d8c6a6", label: "ESTATE MANAGEMENT OFFICE", kind: "civic" },
+  { x: 48, z: 72, w: 16, d: 12, h: 8, color: "#d5c4a4", label: "IKOYI RESIDENTS CLUB" },
+  { x: 28, z: 72, w: 14, d: 12, h: 10, color: "#a8bdb4", kind: "apartments", label: "IKOYI COURTYARD APARTMENTS" },
 ];
 
 export interface Poi {
