@@ -81,6 +81,15 @@ export default function Hud() {
   const [run, setRun] = useState(false);
   const [sirenOn, setSirenOn] = useState(false);
   const [satelliteMode, setSatelliteMode] = useState(false);
+  const [interiorTransition, setInteriorTransition] = useState(false);
+  const previousInterior = useRef(interior);
+  useEffect(() => {
+    if (previousInterior.current === interior) return;
+    previousInterior.current = interior;
+    setInteriorTransition(true);
+    const timer = window.setTimeout(() => setInteriorTransition(false), 520);
+    return () => window.clearTimeout(timer);
+  }, [interior]);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -223,6 +232,7 @@ export default function Hud() {
 
       {!phoneOpen && <Joystick />}
       <Phone />
+      {interiorTransition && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[60] bg-black" style={{ animation: "lagosInteriorFade 520ms ease-in-out forwards" }}><style>{`@keyframes lagosInteriorFade { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }`}</style></div>}
     </div>
   );
 }
