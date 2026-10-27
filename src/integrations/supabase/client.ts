@@ -47,19 +47,27 @@ function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof f
 
 
 function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
+  // Vite replaces import.meta.env values in the browser. process.env is only
+  // available in the server runtime, so guard it before reading it.
+  const serverEnv = typeof process !== 'undefined' ? process.env : undefined;
+  let SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || serverEnv?.['SUPABASE_URL'];
+  let SUPABASE_PUBLISHABLE_KEY =
+    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || serverEnv?.['SUPABASE_PUBLISHABLE_KEY'];
 
+  // A missing backend configuration must not crash the entire app at startup.
+  // Use a deliberately non-working client so guest mode can still render; all
+  // account/cloud-save operations will report their own connection errors.
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ['VITE_SUPABASE_URL / SUPABASE_URL'] : []),
+      ...(!SUPABASE_PUBLISHABLE_KEY ? ['VITE_SUPABASE_PUBLISHABLE_KEY / SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+    console.error(
+      `[Supabase] Missing environment variable(s): ${missing.join(', ')}. ` +
+      'Guest play remains available, but account and cloud-save features need Supabase configuration.',
+    );
+    SUPABASE_URL = SUPABASE_URL || 'https://missing-supabase-configuration.invalid';
+    SUPABASE_PUBLISHABLE_KEY = SUPABASE_PUBLISHABLE_KEY || 'missing-publishable-key';
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
