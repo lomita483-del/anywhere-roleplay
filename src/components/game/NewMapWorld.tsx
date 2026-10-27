@@ -720,6 +720,15 @@ function CityEcosystem() {
     // Dense Lagos residential grid is rendered by instanced meshes below (64 varied low-rise buildings).
     // Commercial blocks around the centre, leaving a clear stadium ring.
     for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4]! });
+    // Named everyday services, scaled and styled as low-rise Lagos commercial buildings.
+    out.push({ x: 38, z: 18, w: 12, d: 10, h: 9, color: "#c8b78c", label: "COMMUNITY BANK & ATM" });
+    out.push({ x: 78, z: 24, w: 16, d: 12, h: 10, color: "#d9d2bd", label: "CITY HOSPITAL" });
+    out.push({ x: -130, z: -42, w: 14, d: 12, h: 8, color: "#8ba2b4", label: "POLICE STATION" });
+    out.push({ x: -36, z: 2, w: 9, d: 8, h: 5, color: "#b8c7b9", label: "NEIGHBOURHOOD PHARMACY" });
+    out.push({ x: -88, z: 52, w: 18, d: 13, h: 7, color: "#d8c7a5", label: "COMMUNITY SECONDARY SCHOOL" });
+    out.push({ x: 58, z: -40, w: 13, d: 10, h: 5, color: "#d7bd65", label: "FUEL STATION" });
+    out.push({ x: 96, z: 40, w: 14, d: 10, h: 7, color: "#b5b6a7", label: "CAR DEALERSHIP" });
+    out.push({ x: 110, z: 58, w: 12, d: 9, h: 7, color: "#c7b89c", label: "REAL ESTATE OFFICE" });
     // University district and civic campus, west.
     out.push({ x: -125, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
     out.push({ x: -95, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
