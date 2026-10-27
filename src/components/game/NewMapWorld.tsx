@@ -304,37 +304,49 @@ function CityBuilding({ b }: { b: CityBlock }) {
 function CityTrees() {
   const trunkRef = useRef<THREE.InstancedMesh>(null);
   const crownRef = useRef<THREE.InstancedMesh>(null);
+  const palmTrunkRef = useRef<THREE.InstancedMesh>(null);
+  const palmFrondRef = useRef<THREE.InstancedMesh>(null);
   const spots = useMemo(() => {
-    const out: [number, number, number][] = [];
-    for (let i = 0; i < 120; i++) {
-      const a = i * 2.399963;
-      const r = 104 + (i % 5) * 11;
-      out.push([Math.cos(a) * r, 0, Math.sin(a) * r]);
+    const out: {x:number;z:number;type:"round"|"palm";h:number}[] = [];
+    // Cluster trees at district edges and green corridors rather than making a bare perimeter ring.
+    for (let i=0;i<150;i++) {
+      const angle=i*2.399963;
+      const radius=34+(i%7)*10;
+      out.push({x:Math.cos(angle)*radius,z:Math.sin(angle)*radius,type:i%4===0?"palm":"round",h:2.1+(i%4)*0.28});
     }
-    for (let i = 0; i < 30; i++) {
-      const a = i * 2.399963;
-      out.push([Math.cos(a) * (32 + (i % 3) * 4), 0, Math.sin(a) * (32 + (i % 3) * 4)]);
-    }
+    for (let i=0;i<28;i++) out.push({x:-112+(i%7)*7,z:96+Math.floor(i/7)*8,type:i%2?"palm":"round",h:2.4});
+    for (let i=0;i<24;i++) out.push({x:100+(i%6)*8,z:94+Math.floor(i/6)*8,type:i%3?"round":"palm",h:2.2});
     return out;
   }, []);
+  const palms = useMemo(()=>spots.map((p,i)=>({...p,i})).filter(p=>p.type==="palm"),[spots]);
   useEffect(() => {
-    const trunks = trunkRef.current, crowns = crownRef.current;
-    if (!trunks || !crowns) return;
     const dummy = new THREE.Object3D();
-    spots.forEach(([x, y, z], i) => {
-      const h = 1.5 + (i % 4) * 0.2;
-      dummy.position.set(x, y + h * 0.5, z); dummy.scale.set(0.34, h, 0.34); dummy.rotation.set(0, i, 0); dummy.updateMatrix(); trunks.setMatrixAt(i, dummy.matrix);
-      dummy.position.set(x, y + h + 1.1 + (i % 3) * 0.18, z); dummy.scale.set(1.05 + (i % 3) * 0.12, 1.45 + (i % 2) * 0.2, 1.05 + (i % 3) * 0.12); dummy.updateMatrix(); crowns.setMatrixAt(i, dummy.matrix);
+    const trunks=trunkRef.current,crowns=crownRef.current,palmTrunks=palmTrunkRef.current,fronds=palmFrondRef.current;
+    if(!trunks||!crowns||!palmTrunks||!fronds)return;
+    spots.forEach((p,i)=>{
+      if(p.type==="round"){
+        dummy.position.set(p.x,p.h*0.45,p.z);dummy.scale.set(0.32,p.h,0.32);dummy.rotation.set(0,i*0.2,0);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
+        dummy.position.set(p.x,p.h+0.65,p.z);dummy.scale.set(1.05+(i%3)*0.18,1.15+(i%4)*0.12,1.05+(i%3)*0.18);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
+      }
     });
-    trunks.instanceMatrix.needsUpdate = true; crowns.instanceMatrix.needsUpdate = true;
-    trunks.computeBoundingSphere(); crowns.computeBoundingSphere();
-  }, [spots]);
+    palms.forEach((p,i)=>{
+      dummy.position.set(p.x,p.h*1.05,p.z);dummy.scale.set(0.22,p.h*2.1,0.22);dummy.rotation.set(0,0,0.05);dummy.updateMatrix();palmTrunks.setMatrixAt(i,dummy.matrix);
+      for(let f=0;f<5;f++){
+        const angle=(f/5)*Math.PI*2+i*0.73;
+        dummy.position.set(p.x+Math.cos(angle)*0.95,p.h*2.0,p.z+Math.sin(angle)*0.95);
+        dummy.rotation.set(Math.cos(angle)*0.22,-angle,Math.sin(angle)*0.22);
+        dummy.scale.set(2.15,0.12,0.34);dummy.updateMatrix();fronds.setMatrixAt(i*5+f,dummy.matrix);
+      }
+    });
+    for(const mesh of [trunks,crowns,palmTrunks,fronds]){mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}
+  },[spots,palms]);
   return <>
-    <instancedMesh ref={trunkRef} args={[undefined, undefined, spots.length]} frustumCulled={false}><cylinderGeometry args={[0.5, 0.65, 1, 5]} /><meshStandardMaterial color="#71533b" roughness={1} /></instancedMesh>
-    <instancedMesh ref={crownRef} args={[undefined, undefined, spots.length]} frustumCulled={false}><coneGeometry args={[1, 2, 5]} /><meshStandardMaterial color="#315f3b" roughness={1} /></instancedMesh>
+    <instancedMesh ref={trunkRef} args={[undefined,undefined,spots.length]} frustumCulled={false}><cylinderGeometry args={[0.5,0.65,1,6]} /><meshStandardMaterial color="#71533b" roughness={1} /></instancedMesh>
+    <instancedMesh ref={crownRef} args={[undefined,undefined,spots.length]} frustumCulled={false}><icosahedronGeometry args={[1,1]} /><meshStandardMaterial color="#467442" roughness={1} /></instancedMesh>
+    <instancedMesh ref={palmTrunkRef} args={[undefined,undefined,palms.length]} frustumCulled={false}><cylinderGeometry args={[0.5,0.72,1,7]} /><meshStandardMaterial color="#8c6b42" roughness={1} /></instancedMesh>
+    <instancedMesh ref={palmFrondRef} args={[undefined,undefined,palms.length*5]} frustumCulled={false}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#39764a" roughness={1} /></instancedMesh>
   </>;
 }
-
 
 /** Dense Lagos low-rise district rendered with shared instanced geometry for mobile performance. */
 function LagosResidentialDistrict() {
