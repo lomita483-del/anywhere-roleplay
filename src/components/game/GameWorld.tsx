@@ -568,7 +568,7 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
   });
   return (
     <group ref={ref} position={[player.x, player.y, player.z]} rotation-y={player.yaw}>
-      {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} gender={player.outfit?.gender} skinTone={player.outfit?.skinTone} topColor={topColors[player.outfit?.top ?? ""]} hairColor={player.outfit?.hairColor} />}
+      {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} gender={player.outfit?.gender} skinTone={player.outfit?.skinTone ?? "#986344"} topColor={topColors[player.outfit?.top ?? ""] ?? "#c35c3e"} hairColor={player.outfit?.hairColor ?? "#171411"} />}
       <Html position={[0, player.vehicle ? 2.8 : 3.05, 0]} center distanceFactor={12} occlude={false}>
         <div className="pointer-events-none whitespace-nowrap rounded-full border border-[#eab308]/55 bg-[#07131d]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg shadow-black/30">
           <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
