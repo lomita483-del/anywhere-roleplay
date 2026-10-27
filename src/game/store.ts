@@ -360,13 +360,13 @@ export function tryJobProgress(playerX: number, playerZ: number) {
       s.addItem("goods", 1);
       s.radio("🛒 Bought a crate of goods for ₦2,000.");
     }
-    if (job.type === "trader" && job.stage === 1 && !(useGame.getState().inventory["goods"] > 0)) {
+    if (job.type === "trader" && job.stage === 1 && !((useGame.getState().inventory["goods"] ?? 0) > 0)) {
       useGame.getState().radio("❌ You have no goods to sell.");
       return;
     }
     if (job.type === "courier" && job.stage === 0) useGame.getState().addItem("package", 1);
     if (job.type === "courier" && job.stage === 1) {
-      if (!(useGame.getState().inventory["package"] > 0)) return;
+      if (!((useGame.getState().inventory["package"] ?? 0) > 0)) return;
       useGame.getState().removeItem("package");
     }
     if (job.type === "driver" && job.stage === 1) useGame.getState().radio("🚕 Passenger dropped off. Owo dey!");
