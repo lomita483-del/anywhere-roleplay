@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SAVE_KEY, useGame } from "@/game/store";
+import { g } from "@/game/state";
 import Scene from "./Scene";
 import Hud from "./Hud";
 
@@ -29,6 +30,28 @@ function CloudSaveSync() {
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
         if (error) console.warn("[Anywhere Roleplay] Cloud save failed:", error.message);
+        // Persist the public roleplay profile separately so wallet and coordinates
+        // can be queried by other game services without unpacking the full save blob.
+        try {
+          const current = useGame.getState();
+          const profileUpdate = await (supabase as any).from("profiles").upsert({
+            id: userId,
+            display_name: current.name || "Hustler",
+            alias: current.name || "Hustler",
+            cash_balance: current.cash,
+            bank_balance: current.bank,
+            pos_x: g.playerPos.x,
+            pos_y: g.playerPos.y,
+            pos_z: g.playerPos.z,
+            rotation: g.playerYaw,
+            current_job: current.activeJob?.type ?? null,
+            active_vehicle: g.drivingId,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "id" });
+          if (profileUpdate.error) console.warn("[Anywhere Roleplay] Profile sync skipped:", profileUpdate.error.message);
+        } catch (profileError) {
+          console.warn("[Anywhere Roleplay] Profile sync unavailable:", profileError);
+        }
       } catch (error) {
         console.warn("[Anywhere Roleplay] Cloud save unavailable:", error);
       } finally {
