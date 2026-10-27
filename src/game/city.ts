@@ -40,6 +40,8 @@ export const BUILDINGS: BuildingDef[] = [
   { x: -20, z: 60, w: 16, d: 14, h: 14, color: "#b8b0a0" },
   { x: -58, z: 30, w: 14, d: 12, h: 18, color: "#c9a0a0" },
   { x: -58, z: 60, w: 18, d: 14, h: 10, color: "#a0c4b8" },
+  // Airport district at the edge of the playable city
+  { x: 91, z: -96, w: 20, d: 13, h: 7, color: "#b9c7c8", kind: "airport", label: "LAGOS INTERNATIONAL AIRPORT" },
   // South-east block
   { x: 42, z: 52, w: 26, d: 22, h: 26, color: "#d9c4e0", kind: "apartments", label: "IKOYI TOWERS" },
   { x: 62, z: 24, w: 16, d: 14, h: 9, color: "#c4d1a3" },
