@@ -731,7 +731,7 @@ export default function GameWorld() {
       if (pointers.size >= 2) {
         const pts = [...pointers.values()];
         const distance = Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y);
-        if (pinchDistance > 0) g.camDistance = THREE.MathUtils.clamp(g.camDistance - (distance - pinchDistance) * 0.055, 4, 95);
+        if (pinchDistance > 0) g.camDistance = THREE.MathUtils.clamp(g.camDistance - (distance - pinchDistance) * 0.055, 2.5, 500);
         pinchDistance = distance;
         return;
       }
@@ -749,7 +749,7 @@ export default function GameWorld() {
     };
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
-      g.camDistance = THREE.MathUtils.clamp(g.camDistance + event.deltaY * 0.025, 4, 95);
+      g.camDistance = THREE.MathUtils.clamp(g.camDistance + event.deltaY * 0.06, 2.5, 500);
     };
     canvas.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
