@@ -63,6 +63,18 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
           <meshStandardMaterial map={sign} roughness={0.6} emissive="#ffffff" emissiveMap={sign} emissiveIntensity={0.25} />
         </mesh>
       )}
+      {b.label && (
+        <Html
+          position={[0, b.h + 1.25, b.d / 2 + 0.25]}
+          center
+          distanceFactor={17}
+          style={{ pointerEvents: "none" }}
+        >
+          <div className="max-w-[190px] whitespace-nowrap rounded-md border border-white/35 bg-slate-950/95 px-2.5 py-1.5 text-center text-[11px] font-extrabold tracking-wide text-white shadow-[0_3px_16px_rgba(0,0,0,.8)]">
+            {b.label}
+          </div>
+        </Html>
+      )}
       {/* Physical entrance and glowing yellow interaction marker. */}
       {side && b.label && (
         <group position={[side.dx * (b.w / 2 + 0.72), 0, side.dz * (b.d / 2 + 0.72)]}>
@@ -340,6 +352,34 @@ function LagosStreetProps() {
       ))}
     </group>
   );
+}
+
+const LOCALITY_SIGNS = [
+  { x: -39, z: -112, label: "GOVERNMENT AVENUE", sub: "ASSEMBLY · CITY HALL · COURTS", color: "#183e35" },
+  { x: 105, z: 131, label: "ESTATE DRIVE", sub: "GATED ESTATES · BUNGALOWS", color: "#244b38" },
+  { x: -120, z: 131, label: "VILLAGE ROAD", sub: "FAMILY COMPOUNDS · VILLAGE SQUARE", color: "#68462c" },
+  { x: -49, z: 131, label: "MARKET SQUARE ROAD", sub: "TRADERS · PRODUCE · MAMA PUT", color: "#75431f" },
+  { x: 2, z: 64, label: "BIG CITY", sub: "CENTRAL BUSINESS & RESIDENTIAL DISTRICT", color: "#172d43" },
+] as const;
+
+function LocalityRoadsAndSigns() {
+  const labels = useMemo(() => LOCALITY_SIGNS.map((s) => ({ ...s, texture: signTexture(s.label + "  |  " + s.sub, s.color) })), []);
+  return <group>
+    {/* Dedicated access roads link the named localities to the main Lagos road grid. */}
+    {[-112, 131].map((z) => <group key={"local-road-" + z}>
+      <mesh rotation-x={-Math.PI / 2} position={[-8, 0.031, z]} receiveShadow>
+        <planeGeometry args={[WORLD - 20, 7]} />
+        <meshStandardMaterial color="#343a40" roughness={0.96} />
+      </mesh>
+      {Array.from({ length: 19 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[-170 + i * 18, 0.054, z]}><planeGeometry args={[7, 0.12]} /><meshBasicMaterial color="#e4c75e" /></mesh>)}
+      {[-1, 1].map((side) => <mesh key={side} rotation-x={-Math.PI / 2} position={[-8, 0.04, z + side * 5.1]}><planeGeometry args={[WORLD - 20, 2.2]} /><meshStandardMaterial color="#b9b6ac" roughness={1} /></mesh>)}
+    </group>)}
+    {labels.map((s) => <group key={s.label} position={[s.x, 0, s.z]}>
+      <mesh position={[0, 3.3, 0]} castShadow><boxGeometry args={[9.8, 2.1, 0.28]} /><meshStandardMaterial color={s.color} metalness={0.2} roughness={0.6} /></mesh>
+      <mesh position={[0, 3.3, 0.16]}><planeGeometry args={[9.45, 1.78]} /><meshStandardMaterial map={s.texture} emissive="#ffffff" emissiveMap={s.texture} emissiveIntensity={0.35} /></mesh>
+      {[-4.1, 4.1].map((x) => <mesh key={x} position={[x, 1.5, 0]} castShadow><boxGeometry args={[0.2, 3, 0.2]} /><meshStandardMaterial color="#59646b" metalness={0.5} /></mesh>)}
+    </group>)}
+  </group>;
 }
 
 function RoadMarkings() {
@@ -645,6 +685,7 @@ export default function World() {
 
       {BUILDINGS.map((b, i) => <Building key={i} b={b} />)}
       <LagosStreetProps />
+      <LocalityRoadsAndSigns />
       <AirportDistrict />
       <ConstructionSite />
       <LivingCity />
