@@ -63,7 +63,7 @@ function Joystick() {
 function MiniMap({ onOpen }: { onOpen: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const waypoint = useGame((s) => s.waypoint);
-  const [, refresh] = useState(0);
+  const [tick, refresh] = useState(0);
   useEffect(() => { const timer = window.setInterval(() => refresh(v => v + 1), 350); return () => clearInterval(timer); }, []);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -86,7 +86,7 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
     if (waypoint) { const tx = sx(waypoint.x), ty = sy(waypoint.z); ctx.strokeStyle = "#39ef9b"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(center, center); ctx.lineTo(tx, ty); ctx.stroke(); ctx.fillStyle = "#39ef9b"; ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI * 2); ctx.fill(); }
     ctx.save(); ctx.translate(center, center); ctx.rotate(g.playerYaw); ctx.fillStyle = "#72d3ff"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-5, 5); ctx.lineTo(0, 2); ctx.lineTo(5, 5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
     ctx.restore();
-  }, [waypoint]);
+  }, [waypoint, tick]);
   return <button type="button" onClick={onOpen} aria-label="Open full city map" className="pointer-events-auto absolute right-3 top-[7.8rem] rounded-full border border-amber-200/35 bg-[#07131b]/90 p-1 shadow-lg active:scale-95">
     <canvas ref={canvasRef} width={128} height={128} className="h-[104px] w-[104px] rounded-full sm:h-[118px] sm:w-[118px]" />
     <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">LAGOS · MAP</span>
