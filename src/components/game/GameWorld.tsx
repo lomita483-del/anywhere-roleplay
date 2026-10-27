@@ -11,7 +11,6 @@ import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, isBlocked, clampWorld } from "@/gam
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
 const MODEL_FLIP = Math.PI;
-const CHAR_SCALE = 2.2;
 
 const _target = new THREE.Vector3();
 const _ideal = new THREE.Vector3();
