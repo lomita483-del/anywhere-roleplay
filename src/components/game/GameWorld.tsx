@@ -324,7 +324,7 @@ function MotorcycleMesh() {
   );
 }
 
-function VehicleBody({ model }: { model: string }) {
+export function VehicleBody({ model }: { model: string }) {
   if (model === "keke") return <KekeMesh />;
   if (model === "bike") return <MotorcycleMesh />;
   if (model === "danfo") return <DanfoMesh />;
