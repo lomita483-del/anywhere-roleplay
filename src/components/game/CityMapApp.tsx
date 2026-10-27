@@ -16,12 +16,12 @@ const NAME_KEY = "anywhere-map-names-v1";
 const ZOOM_KEY = "anywhere-map-zoom-v1";
 const CITY_KEY = "anywhere-map-city-v1";
 const cashLabel = (n:number) => "₦" + Math.floor(n).toLocaleString("en-NG");
-type RideOption = { id: "walk" | "ride" | "bike" | "private"; title: string; price: number; eta: (d:number)=>number; detail: string };
+type RideOption = { id: "walk" | "ride" | "bike" | "private" | "danfo" | "keke"; title: string; price: number; rate: number; eta: (d:number)=>number; detail: string };
 const RIDE_OPTIONS: RideOption[] = [
-  {id:"walk",title:"Walk",price:0,eta:d=>Math.ceil(d/1.4),detail:"Free · take the streets"},
-  {id:"ride",title:"Book taxi",price:1600,eta:d=>Math.max(2,Math.ceil(d/8)+3),detail:"City taxi · comfortable"},
-  {id:"bike",title:"Book bike man / okada",price:700,eta:d=>Math.max(1,Math.ceil(d/16)+2),detail:"Fastest through traffic"},
-  {id:"private",title:"My private driver",price:4200,eta:d=>Math.max(2,Math.ceil(d/9)+3),detail:"Private sedan · premium"},
+  {id:"walk",title:"Walk",price:0,rate:0,eta:d=>Math.ceil(d/1.4),detail:"Free · take the streets"},
+  {id:"ride",title:"Book taxi",price:1600,rate:4.5,eta:d=>Math.max(2,Math.ceil(d/8)+3),detail:"City taxi · comfortable"},
+  {id:"bike",title:"Book bike man / okada",price:700,rate:3.2,eta:d=>Math.max(1,Math.ceil(d/16)+2),detail:"Fastest through traffic"},
+  {id:"private",title:"My private driver",price:4200,rate:10,eta:d=>Math.max(2,Math.ceil(d/9)+3),detail:"Private sedan · premium"},\n  {id:"danfo",title:"Book danfo",price:300,rate:1.1,eta:d=>Math.max(4,Math.ceil(d/4)+5),detail:"Cheapest · slower shared ride"},\n  {id:"keke",title:"Book keke",price:500,rate:1.8,eta:d=>Math.max(3,Math.ceil(d/6)+4),detail:"Local three-wheeler"},
 ];
 
 export default function CityMapApp() {
@@ -55,7 +55,7 @@ export default function CityMapApp() {
   const [muted,setMuted] = useState(false);
   const [tick,setTick] = useState(0);
   const [now,setNow] = useState(()=>new Date());
-  const [routeToEnter,setRouteToEnter] = useState(false);
+  const [routeToEnter,setRouteToEnter] = useState(false);\n  const [skipFade,setSkipFade] = useState(false);
   const places = useMemo(() => getMapPlaces(city), [city]);
   const playerDistance = selected ? Math.hypot(selected.doorX-g.playerPos.x,selected.doorZ-g.playerPos.z) : 0;
   const etaWalk = Math.max(1,Math.ceil(playerDistance/1.4));
@@ -149,7 +149,7 @@ export default function CityMapApp() {
     if(driving){setNotice("Park your vehicle before booking a ride.");return}
     if(rideRequest){setNotice("Finish or cancel your current ride first.");return}
     if(!waypoint||waypoint.label!==selected.label)setWaypoint({x:selected.doorX,z:selected.doorZ,label:selected.label,kind:selected.kind});
-    const ok=requestRide(service==="ride"?"ride":service==="bike"?"bike":"private");
+    const ok=requestRide(service==="walk"?"ride":service);
     if(!ok){setNotice("Booking failed. Check your cash and bank balance, or finish your current trip.");return}
     setNotice("Driver assigned. Watch the road for your pickup.");setRides(false);closePhone();
   };
@@ -186,10 +186,10 @@ export default function CityMapApp() {
       <div className="flex items-start gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-300/15 text-emerald-100"><Icon size={22}/></span><div className="min-w-0 flex-1"><div className="text-base font-bold leading-tight">{selected.label}</div><div className="mt-1 text-xs capitalize text-emerald-100/75">{selected.district} · {selected.kind.replace(/-/g," ")}</div><div className="mt-1 text-xs text-slate-300">{Math.round(playerDistance)} units away · about {etaWalk} min walk</div></div><button onClick={()=>{setSelected(null);setRides(false)}} aria-label="Close place details" className="rounded-lg p-1 text-slate-300"><X size={18}/></button></div>
       {notice&&<div role="status" className="mt-2 rounded-lg border border-amber-200/20 bg-amber-200/10 p-2 text-xs text-amber-100">{notice}</div>}
       <div className="mt-3 grid grid-cols-2 gap-2"><button onClick={enterSelected} className="min-h-11 rounded-xl bg-emerald-300 px-3 text-sm font-extrabold text-[#05231b]">ENTER</button><button onClick={()=>{setWaypoint({x:selected.doorX,z:selected.doorZ,label:selected.label,kind:selected.kind});setNotice("Green GPS route set to the building door.")}} className="min-h-11 rounded-xl border border-emerald-200/30 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100">GO THERE</button><button onClick={goInside} className="min-h-11 rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-bold">GO INSIDE</button><button onClick={()=>setRides(v=>!v)} className="min-h-11 rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-bold">GET THERE</button></div>
-      {rides&&<div className="mt-3 space-y-2">{RIDE_OPTIONS.map(opt=><button key={opt.id} onClick={()=>startRide(opt.id)} className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/15 px-3 text-left"><span><span className="block text-sm font-bold">{opt.title}</span><span className="block text-xs text-slate-300">{opt.detail} · ETA {opt.eta(playerDistance)} min</span></span><span className="text-sm font-extrabold text-emerald-200">{opt.price?cashLabel(opt.price):"FREE"}</span></button>)}
+      {rides&&<div className="mt-3 space-y-2">{RIDE_OPTIONS.map(opt=><button key={opt.id} onClick={()=>startRide(opt.id)} className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/15 px-3 text-left"><span><span className="block text-sm font-bold">{opt.title}</span><span className="block text-xs text-slate-300">{opt.detail} · ETA {opt.eta(playerDistance)} min</span></span><span className="text-sm font-extrabold text-emerald-200">{opt.price?cashLabel(opt.price + Math.ceil(playerDistance*opt.rate)):"FREE"}</span></button>)}
       <button onClick={()=>{if(!owned.length){setNotice("You don't own a vehicle yet. Open Garage to buy one.");openPhone("garage");return}setWaypoint({x:selected.doorX,z:selected.doorZ,label:selected.label,kind:selected.kind});openPhone("garage")}} className="flex min-h-11 w-full items-center justify-between rounded-xl border border-white/10 px-3 text-sm font-bold"><span>Drive myself</span><span className="text-xs text-emerald-200">{owned.length?"Choose owned vehicle":"Buy a vehicle"}</span></button></div>}
     </div>}
-    {rideRequest&&<div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2.5 text-xs text-sky-100">{rideRequest.status==="approaching"?"Driver arriving":"On the way"} · {rideRequest.destination.label}</div>}
+    {rideRequest&&<div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2.5 text-xs text-sky-100"><div>{rideRequest.status==="approaching"?"Driver arriving":"On the way"} · {rideRequest.destination.label}</div><div className="mt-2 flex gap-2">{rideRequest.status==="approaching"&&<button onClick={()=>{useGame.getState().earn(rideRequest.fare,"cash");useGame.getState().setRideRequest(null);setNotice("Ride cancelled before pickup. Fare refunded.");}} className="min-h-10 rounded-lg border border-white/15 px-3 font-bold">Cancel</button>}{rideRequest.status==="travelling"&&<button onClick={()=>{setSkipFade(true);window.setTimeout(()=>{g.playerPos.set(rideRequest.destination.x,0,rideRequest.destination.z);g.ridingPassenger=false;useGame.getState().setRideRequest(null);useGame.getState().setWaypoint(null);setSkipFade(false)},450)}} className="min-h-10 rounded-lg bg-emerald-300 px-3 font-extrabold text-[#05231b]">Skip · arrive now</button>}</div></div>}\n    {skipFade&&<div className="fixed inset-0 z-[100] bg-black transition-opacity duration-500" aria-label="Arriving at destination"/>}
     <div className="sticky bottom-0 z-10 flex items-center justify-around rounded-2xl border border-white/10 bg-[#102326]/95 p-1.5 backdrop-blur"><button onClick={()=>openPhone("home")} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><Home size={17}/>Home</button><button onClick={()=>openPhone("market")} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><ShoppingBag size={17}/>Buy</button><span className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-bold text-emerald-200"><MapPin size={17}/>Map</span><button onClick={closePhone} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><X size={17}/>Phone</button></div>
   </div>;
 }
