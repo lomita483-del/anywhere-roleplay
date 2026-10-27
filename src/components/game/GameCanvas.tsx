@@ -11,6 +11,7 @@ function CloudSaveSync() {
     let stopped = false;
     let busy = false;
     let userId: string | null = null;
+    let cloudLoaded = false;
 
     const sync = async () => {
       if (stopped || busy || !useGame.getState().started) return;
@@ -20,6 +21,24 @@ function CloudSaveSync() {
         const session = data.session;
         if (!session) return;
         userId = session.user.id;
+        if (!cloudLoaded) {
+          cloudLoaded = true;
+          const { data: cloudSave, error: cloudReadError } = await supabase.from("player_save").select("state,updated_at").eq("user_id", userId).maybeSingle();
+          if (cloudReadError) console.warn("[Anywhere Roleplay] Cloud save read skipped:", cloudReadError.message);
+          if (cloudSave?.state) {
+            const localRaw = localStorage.getItem(SAVE_KEY);
+            let localSavedAt = 0;
+            try { localSavedAt = Number((JSON.parse(localRaw ?? "{}") as { savedAt?: number }).savedAt ?? 0); } catch { localSavedAt = 0; }
+            const cloudSavedAt = Date.parse(cloudSave.updated_at ?? "") || 0;
+            if (cloudSavedAt > localSavedAt) {
+              const restored = { ...(cloudSave.state as Record<string, unknown>), savedAt: Math.max(cloudSavedAt, Number((cloudSave.state as { savedAt?: number }).savedAt ?? 0)) };
+              localStorage.setItem(SAVE_KEY, JSON.stringify(restored));
+              useGame.getState().start(false);
+              console.info("[Anywhere Roleplay] Restored a newer cloud save for this account.");
+              return;
+            }
+          }
+        }
         useGame.getState().save();
         const raw = localStorage.getItem(SAVE_KEY);
         if (!raw) return;
