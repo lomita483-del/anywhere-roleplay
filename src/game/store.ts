@@ -169,6 +169,8 @@ export function makeJob(type: JobType): ActiveJob {
 
 interface GameStore {
   started: boolean;
+  graphicsQuality: "low" | "medium" | "high";
+  setGraphicsQuality: (quality: "low" | "medium" | "high") => void;
   name: string;
   cash: number;
   bank: number;
@@ -253,6 +255,7 @@ function loadSave(): SaveData | null {
 
 const DEFAULTS = {
   started: false,
+  graphicsQuality: (typeof window !== "undefined" && ["low","medium","high"].includes(localStorage.getItem("lagos-graphics-quality") ?? "") ? localStorage.getItem("lagos-graphics-quality") : "medium") as "low" | "medium" | "high",
   name: "",
   cash: 5000,
   bank: 10000,
@@ -284,6 +287,7 @@ const DEFAULTS = {
 
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
+  setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
   hasSave: false,
   lastRadio: 0,
   spawnedVehicles: [],
