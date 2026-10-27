@@ -387,7 +387,7 @@ function MapApp() {
         ctx.fillStyle = "#d5c08e"; ctx.beginPath(); ctx.ellipse(lx,ly,22*S/WORLD,18*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = "#287f9d"; ctx.beginPath(); ctx.ellipse(lx,ly,18*S/WORLD,14*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
         const [wx,wy] = to(116,120,S); ctx.fillStyle="#2b7e9d"; ctx.fillRect(wx-35*S/WORLD,wy-27*S/WORLD,70*S/WORLD,54*S/WORLD);
-        const zones = [[-145,-82,38,30,"#819b83"],[-143,-46,34,25,"#a29a7b"],[-38,-76,42,24,"#bda16f"],[-110,32,36,30,"#a98f7b"],[98,-40,80,82,"#bdb79c"],[78,10,42,30,"#b3a895"],[116,120,50,35,"#9c9e91"],[6,-142,65,60,"#9ba9a5"]];
+        const zones: [number,number,number,number,string][] = [[-145,-82,38,30,"#819b83"],[-143,-46,34,25,"#a29a7b"],[-38,-76,42,24,"#bda16f"],[-110,32,36,30,"#a98f7b"],[98,-40,80,82,"#bdb79c"],[78,10,42,30,"#b3a895"],[116,120,50,35,"#9c9e91"],[6,-142,65,60,"#9ba9a5"]];
         for (const zone of zones) { const x=zone[0],z=zone[1],w=zone[2],d=zone[3],color=zone[4]; const a=to(x-w/2,z-d/2,S),b=to(x+w/2,z+d/2,S);ctx.fillStyle=color;ctx.globalAlpha=.72;ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.globalAlpha=1; }
         ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#d2d0c4";ctx.lineWidth=10*S/WORLD;
         for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>{const q=to(x,z,S);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.stroke();}
