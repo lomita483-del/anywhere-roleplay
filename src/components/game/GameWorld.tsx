@@ -548,15 +548,22 @@ function buildRoadRoute(startX: number, startZ: number, destX: number, destZ: nu
 }
 
 function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
-  const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#eab308", transparent: true, opacity: 0.2 })), []);
-  const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#ffe38a", transparent: true, opacity: 0.95 })), []);
+  const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#24ef91", transparent: true, opacity: 0.24 })), []);
+  const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#57f5a9", transparent: true, opacity: 0.98 })), []);
   const beacon = useRef<THREE.Group>(null);
+  const distanceTimer = useRef(0);
+  const [distance, setDistance] = useState(0);
   useEffect(() => () => {
     glow.geometry.dispose(); (glow.material as THREE.Material).dispose();
     route.geometry.dispose(); (route.material as THREE.Material).dispose();
   }, [glow, route]);
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!waypoint) return;
+    distanceTimer.current += delta;
+    if (distanceTimer.current >= 0.5) {
+      distanceTimer.current = 0;
+      setDistance(Math.round(Math.hypot(waypoint.x - g.playerPos.x, waypoint.z - g.playerPos.z)));
+    }
     const points = buildRoadRoute(g.playerPos.x, g.playerPos.z, waypoint.x, waypoint.z).map(([x, z]) => new THREE.Vector3(x, 0.16, z));
     glow.geometry.setFromPoints(points);
     route.geometry.setFromPoints(points);
@@ -574,12 +581,15 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
       <group ref={beacon} position={[waypoint.x, 0, waypoint.z]}>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
           <ringGeometry args={[1.2, 1.8, 32]} />
-          <meshBasicMaterial color="#ff5757" transparent opacity={0.9} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#35f29a" transparent opacity={0.96} side={THREE.DoubleSide} />
         </mesh>
         <mesh position={[0, 2.4, 0]}>
           <cylinderGeometry args={[0.12, 0.42, 4.8, 10, 1, true]} />
-          <meshBasicMaterial color="#ff5757" transparent opacity={0.28} side={THREE.DoubleSide} depthWrite={false} />
+          <meshBasicMaterial color="#35f29a" transparent opacity={0.32} side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
+        <Html position={[0, 4.8, 0]} center distanceFactor={16}>
+          <div className="whitespace-nowrap rounded-lg border border-emerald-300/60 bg-[#04170f]/90 px-2.5 py-1 text-[10px] font-black text-emerald-100 shadow-[0_0_18px_rgba(53,242,154,.35)]">{waypoint.label} · {distance}m</div>
+        </Html>
       </group>
     </>
   );
