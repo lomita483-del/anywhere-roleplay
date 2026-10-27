@@ -193,6 +193,7 @@ interface GameStore {
   unlockDistrict: (district: string) => boolean;
   tickNeeds: (seconds: number) => void;
   eatFood: (kind: "mama-put" | "snack" | "water") => boolean;
+  sleep: () => void;
   rentals: Record<string, number>;
   rentMarketItem: (key: string) => boolean;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
@@ -491,6 +492,13 @@ export const useGame = create<GameStore>((set, get) => ({
     const n = get().needs;
     set({ needs: { hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), health: n.health, stress: Math.max(0, n.stress + item.stress), hygiene: n.hygiene } });
     get().radio(item.message); get().save(); return true;
+  },
+  sleep: () => {
+    const n = get().needs;
+    g.time = 7;
+    set({ clock: 7, needs: { hunger: Math.max(0, n.hunger - 8), energy: 100, health: Math.min(100, n.health + 8), stress: Math.max(0, n.stress - 24), hygiene: n.hygiene } });
+    get().save();
+    get().radio("🏠 You rested until 07:00. Energy restored; a new Lagos morning begins.");
   },
   setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
   setWaypoint: (waypoint) => { set({ waypoint }); get().save(); },
