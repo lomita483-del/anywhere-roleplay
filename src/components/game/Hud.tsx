@@ -254,7 +254,16 @@ export default function Hud() {
         <ChevronsUp className="h-5 w-5 text-hud-bright" />
       </button>}
 
-      {interior && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit {interiorLabel} ↗</button>}
+      {interior && /apartment|studio|home/i.test(interiorLabel) && (
+        <div className="pointer-events-auto absolute right-3 top-24 flex max-w-[44vw] flex-col gap-1.5 sm:right-5">
+          <button className="min-h-10 rounded-xl border border-amber-300/30 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-amber-100" onClick={() => useGame.getState().sleep()}>🛏 Sleep · 07:00</button>
+          <button className="min-h-10 rounded-xl border border-emerald-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-emerald-100" onClick={() => openPhone("inventory")}>🧊 Fridge / Stored food</button>
+          <button className="min-h-10 rounded-xl border border-sky-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-sky-100" onClick={() => openPhone("wardrobe")}>👕 Wardrobe</button>
+          <button className="min-h-10 rounded-xl border border-white/15 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-white" onClick={() => useGame.getState().radio("📺 The TV is playing the evening news from Lagos.")}>📺 Turn on TV</button>
+          <button className="min-h-10 rounded-xl border border-rose-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-rose-100" onClick={exitApartment}>Exit {interiorLabel} ↗</button>
+        </div>
+      )}
+      {interior && !/apartment|studio|home/i.test(interiorLabel) && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit {interiorLabel} ↗</button>}
 
       {/* Phone toggle */}
       {!phoneOpen && (
