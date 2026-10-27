@@ -148,7 +148,7 @@ function CharacterBody() {
   );
 }
 
-function PedBody({ variant = 0 }: { variant?: number }) {
+function PedBody({ variant = 0, skinTone, topColor, hairColor }: { variant?: number; skinTone?: string; topColor?: string; hairColor?: string }) {
   const { scene, animations } = useGLTF("/models/character.glb");
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { actions } = useAnimations(animations, clone);
@@ -166,13 +166,13 @@ function PedBody({ variant = 0 }: { variant?: number }) {
       for (const material of materials) {
         const standard = material as THREE.MeshStandardMaterial;
         if (!standard.color) continue;
-        if (/skin|face|head|body/.test(name)) standard.color.set(skinTones[variant % skinTones.length]!);
-        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(tops[variant % tops.length]!);
-        else if (/hair/.test(name)) standard.color.set(variant % 3 === 0 ? "#171411" : variant % 3 === 1 ? "#35241c" : "#241e28");
+        if (/skin|face|head|body/.test(name)) standard.color.set(skinTone || skinTones[variant % skinTones.length]!);
+        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(topColor || tops[variant % tops.length]!);
+        else if (/hair/.test(name)) standard.color.set(hairColor || (variant % 3 === 0 ? "#171411" : variant % 3 === 1 ? "#35241c" : "#241e28"));
       }
     });
     actions["walk"]?.reset().play();
-  }, [clone, actions, variant]);
+  }, [clone, actions, variant, skinTone, topColor, hairColor]);
   const isChild = variant % 6 === 0;
   return <primitive object={clone} scale={isChild ? 1.35 : 2.2} />;
 }
@@ -550,8 +550,9 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   );
 }
 
-function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number }; variant: number }) {
+function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone?: string; top?: string; hairColor?: string } }; variant: number }) {
   const ref = useRef<THREE.Group>(null);
+  const topColors: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
   useFrame((_, delta) => {
     if (!ref.current) return;
     const target = new THREE.Vector3(player.x, player.y, player.z);
@@ -560,8 +561,8 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
   });
   return (
     <group ref={ref} position={[player.x, player.y, player.z]} rotation-y={player.yaw}>
-      <PedBody variant={variant} />
-      <Html position={[0, 3.05, 0]} center distanceFactor={12} occlude={false}>
+      {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} skinTone={player.outfit?.skinTone} topColor={topColors[player.outfit?.top ?? ""]} hairColor={player.outfit?.hairColor} />}
+      <Html position={[0, player.vehicle ? 2.8 : 3.05, 0]} center distanceFactor={12} occlude={false}>
         <div className="pointer-events-none whitespace-nowrap rounded-full border border-[#eab308]/55 bg-[#07131d]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg shadow-black/30">
           <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           {player.name}
@@ -570,7 +571,6 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
     </group>
   );
 }
-
 
 function RideDriver() {
   const ride = useGame((s) => s.rideRequest);
@@ -717,7 +717,7 @@ export default function GameWorld() {
         channel = supabase.channel("lagos-life-world", { config: { presence: { key: playerId }, broadcast: { self: false } } });
         channel
           .on("broadcast", { event: "player_state" }, ({ payload }) => {
-            const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { skinTone: string; top: string } };
+            const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { skinTone?: string; top?: string; hairColor?: string } };
             if (!p.id || p.id === playerId || typeof p.x !== "number" || typeof p.z !== "number") return;
             setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, y: p.y ?? 0, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null, ...(p.outfit ? { outfit: p.outfit } : {}) } }));
           })
@@ -733,7 +733,7 @@ export default function GameWorld() {
             publishTimer = window.setInterval(() => {
               if (!channel || !playerId) return;
               const v = g.drivingId ? g.vehicles.get(g.drivingId) : null;
-              void channel.send({ type: "broadcast", event: "player_state", payload: { id: playerId, name: useGame.getState().name || "Hustler", x: g.playerPos.x, y: g.playerPos.y, z: g.playerPos.z, yaw: g.playerYaw, vehicle: v?.model ?? null, outfit: { skinTone: useGame.getState().outfit.skinTone, top: useGame.getState().outfit.top } } });
+              void channel.send({ type: "broadcast", event: "player_state", payload: { id: playerId, name: useGame.getState().name || "Hustler", x: g.playerPos.x, y: g.playerPos.y, z: g.playerPos.z, yaw: g.playerYaw, vehicle: v?.model ?? null, outfit: { ...useGame.getState().outfit } } });
             }, 250);
           });
       } catch (error) {
