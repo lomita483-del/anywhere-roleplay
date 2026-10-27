@@ -19,6 +19,10 @@ export const g = {
   started: false,
   time: 8.0, // in-game hour (0–24)
   camYaw: Math.PI, // orbit yaw of camera around target
+  camPitch: 0.42, // elevation angle, adjustable by dragging the world view
+  camDistance: 8, // orbit distance, adjustable by wheel/pinch
+  camSatellite: false,
+  camBeforeSatellite: { pitch: 0.42, distance: 8 },
   playerPos: new THREE.Vector3(-14, 0, -14),
   playerYaw: 0,
   playerSpeed: 0, // horizontal speed, for anim blend
