@@ -55,7 +55,6 @@ export interface SaveData {
   name: string;
   cash: number;
   bank: number;
-  transactions: BankTransaction[];
   inventory: Record<string, number>;
   owned: string[];
   jobStats: JobStats;
@@ -173,6 +172,7 @@ interface GameStore {
   name: string;
   cash: number;
   bank: number;
+  transactions: BankTransaction[];
   inventory: Record<string, number>;
   owned: string[];
   jobStats: JobStats;
