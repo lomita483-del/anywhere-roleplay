@@ -34,7 +34,7 @@ function CloudSaveSync() {
         // can be queried by other game services without unpacking the full save blob.
         try {
           const current = useGame.getState();
-          const profileUpdate = await (supabase as any).from("profiles").upsert({
+          const profileUpdate = await (supabase as any).from("profiles").update({
             id: userId,
             display_name: current.name || "Hustler",
             alias: current.name || "Hustler",
@@ -48,7 +48,7 @@ function CloudSaveSync() {
             active_vehicle: g.drivingId,
             outfit: current.outfit,
             updated_at: new Date().toISOString(),
-          }, { onConflict: "id" });
+          }).eq("id", userId);
           if (profileUpdate.error) console.warn("[Anywhere Roleplay] Profile sync skipped:", profileUpdate.error.message);
         } catch (profileError) {
           console.warn("[Anywhere Roleplay] Profile sync unavailable:", profileError);
