@@ -24,6 +24,8 @@ export interface ActiveJob {
 
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | null;
 
+export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
+
 export interface JobStats {
   deliveries: number;
   drives: number;
@@ -133,6 +135,9 @@ interface GameStore {
   jobStats: JobStats;
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
+  waypoint: GpsWaypoint | null;
+  setWaypoint: (waypoint: GpsWaypoint | null) => void;
+  clearWaypoint: () => void;
   phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market";
   prompt: { kind: PromptKind; label: string; vehicleId?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
@@ -191,6 +196,7 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
+  waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
   prompt: null as GameStore["prompt"],
   modal: null as GameStore["modal"],
@@ -320,6 +326,8 @@ export const useGame = create<GameStore>((set, get) => ({
   cancelJob: () => set({ activeJob: null }),
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
+  setWaypoint: (waypoint) => set({ waypoint }),
+  clearWaypoint: () => set({ waypoint: null }),
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
   closePhone: () => set({ phoneOpen: false }),
   setPrompt: (p) => { if (JSON.stringify(p) !== JSON.stringify(get().prompt)) set({ prompt: p }); },
