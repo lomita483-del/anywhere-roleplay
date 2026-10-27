@@ -160,37 +160,82 @@ function GarageApp() {
 
 function HomeApp() {
   const name = useGame((s) => s.name);
+  const setName = useGame((s) => s.setName);
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
   const stats = useGame((s) => s.jobStats);
   const owned = useGame((s) => s.owned);
+  const background = useGame((s) => s.background);
+  const setBackground = useGame((s) => s.setBackground);
+  const traits = useGame((s) => s.characterTraits);
+  const setTraits = useGame((s) => s.setCharacterTraits);
+  const [aliasDraft, setAliasDraft] = useState(name);
+  const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => setAliasDraft(name), [name]);
+  const traitOptions = ["Street smart", "Educated", "Well connected", "Hard worker", "Negotiator", "Athletic"];
+  const toggleTrait = (trait: string) => {
+    if (traits.includes(trait)) setTraits(traits.filter((t) => t !== trait));
+    else if (traits.length < 3) setTraits([...traits, trait]);
+    else setNotice("Choose up to three starting traits.");
+  };
+  const saveProfile = async () => {
+    setSaving(true);
+    try {
+      setName(aliasDraft.trim() || "Hustler");
+      useGame.getState().save();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const current = useGame.getState();
+        const { error } = await (supabase as any).from("profiles").update({
+          alias: current.name, display_name: current.name, background: current.background,
+          character_traits: current.characterTraits, outfit: current.outfit,
+        }).eq("id", user.id);
+        if (error) throw error;
+        setNotice("Character profile saved to your account.");
+      } else setNotice("Character profile saved on this device. Sign in to sync across devices.");
+    } catch {
+      setNotice("Saved locally. Online sync will retry when your connection is available.");
+    } finally { setSaving(false); }
+  };
   return (
-    <div className="flex flex-col items-center gap-2 p-4 text-sm">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-hud-accent to-[#e28a3c] text-2xl font-bold text-black">
-        {(name || "H").charAt(0).toUpperCase()}
-      </div>
-      <div className="text-lg font-bold text-hud-bright">{name || "Hustler"}</div>
-      <div className="grid w-full grid-cols-2 gap-2 pt-1">
-        <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center">
-          <div className="text-[10px] text-hud-muted">Cash</div>
-          <div className="text-sm font-bold text-hud-bright">{naira(cash)}</div>
-        </div>
-        <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center">
-          <div className="text-[10px] text-hud-muted">Bank</div>
-          <div className="text-sm font-bold text-hud-bright">{naira(bank)}</div>
-        </div>
-        <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center">
-          <div className="text-[10px] text-hud-muted">Deliveries</div>
-          <div className="text-sm font-bold text-hud-bright">{stats.deliveries + stats.drives}</div>
-        </div>
-        <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center">
-          <div className="text-[10px] text-hud-muted">Vehicles</div>
-          <div className="text-sm font-bold text-hud-bright">{owned.length}</div>
+    <div className="flex flex-col gap-3 p-3 text-sm">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-[#eab308]/20 bg-gradient-to-br from-[#332911] to-[#111b20] p-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-hud-accent to-[#e28a3c] text-2xl font-bold text-black">{(name || "H").charAt(0).toUpperCase()}</div>
+        <div className="text-lg font-bold text-hud-bright">{name || "Hustler"}</div>
+        <div className="grid w-full grid-cols-2 gap-2 pt-1">
+          <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Cash</div><div className="text-sm font-bold text-hud-bright">{naira(cash)}</div></div>
+          <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Bank</div><div className="text-sm font-bold text-hud-bright">{naira(bank)}</div></div>
+          <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Jobs completed</div><div className="text-sm font-bold text-hud-bright">{stats.deliveries + stats.drives + stats.trades + stats.patrols}</div></div>
+          <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Vehicles</div><div className="text-sm font-bold text-hud-bright">{owned.length}</div></div>
         </div>
       </div>
-      <div className="w-full rounded-xl border border-hud-line bg-white/5 p-2 text-center text-xs text-hud-muted">
-        Trades: {stats.trades} · Patrols: {stats.patrols}
+      <div className="rounded-xl border border-hud-line bg-white/[0.035] p-3">
+        <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-hud-muted">Character identity & backstory</div>
+        <label className="mb-2 block text-[10px] text-hud-muted">Alias / name
+          <input value={aliasDraft} maxLength={16} onChange={(e) => setAliasDraft(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-[#111b20] px-3 py-2 text-xs text-white" placeholder="Enter your character name" />
+        </label>
+        <label className="mb-2 block text-[10px] text-hud-muted">Family background
+          <select value={background.family} onChange={(e) => setBackground({ family: e.target.value })} className="mt-1 w-full rounded-lg border border-white/10 bg-[#111b20] px-3 py-2 text-xs text-white">
+            {["Mainland family", "Single parent household", "Entrepreneur family", "Rural village family"].map((v) => <option key={v}>{v}</option>)}
+          </select>
+        </label>
+        <label className="mb-2 block text-[10px] text-hud-muted">Education
+          <select value={background.education} onChange={(e) => setBackground({ education: e.target.value })} className="mt-1 w-full rounded-lg border border-white/10 bg-[#111b20] px-3 py-2 text-xs text-white">
+            {["Primary school", "Secondary school", "University student", "University graduate", "Self-taught"].map((v) => <option key={v}>{v}</option>)}
+          </select>
+        </label>
+        <label className="mb-2 block text-[10px] text-hud-muted">Home neighbourhood
+          <select value={background.neighborhood} onChange={(e) => setBackground({ neighborhood: e.target.value })} className="mt-1 w-full rounded-lg border border-white/10 bg-[#111b20] px-3 py-2 text-xs text-white">
+            {["Yaba / Surulere", "Oshodi / Mushin", "Ikeja / Airport", "Lekki / Victoria Island", "Ajegunle / Makoko"].map((v) => <option key={v}>{v}</option>)}
+          </select>
+        </label>
+        <div className="mb-1 mt-3 text-[10px] font-bold uppercase tracking-wider text-hud-muted">Starting traits · choose up to 3</div>
+        <div className="flex flex-wrap gap-1.5">{traitOptions.map((trait) => <button key={trait} onClick={() => toggleTrait(trait)} className={traits.includes(trait) ? "rounded-full border border-emerald-300/40 bg-emerald-300/15 px-2.5 py-1.5 text-[9px] font-bold text-emerald-100" : "rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 text-[9px] text-hud-muted"}>{trait}</button>)}</div>
+        <button disabled={saving} onClick={() => void saveProfile()} className="mt-3 w-full rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a] disabled:opacity-50">{saving ? "Saving…" : "Save Character Profile"}</button>
+        {notice && <div role="status" className="mt-2 rounded-lg bg-white/5 p-2 text-[10px] text-hud-muted">{notice}</div>}
       </div>
+      <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center text-xs text-hud-muted">Trades: {stats.trades} · Patrols: {stats.patrols} · Skills improve as you complete jobs.</div>
     </div>
   );
 }
