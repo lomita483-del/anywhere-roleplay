@@ -220,13 +220,13 @@ function ApartmentInterior() {
   return (
     <group position={[104, 0, 104]}>
       <mesh position={[0, 0.04, 0]} receiveShadow><boxGeometry args={[12, 0.12, 10]} /><meshStandardMaterial color="#8b7355" roughness={0.85} /></mesh>
-      <mesh position={[0, 1.8, -4.9]}><boxGeometry args={[12, 3.6, 0.18]} /><meshStandardMaterial color="#e2d5bd" roughness={0.9} /></mesh>
+      <mesh position={[0, 1.8, 4.9]}><boxGeometry args={[12, 3.6, 0.18]} /><meshStandardMaterial color="#e2d5bd" roughness={0.9} /></mesh>
       <mesh position={[-5.9, 1.8, 0]}><boxGeometry args={[0.18, 3.6, 10]} /><meshStandardMaterial color="#d1c3aa" roughness={0.9} /></mesh>
       <mesh position={[5.9, 1.8, 0]}><boxGeometry args={[0.18, 3.6, 10]} /><meshStandardMaterial color="#d1c3aa" roughness={0.9} /></mesh>
       <mesh position={[0, 3.65, 0]}><boxGeometry args={[12, 0.18, 10]} /><meshStandardMaterial color="#252a2c" roughness={0.9} /></mesh>
       <mesh position={[-2.4, 0.62, -2.5]} castShadow><boxGeometry args={[3.2, 0.9, 1.1]} /><meshStandardMaterial color="#174b3b" roughness={0.7} /></mesh>
       <mesh position={[0.7, 0.42, -1.2]} castShadow><boxGeometry args={[1.7, 0.45, 1.1]} /><meshStandardMaterial color="#4b3927" roughness={0.65} /></mesh>
-      <mesh position={[3.8, 1.3, -4.72]}><boxGeometry args={[2.2, 1.2, 0.12]} /><meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.15} /></mesh>
+      <mesh position={[3.8, 1.3, 4.72]}><boxGeometry args={[2.2, 1.2, 0.12]} /><meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.15} /></mesh>
       <mesh position={[3.7, 0.55, 2.5]} castShadow><boxGeometry args={[1.5, 1.1, 1.5]} /><meshStandardMaterial color="#3c504b" roughness={0.8} /></mesh>
     </group>
   );
