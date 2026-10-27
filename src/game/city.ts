@@ -1,5 +1,6 @@
 // City layout data — single source of truth for geometry, collision, and POIs.
 import { UMUAHIA_BUILDINGS, UMUAHIA_POIS } from "./umuahia";
+import { NEW_MAP_BUILDINGS, NEW_MAP_POIS } from "./newMap";
 
 export interface Box {
   x: number;
@@ -11,7 +12,7 @@ export interface Box {
 
 export interface BuildingDef extends Box {
   color: string;
-  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "airport" | "civic";
+  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "airport" | "civic" | "fuel";
   label?: string;
 }
 
@@ -153,7 +154,7 @@ export let BUILDINGS: BuildingDef[] = LAGOS_BUILDINGS;
 
 export interface Poi {
   id: string;
-  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport" | "fuel";
+  kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport" | "fuel" | "hospital" | "pharmacy" | "school" | "university" | "real-estate" | "shop" | "stadium" | "port" | "lake" | "residential";
   x: number;
   z: number;
   label: string;
@@ -180,6 +181,12 @@ const LAGOS_POIS: Poi[] = [
   { id: "lekki-fuel", kind: "fuel", x: 126, z: 22, label: "Lekki Fuel Station" },
 ];
 
+export const NEW_MAP_POI_DATA: Poi[] = NEW_MAP_POIS.map((p) => ({
+  id: p.id, label: p.label, x: p.x, z: p.z,
+  kind: p.kind === "mama-put" ? "food" :
+    p.kind === "residential" ? "apartments" :
+    p.kind === "shop" ? "clothing" : p.kind,
+}));
 export let POIS: Poi[] = LAGOS_POIS;
 
 // Collision boxes for every building (slightly padded)
@@ -378,8 +385,8 @@ export let currentCity: CityId = "newmap";
 
 export function setCityWorld(city: CityId) {
   currentCity = city;
-  BUILDINGS = city === "newmap" ? [] : city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
-  POIS = city === "newmap" ? [] : city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
+  BUILDINGS = city === "newmap" ? NEW_MAP_BUILDINGS : city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
+  POIS = city === "newmap" ? NEW_MAP_POI_DATA : city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
   COLLIDERS = buildingBoxes();
 }
 
