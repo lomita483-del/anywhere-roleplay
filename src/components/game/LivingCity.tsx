@@ -1,0 +1,129 @@
+import { useMemo, useRef } from "react";
+import { Html } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import { useGame } from "@/game/store";
+
+/** Lagos street life props: roadside kiosks, public landmarks, flyover and ambient people. */
+function MarketCanopy({ x, z, color, label, phase = 0 }: { x: number; z: number; color: string; label: string; phase?: number }) {
+  return <group position={[x, 0, z]} rotation-y={phase}>
+    {[-1.35, 1.35].map((px) => [-0.85, 0.85].map((pz) => <mesh key={px + ":" + pz} position={[px, 1.25, pz]} castShadow><cylinderGeometry args={[0.045, 0.06, 2.5, 6]} /><meshStandardMaterial color="#514638" /></mesh>))}
+    <mesh position={[0, 2.45, 0]} rotation-x={-0.08} castShadow><boxGeometry args={[3.25, 0.13, 2.35]} /><meshStandardMaterial color={color} roughness={0.92} side={THREE.DoubleSide} /></mesh>
+    <mesh position={[0, 0.82, 0.2]} castShadow><boxGeometry args={[2.8, 0.22, 1.05]} /><meshStandardMaterial color="#775238" roughness={0.92} /></mesh>
+    {[-0.8, 0, 0.8].map((px, i) => <mesh key={px} position={[px, 1.04, 0.3]} castShadow><boxGeometry args={[0.55, 0.32, 0.62]} /><meshStandardMaterial color={["#d9a441", "#c84f36", "#4d9a68"][i] ?? "#d9a441"} /></mesh>)}
+    <Html position={[0, 2.8, 0]} center distanceFactor={24}><div className="whitespace-nowrap rounded bg-[#1b211c]/90 px-2 py-1 text-[9px] font-bold tracking-wide text-amber-100">{label}</div></Html>
+  </group>;
+}
+
+function StreetPerson({ x, z, phase, shirt, scale = 1 }: { x: number; z: number; phase: number; shirt: string; scale?: number }) {
+  const root = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (!root.current) return;
+    const t = clock.elapsedTime * 0.65 + phase;
+    root.current.position.x = x + Math.sin(t) * 1.1;
+    root.current.position.z = z + Math.cos(t * 0.7) * 0.7;
+    root.current.rotation.y = Math.atan2(Math.cos(t) * 0.7, Math.cos(t * 0.7) * -1.1);
+    const gait = Math.sin(t * 5) * 0.12;
+    root.current.children[0] && (root.current.children[0].rotation.x = gait);
+  });
+  const skin = ["#6c402d", "#8e5b3f", "#ad7958", "#573323"][Math.floor((phase * 13) % 4)] ?? "#8e5b3f";
+  return <group ref={root} position={[x, 0, z]} scale={scale}>
+    <group>
+      <mesh position={[0, 0.98, 0]} castShadow><capsuleGeometry args={[0.22, 0.62, 4, 8]} /><meshStandardMaterial color={shirt} roughness={0.86} /></mesh>
+      <mesh position={[0, 1.57, 0]} castShadow><sphereGeometry args={[0.19, 12, 10]} /><meshStandardMaterial color={skin} roughness={0.94} /></mesh>
+      <mesh position={[0, 1.69, -0.025]}><sphereGeometry args={[0.195, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.5]} /><meshStandardMaterial color={phase % 2 ? "#1d1b1a" : "#25202a"} roughness={0.95} /></mesh>
+      {[-0.105, 0.105].map((px) => <mesh key={px} position={[px, 0.34, 0]} castShadow><capsuleGeometry args={[0.075, 0.42, 3, 6]} /><meshStandardMaterial color={phase % 3 ? "#303f58" : "#44362b"} /></mesh>)}
+      {[-0.27, 0.27].map((px) => <mesh key={px} position={[px, 0.99, 0]} rotation-z={px * 0.6} castShadow><capsuleGeometry args={[0.065, 0.42, 3, 6]} /><meshStandardMaterial color={shirt} /></mesh>)}
+    </group>
+  </group>;
+}
+
+function Landmark({ x, z, w, d, h, name, color, accent }: { x: number; z: number; w: number; d: number; h: number; name: string; color: string; accent: string }) {
+  return <group position={[x, 0, z]}>
+    <mesh position={[0, h / 2, 0]} castShadow receiveShadow><boxGeometry args={[w, h, d]} /><meshStandardMaterial color={color} roughness={0.82} /></mesh>
+    <mesh position={[0, h + 0.12, 0]} castShadow><boxGeometry args={[w + 0.6, 0.24, d + 0.6]} /><meshStandardMaterial color={accent} metalness={0.25} roughness={0.5} /></mesh>
+    {Array.from({ length: Math.max(2, Math.floor(w / 3)) }, (_, i) => <mesh key={i} position={[-w / 2 + 1.3 + i * ((w - 2.6) / Math.max(1, Math.floor(w / 3) - 1)), h * 0.58, d / 2 + 0.03]}><boxGeometry args={[0.9, 1.1, 0.06]} /><meshStandardMaterial color="#2b5265" metalness={0.35} roughness={0.3} emissive="#6eabbc" emissiveIntensity={0.07} /></mesh>)}
+    <mesh position={[0, h * 0.32, d / 2 + 0.06]}><boxGeometry args={[Math.min(9, w * 0.78), 0.72, 0.12]} /><meshStandardMaterial color={accent} roughness={0.5} /></mesh>
+    <Html position={[0, h + 1, 0]} center distanceFactor={34}><div className="whitespace-nowrap rounded-md border border-white/20 bg-[#101a21]/90 px-3 py-1.5 text-[10px] font-bold tracking-wider text-white">{name}</div></Html>
+  </group>;
+}
+
+function Flyover() {
+  return <group>
+    {/* Raised expressway at the market / civic district. */}
+    <mesh position={[0, 5.2, 13]} castShadow receiveShadow><boxGeometry args={[52, 0.8, 7.8]} /><meshStandardMaterial color="#777b7d" roughness={0.9} /></mesh>
+    <mesh position={[0, 5.66, 13]}><boxGeometry args={[52, 0.12, 7.8]} /><meshStandardMaterial color="#30383d" roughness={0.95} /></mesh>
+    {Array.from({ length: 18 }, (_, i) => <mesh key={"lane" + i} position={[-24 + i * 2.8, 5.74, 13]}><boxGeometry args={[1.35, 0.025, 0.12]} /><meshStandardMaterial color="#e6d9a0" /></mesh>)}
+    {[-23, -12, 0, 12, 23].map((x) => <group key={x} position={[x, 0, 13]}>
+      <mesh position={[0, 2.6, 0]} castShadow><boxGeometry args={[0.85, 5.2, 1.05]} /><meshStandardMaterial color="#a2a6a7" roughness={0.92} /></mesh>
+      <mesh position={[0, 4.95, 0]}><boxGeometry args={[1.45, 0.22, 1.5]} /><meshStandardMaterial color="#858c8e" /></mesh>
+    </group>)}
+    {[-1, 1].map((side) => <mesh key={side} position={[0, 5.8, 13 + side * 3.55]}><boxGeometry args={[52, 0.6, 0.16]} /><meshStandardMaterial color="#c3c7c8" /></mesh>)}
+    <Html position={[0, 7, 13]} center distanceFactor={40}><div className="rounded bg-[#17242b]/90 px-3 py-1 text-[10px] font-bold tracking-widest text-amber-100">LAGOS CITY FLYOVER</div></Html>
+  </group>;
+}
+
+function InteriorLife() {
+  const inside = useGame((s) => s.interior);
+  const label = useGame((s) => s.interiorLabel.toLowerCase());
+  const people = useMemo(() => {
+    if (!inside) return [];
+    const bank = label.includes("bank"), airport = label.includes("airport") || label.includes("international"), police = label.includes("police");
+    const count = bank || airport ? 6 : police ? 4 : 5;
+    return Array.from({ length: count }, (_, i) => ({
+      x: -4.2 + (i % 3) * 4.1, z: -2.5 + Math.floor(i / 3) * 2.5,
+      phase: i * 1.73, shirt: ["#244d70", "#8e3347", "#d7a42d", "#38694d", "#e2ddd4", "#4e536c"][i] ?? "#244d70",
+    }));
+  }, [inside, label]);
+  if (!inside) return null;
+  const role = label.includes("bank") ? "TELLER / CUSTOMER SERVICE" : label.includes("airport") || label.includes("international") ? "AIRLINE CHECK-IN / PASSENGERS" : label.includes("police") ? "OFFICERS / VISITORS" : label.includes("boutique") || label.includes("clothing") ? "SHOP ASSISTANT / CUSTOMERS" : label.includes("market") ? "TRADERS / CUSTOMERS" : "RESIDENTS / VISITORS";
+  return <group position={[104, 0, 104]}>
+    {people.map((p, i) => <StreetPerson key={i} {...p} scale={0.92} />)}
+    <Html position={[0, 3.1, 0]} center distanceFactor={14}><div className="rounded-lg border border-emerald-300/30 bg-[#101b1a]/90 px-3 py-1.5 text-[9px] font-bold tracking-wider text-emerald-100">{role} · OPEN</div></Html>
+  </group>;
+}
+
+export default function LivingCity() {
+  const vendors = [
+    { x: -62, z: 20, color: "#dc493b", label: "SUYA / GRILLS" },
+    { x: -56, z: 20, color: "#e6b638", label: "MAMA PUT" },
+    { x: -50, z: 20, color: "#3b9b66", label: "FRUITS & VEG" },
+    { x: -44, z: 20, color: "#3b6fb2", label: "CLOTHES" },
+    { x: -38, z: 20, color: "#cf4e8c", label: "PHONE ACCESSORIES" },
+    { x: -32, z: 20, color: "#d67b32", label: "SNACKS / DRINKS" },
+    { x: -60, z: 27, color: "#438bba", label: "PROVISIONS" },
+    { x: -52, z: 27, color: "#d3aa35", label: "MARKET WOMAN" },
+    { x: -44, z: 27, color: "#5c9c62", label: "TAILOR" },
+    { x: -36, z: 27, color: "#a64e49", label: "LOCAL GOODS" },
+    { x: 20, z: 21, color: "#d7a63b", label: "ROADSIDE KIOSK" },
+    { x: 28, z: 21, color: "#c85042", label: "COLD DRINKS" },
+  ];
+  const crowd = useMemo(() => [
+    [-67, 16], [-64, 24], [-58, 16], [-55, 25], [-49, 16], [-46, 24], [-40, 16], [-34, 24], [-29, 17],
+    [14, 25], [19, 26], [24, 25], [31, 26], [36, 24], [40, 28], [46, 25], [51, 28],
+    [-28, -12], [-24, -10], [-18, -12], [16, -12], [22, -10], [29, -12], [36, -10],
+  ] as [number, number][], []);
+  return <group>
+    {vendors.map((v, i) => <MarketCanopy key={i} x={v.x} z={v.z} color={v.color} label={v.label} phase={i % 3 * 0.15} />)}
+    {crowd.map(([x, z], i) => <StreetPerson key={i} x={x} z={z} phase={i * 1.19} shirt={["#263f60", "#d8a63d", "#b6473e", "#3b7754", "#ded4c6", "#8c4567"][i % 6] ?? "#263f60"} scale={i % 5 === 0 ? 0.82 : 0.94} />)}
+    <Flyover />
+    {/* Civic/education district and property sales office. */}
+    <Landmark x={-94} z={-36} w={19} d={13} h={8} name="PRIMARY SCHOOL" color="#e6d3a5" accent="#2b6a4b" />
+    <Landmark x={-92} z={-12} w={22} d={14} h={10} name="SECONDARY SCHOOL" color="#d6c7b0" accent="#285b86" />
+    <Landmark x={92} z={-42} w={20} d={16} h={13} name="LAGOS UNIVERSITY" color="#d9d2bd" accent="#8a6b2f" />
+    <Landmark x={92} z={-16} w={17} d={13} h={9} name="COURT OF JUSTICE" color="#d8d2c8" accent="#3d4d61" />
+    <Landmark x={92} z={10} w={20} d={15} h={12} name="GOVERNMENT HOUSE" color="#d8c8a6" accent="#234d3b" />
+    <Landmark x={-92} z={12} w={17} d={13} h={8} name="REAL ESTATE & PROPERTY" color="#d5c2a5" accent="#8a642b" />
+    {/* A small village edge with compound walls and pitched roofs. */}
+    {[
+      { x: 91, z: 58, c: "#c4a17a" }, { x: 103, z: 58, c: "#d0b18a" },
+      { x: 91, z: 72, c: "#b88f68" }, { x: 103, z: 72, c: "#d7c29e" },
+    ].map((h, i) => <group key={i} position={[h.x, 0, h.z]}>
+      <mesh position={[0, 1.45, 0]} castShadow><boxGeometry args={[8, 2.9, 7]} /><meshStandardMaterial color={h.c} roughness={0.95} /></mesh>
+      <mesh position={[0, 3.2, 0]} rotation-y={Math.PI / 4} castShadow><coneGeometry args={[5.8, 1.8, 4]} /><meshStandardMaterial color={i % 2 ? "#6b4935" : "#7a5335"} roughness={1} /></mesh>
+      <mesh position={[0, 0.85, 3.56]}><boxGeometry args={[1.1, 1.7, 0.08]} /><meshStandardMaterial color="#473426" /></mesh>
+    </group>)}
+    <Html position={[97, 5.5, 80]} center distanceFactor={32}><div className="rounded-md border border-amber-300/30 bg-[#21180e]/90 px-3 py-1 text-[10px] font-bold tracking-wider text-amber-100">OUTSKIRTS VILLAGE · FAMILY COMPOUNDS</div></Html>
+    <InteriorLife />
+  </group>;
+}
