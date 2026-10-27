@@ -85,6 +85,29 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
           );
         });
       })}
+      {(b.kind === "apartments" || /flat|residence|apartment|court/i.test(b.label ?? "")) && b.h >= 8 && Array.from({ length: Math.min(4, Math.max(1, Math.floor(b.h / 4))) }, (_, floor) => (
+        <group key={"balcony-" + floor} position={[0, 2.6 + floor * 3.2, b.d / 2 + 0.48]}>
+          {[-b.w * 0.28, 0, b.w * 0.28].filter((x) => Math.abs(x) < b.w / 2 - 1.4).map((x) => (
+            <group key={x} position={[x, 0, 0]}>
+              <mesh position={[0, -0.62, 0.18]} castShadow><boxGeometry args={[Math.min(2.7, b.w * 0.24), 0.12, 0.9]} /><meshStandardMaterial color="#9c9b8e" roughness={0.9} /></mesh>
+              <mesh position={[0, -0.18, 0.58]}><boxGeometry args={[Math.min(2.7, b.w * 0.24), 0.72, 0.07]} /><meshStandardMaterial color="#b6c4c4" metalness={0.35} roughness={0.45} /></mesh>
+              {[-0.9, 0, 0.9].map((dx) => <mesh key={dx} position={[dx, -0.18, 0.58]}><boxGeometry args={[0.045, 0.72, 0.09]} /><meshStandardMaterial color="#d3d8d2" metalness={0.45} roughness={0.4} /></mesh>)}
+            </group>
+          ))}
+        </group>
+      ))}
+      {b.h >= 8 && Math.abs(Math.round(b.x + b.z)) % 3 === 0 && (
+        <group position={[b.w * 0.3, b.h + 0.4, -b.d * 0.22]} rotation-z={-0.2}>
+          <mesh position={[0, 0.45, 0]} rotation-x={-0.2}><cylinderGeometry args={[0.06, 0.06, 0.9, 6]} /><meshStandardMaterial color="#545b5e" metalness={0.45} roughness={0.55} /></mesh>
+          <mesh position={[0.12, 0.75, 0]} rotation-x={-0.5}><circleGeometry args={[0.42, 12]} /><meshStandardMaterial color="#b6c0bf" side={THREE.DoubleSide} metalness={0.35} roughness={0.45} /></mesh>
+        </group>
+      )}
+      {b.h >= 8 && Array.from({ length: Math.min(3, Math.max(1, Math.floor(b.h / 5))) }, (_, floor) => (
+        <group key={"ac-" + floor} position={[b.w / 2 + 0.12, 2.8 + floor * 4.2, -b.d * 0.18]}>
+          <mesh><boxGeometry args={[0.28, 0.55, 0.85]} /><meshStandardMaterial color="#d0d1c8" roughness={0.8} /></mesh>
+          <mesh position={[0.15, 0, 0]}><boxGeometry args={[0.06, 0.38, 0.6]} /><meshStandardMaterial color="#727a7c" roughness={0.7} /></mesh>
+        </group>
+      ))}
       {b.h >= 14 && (
         <group position={[b.w * 0.24, b.h + 0.55, -b.d * 0.2]}>
           <mesh position={[0, 0.9, 0]} castShadow><cylinderGeometry args={[0.85, 0.85, 1.8, 12]} /><meshStandardMaterial color="#aeb9b8" metalness={0.25} roughness={0.55} /></mesh>
