@@ -174,11 +174,14 @@ interface GameStore {
   setRideRequest: (rideRequest: RideRequest | null) => void;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
-  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts";
+  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel";
   prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
   speedKph: number;
+  fuelLevel: number;
+  setFuelLevel: (level: number) => void;
+  refuelVehicle: (amount: number, price: number) => boolean;
   nearJobTarget: number; // meters to current target
   driving: boolean;
   hasSave: boolean;
@@ -245,6 +248,7 @@ const DEFAULTS = {
   modal: null as GameStore["modal"],
   clock: 8,
   speedKph: 0,
+  fuelLevel: 100,
   nearJobTarget: 0,
   driving: false,
 };
@@ -437,6 +441,22 @@ export const useGame = create<GameStore>((set, get) => ({
   setModal: (m) => set({ modal: m }),
   setClock: (h) => set({ clock: h }),
   setSpeed: (kph) => { if (Math.abs(kph - get().speedKph) > 0.8) set({ speedKph: kph }); },
+  setFuelLevel: (level) => { const safe = Math.max(0, Math.min(100, level)); if (Math.abs(safe - get().fuelLevel) > 0.5) set({ fuelLevel: safe }); },
+  refuelVehicle: (amount, price) => {
+    const vehicle = g.drivingId ? g.vehicles.get(g.drivingId) : null;
+    const station = POIS.find((p) => p.kind === "fuel" && Math.hypot(p.x - g.playerPos.x, p.z - g.playerPos.z) < 12);
+    if (!vehicle || !station || !Number.isFinite(amount) || amount <= 0 || !Number.isFinite(price) || price <= 0) return false;
+    const current = vehicle.fuel ?? 100;
+    const litres = Math.min(amount, 100 - current);
+    if (litres <= 0) return false;
+    const cost = Math.ceil(price * litres / amount);
+    if (!get().spend(cost, "cash") && !get().spend(cost, "bank")) return false;
+    vehicle.fuel = current + litres;
+    get().setFuelLevel(vehicle.fuel);
+    get().radio("⛽ Fuel purchased at " + station.label + ". Paid ₦" + cost.toLocaleString("en-NG") + ".");
+    get().save();
+    return true;
+  },
   setNearTarget: (m) => { if (Math.abs(m - get().nearJobTarget) > 4) set({ nearJobTarget: m }); },
   setDriving: (d) => { if (d !== get().driving) set({ driving: d }); },
   radio: (msg) => {
