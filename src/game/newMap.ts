@@ -8,7 +8,7 @@ export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: 
 export const NEW_MAP_LOCAL_ROAD_START_INDEX = 8;
 export const NEW_MAP_ROADS: [number, number][][] = [
   // West-side distributor follows the outside edge of the lake, university and industrial plots,
-  // then skirts the south edge of downtown before joining the market.
+  // then skirts the south edge of downtown before joining the airport-access junction south of the market.
   [[-70, 150], [-70, 126], [-70, 105], [-70, 84], [-70, 64], [-70, 43], [-70, 20], [-70, 0], [-95, 0], [-105, -20], [-105, -46], [-105, -67], [-105, -91], [-112, -99], [-90, -99], [-70, -91], [-55, -96], [-40, -98], [-25, -98], [-20, -96]],
   // Airport terminal access: approaches the terminal apron from the south without crossing runways.
   [[36, -94], [32, -100], [32, -108], [10, -108], [-10, -108], [-20, -108], [-20, -96], [-20, -86], [-20, -82], [-18, -75], [-9, -70]],
@@ -43,7 +43,7 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
   { id: "university", label: "UNIVERSITY DISTRICT", kind: "university", x: -110, z: 43 },
   { id: "school", label: "COMMUNITY SECONDARY SCHOOL", kind: "university", x: -88, z: 60 },
   { id: "stadium", label: "CITY STADIUM", kind: "stadium", x: 0, z: 0 },
-  { id: "residential", label: "WALK-UP APARTMENTS", kind: "residential", x: 82, z: -57 },
+  { id: "residential", label: "RESIDENTIAL DISTRICT", kind: "residential", x: 128, z: -17 },
   { id: "civic", label: "CIVIC & OFFICE BLOCKS", kind: "shop", x: 78, z: 10 },
   { id: "lake", label: "LAKE PARK & RESORT", kind: "lake", x: -112, z: 118 },
   { id: "port", label: "PORT OF LAGOS", kind: "port", x: 116, z: 120 },
