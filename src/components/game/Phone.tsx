@@ -310,7 +310,14 @@ function MapApp() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
   const [, setPositionTick] = useState(0);
-  const to = (x: number, z: number, size = 280): [number, number] => [((x + WORLD / 2) / WORLD) * size, ((z + WORLD / 2) / WORLD) * size];
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ x: number; y: number; panX: number; panY: number; moved: boolean } | null>(null);
+  const to = (x: number, z: number, size = 280): [number, number] => {
+    const bx = ((x + WORLD / 2) / WORLD) * size;
+    const bz = ((z + WORLD / 2) / WORLD) * size;
+    return [size / 2 + (bx - size / 2) * zoom + pan.x, size / 2 + (bz - size / 2) * zoom + pan.y];
+  };
 
   useEffect(() => {
     const draw = () => {
@@ -486,26 +493,29 @@ function MapApp() {
         const [currentX, currentZ] = to(g.playerPos.x, g.playerPos.z, S);
         const [targetX, targetZ] = to(waypoint.x, waypoint.z, S);
         ctx.save();
-        ctx.strokeStyle = "rgba(255,72,72,.88)";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "rgba(54,232,139,.96)";
+        ctx.lineWidth = 3;
         ctx.setLineDash([4, 3]);
         ctx.beginPath(); ctx.moveTo(currentX, currentZ); ctx.lineTo(targetX, targetZ); ctx.stroke();
         ctx.restore();
         const [wx, wz] = to(waypoint.x, waypoint.z, S);
-        ctx.strokeStyle = "rgba(255,83,83,.3)"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(wx, wz); ctx.lineTo(wx, wz); ctx.stroke();
-        ctx.fillStyle = "#ff5757"; ctx.beginPath(); ctx.arc(wx, wz, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#fff1d6"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = "rgba(54,232,139,.38)"; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(wx, wz); ctx.lineTo(wx, wz); ctx.stroke();
+        ctx.fillStyle = "#34e88b"; ctx.beginPath(); ctx.arc(wx, wz, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#effff5"; ctx.lineWidth = 2; ctx.stroke();
       }
       const [px, pz] = to(g.playerPos.x, g.playerPos.z, S);
       ctx.fillStyle = "#7fd0ff"; ctx.beginPath(); ctx.arc(px, pz, 5, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = "#effaff"; ctx.lineWidth = 2; ctx.stroke();
+      // Facing-direction arrow rotates with the player.
+      ctx.save(); ctx.translate(px, pz); ctx.rotate(g.playerYaw);
+      ctx.fillStyle = "#effaff"; ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(-4, -3); ctx.lineTo(0, -5); ctx.lineTo(4, -3); ctx.closePath(); ctx.fill(); ctx.restore();
       ctx.fillStyle = "#d5e4e8"; ctx.font = "9px sans-serif";
       ctx.fillText("LAGOS", 8, 13);
     };
     draw();
     const t = window.setInterval(() => { setPositionTick((v) => v + 1); draw(); }, 450);
     return () => window.clearInterval(t);
-  }, [job, waypoint, unlockedDistricts]);
+  }, [job, waypoint, unlockedDistricts, zoom, pan.x, pan.y]);
 
   const handleMapTap = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = e.currentTarget;
@@ -517,8 +527,10 @@ function MapApp() {
       setSelectedPoi(nearest.p);
       return;
     }
-    const x = Math.max(-BOUND, Math.min(BOUND, (cx / canvas.width) * WORLD - WORLD / 2));
-    const z = Math.max(-BOUND, Math.min(BOUND, (cy / canvas.height) * WORLD - WORLD / 2));
+    const baseX = (cx - canvas.width / 2 - pan.x) / zoom + canvas.width / 2;
+    const baseZ = (cy - canvas.height / 2 - pan.y) / zoom + canvas.height / 2;
+    const x = Math.max(-BOUND, Math.min(BOUND, (baseX / canvas.width) * WORLD - WORLD / 2));
+    const z = Math.max(-BOUND, Math.min(BOUND, (baseZ / canvas.height) * WORLD - WORLD / 2));
     setSelectedPoi(null);
     setWaypoint({ x, z, label: "Custom GPS destination", kind: "custom" });
   };
@@ -529,13 +541,26 @@ function MapApp() {
         <div className="text-[10px] uppercase tracking-widest text-hud-muted">Lagos city map · live GPS</div>
         <span className="text-[9px] text-[#7fd0ff]">● LIVE</span>
       </div>
-      <canvas ref={canvasRef} width={280} height={280} onPointerUp={handleMapTap} className="w-full touch-manipulation rounded-xl border border-[#eab308]/25 shadow-[0_0_22px_rgba(234,179,8,.08)]" aria-label="Interactive Lagos map; tap to set GPS destination" />
+      <div className="relative">
+        <canvas ref={canvasRef} width={280} height={280}
+          onPointerDown={(e) => { const rect=e.currentTarget.getBoundingClientRect(); dragRef.current={x:e.clientX*280/rect.width,y:e.clientY*280/rect.height,panX:pan.x,panY:pan.y,moved:false}; e.currentTarget.setPointerCapture(e.pointerId); }}
+          onPointerMove={(e) => { if(!dragRef.current) return; const rect=e.currentTarget.getBoundingClientRect(); const dx=e.clientX*280/rect.width-dragRef.current.x,dy=e.clientY*280/rect.height-dragRef.current.y; if(Math.hypot(dx,dy)>4) dragRef.current.moved=true; if(dragRef.current.moved)setPan({x:Math.max(-140,Math.min(140,dragRef.current.panX+dx)),y:Math.max(-140,Math.min(140,dragRef.current.panY+dy))}); }}
+          onPointerUp={(e) => { const drag=dragRef.current; dragRef.current=null; if(drag && !drag.moved) handleMapTap(e); }}
+          onPointerCancel={() => {dragRef.current=null;}}
+          className="block w-full touch-none rounded-xl border border-[#eab308]/25 shadow-[0_0_22px_rgba(234,179,8,.08)]" aria-label="Interactive Lagos map; drag to pan, tap a landmark to select" />
+        <div className="absolute right-2 top-2 flex flex-col gap-1">
+          <button type="button" aria-label="Zoom in" onClick={()=>setZoom(v=>Math.min(2.8,Number((v+0.25).toFixed(2))))} className="h-9 w-9 rounded-lg border border-white/20 bg-[#07111b]/95 text-xl font-bold text-white">+</button>
+          <button type="button" aria-label="Zoom out" onClick={()=>setZoom(v=>Math.max(1,Number((v-0.25).toFixed(2))))} className="h-9 w-9 rounded-lg border border-white/20 bg-[#07111b]/95 text-xl font-bold text-white">−</button>
+          <button type="button" onClick={()=>{setZoom(1);setPan({x:0,y:0});}} className="rounded-lg border border-white/20 bg-[#07111b]/95 px-2 py-1.5 text-xs font-bold text-white">Reset</button>
+        </div>
+      </div>
       {selectedPoi && (
         <div className="rounded-xl border border-[#eab308]/30 bg-[#eab308]/[0.08] p-3">
-          <div className="text-xs font-bold text-hud-bright">{selectedPoi.label}</div>
-          <div className="mt-1 text-[10px] capitalize text-hud-muted">{selectedPoi.kind} · Lagos Life city landmark</div>
-          <button className="mt-2 w-full rounded-lg bg-[#eab308]/20 px-3 py-2 text-xs font-bold text-[#f5d875]" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind}); setSelectedPoi(null); }}>
-            Set GPS waypoint
+          <div className="text-sm font-bold text-white">{selectedPoi.label}</div>
+          <div className="mt-1 text-xs capitalize text-slate-200">{selectedPoi.kind} · Lagos Life landmark</div>
+          <div className="mt-1 text-xs text-slate-300">{Math.round(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z))} m away · about {Math.max(1,Math.ceil(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z)/1.4))} min walk</div>
+          <button className="mt-2 min-h-11 w-full rounded-lg bg-emerald-400/20 px-3 py-2 text-sm font-bold text-emerald-100" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind}); setSelectedPoi(null); }}>
+            Set Destination
           </button>
         </div>
       )}
@@ -545,9 +570,7 @@ function MapApp() {
           <button className="shrink-0 rounded-lg border border-white/10 px-2 py-1.5 text-[10px] font-semibold text-white" onClick={clearWaypoint}>Clear route</button>
         </div>
       ) : <div className="text-[10px] text-hud-muted">Tap a landmark for details, or tap any map location to set a waypoint.</div>}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-hud-muted">
-        <span className="text-[#7fd0ff]">● You</span><span className="text-[#ff5c5c]">● GPS</span><span className="text-[#eab308]">● Landmarks</span><span className="text-[#59d6a2]">● ATMs</span>
-      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-slate-100"><span className="text-sky-300">● You</span><span className="text-rose-300">● Job target</span><span className="text-amber-200">● Landmarks</span><span className="text-emerald-300">● ATMs</span><span className="text-emerald-300">━ Active route</span></div>
     </div>
   );
 }
@@ -916,19 +939,19 @@ export default function Phone() {
     <HomeApp />;
   const bottomTabs: App[] = ["home", "bank", "jobs", "garage", "inventory", "map", "radar"];
   return (
-    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-black/45 p-2 pt-[max(8px,env(safe-area-inset-top))] pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-[2px]" onPointerDown={e=>e.stopPropagation()} onClick={closePhone}>
-      <div className="phone-shell relative flex h-[min(94dvh,820px)] max-h-[calc(100dvh-16px)] w-[min(96vw,430px)] flex-col overflow-hidden rounded-[2rem] border-[3px] border-[#b9c7d2] bg-[#07111b]/[0.99] text-white shadow-2xl shadow-black/80 md:h-[min(88vh,820px)] md:w-[390px]" onPointerDown={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()}>
+    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-black/70 p-2 pt-[max(8px,env(safe-area-inset-top))] pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-sm" onPointerDown={e=>e.stopPropagation()} onClick={closePhone}>
+      <div className="phone-shell relative flex h-[calc(100dvh-16px)] max-h-[900px] w-full max-w-[440px] flex-col overflow-hidden rounded-[1.6rem] border-2 border-[#b9c7d2] bg-[#07111b]/[0.99] text-white shadow-2xl shadow-black/80 sm:h-[min(94dvh,860px)] sm:w-[min(96vw,440px)] sm:rounded-[2rem] sm:border-[3px]" onPointerDown={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()}>
         <div className="flex min-h-10 items-center justify-between border-b border-white/10 bg-black/40 px-4 py-2">
           <span className="text-xs font-bold tracking-wider text-slate-100">VibeOS <span className="text-slate-400">· Lagos Life</span></span>
-          <div className="flex items-center gap-2"><span className="text-[11px] text-emerald-300">● Online</span><button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white active:scale-95" onClick={closePhone} aria-label="Close phone"><X className="h-5 w-5" /></button></div>
+          <div className="flex items-center gap-2"><span className="text-[11px] text-emerald-300">● Online</span><button className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/40 bg-rose-500/15 text-white active:scale-95" onClick={closePhone} aria-label="Close phone"><X className="h-5 w-5" /></button></div>
         </div>
         <div className="flex min-h-11 items-center gap-2 border-b border-white/10 px-3 py-2">
           {app!=="home" && <button onClick={()=>setApp("home")} className="rounded-lg bg-white/10 p-2 text-white active:scale-90" aria-label="Back to profile"><ArrowLeft className="h-4 w-4" /></button>}
           <span className="text-sm font-bold text-white">{APP_ICONS[app].label}</span><span className="ml-auto text-[11px] text-slate-300">LAGOS · VibeOS</span>
         </div>
         <div key={app} className="min-h-0 flex-1 overflow-y-auto overscroll-contain text-white animate-in fade-in duration-150">{Screen}</div>
-        <nav aria-label="Phone apps" className="grid grid-cols-7 gap-0 border-t border-white/15 bg-[#03080e] px-1 pb-[max(7px,env(safe-area-inset-bottom))] pt-2">
-          {bottomTabs.map(a=>{const I=APP_ICONS[a].icon,active=app===a;return <button key={a} aria-current={active?"page":undefined} onClick={()=>{setApp(a);if(a!=="radar")openPhone(a);}} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 py-2 transition-all active:scale-95 ${active?"bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-300/50":"text-slate-300 hover:bg-white/5"}`}><I className="h-4 w-4 shrink-0" style={{color:active?"#8cf0c2":APP_ICONS[a].tint}}/><span className="max-w-full truncate text-[10px] font-semibold leading-tight text-current">{APP_ICONS[a].label}</span></button>;})}
+        <nav aria-label="Phone apps" className="flex shrink-0 gap-1 overflow-x-auto border-t border-white/15 bg-[#03080e] px-1 pb-[max(7px,env(safe-area-inset-bottom))] pt-2 [scrollbar-width:thin]">
+          {bottomTabs.map(a=>{const I=APP_ICONS[a].icon,active=app===a;return <button key={a} aria-current={active?"page":undefined} onClick={()=>{setApp(a);openPhone(a);}} className={`flex min-w-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-all active:scale-95 ${active?"bg-emerald-400/15 text-emerald-100 ring-1 ring-inset ring-emerald-300/50":"text-slate-200 hover:bg-white/5"}`}><I className="h-5 w-5 shrink-0" style={{color:active?"#8cf0c2":APP_ICONS[a].tint}}/><span className="whitespace-nowrap text-xs font-semibold leading-tight text-current">{APP_ICONS[a].label}</span></button>;})}
         </nav>
       </div>
     </div>
