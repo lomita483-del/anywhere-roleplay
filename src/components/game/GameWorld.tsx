@@ -97,17 +97,33 @@ function CharacterBody() {
   return <primitive object={clone} scale={CHAR_SCALE} />;
 }
 
-function PedBody() {
+function PedBody({ variant = 0 }: { variant?: number }) {
   const { scene, animations } = useGLTF("/models/character.glb");
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { actions } = useAnimations(animations, clone);
   useEffect(() => {
+    const skinTones = ["#986344", "#6f442e", "#b77b55", "#805238", "#c18b62"];
+    const tops = ["#c35c3e", "#286e59", "#d1a52d", "#344d7b", "#6e477d", "#e4e1d8"];
     clone.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
+      const name = (mesh.name + " " + (Array.isArray(mesh.material) ? mesh.material.map((m) => m.name).join(" ") : mesh.material.name)).toLowerCase();
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const material of materials) {
+        const standard = material as THREE.MeshStandardMaterial;
+        if (!standard.color) continue;
+        if (/skin|face|head|body/.test(name)) standard.color.set(skinTones[variant % skinTones.length]!);
+        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(tops[variant % tops.length]!);
+        else if (/hair/.test(name)) standard.color.set(variant % 3 === 0 ? "#171411" : variant % 3 === 1 ? "#35241c" : "#241e28");
+      }
     });
     actions["walk"]?.reset().play();
-  }, [clone, actions]);
-  return <primitive object={clone} scale={CHAR_SCALE} />;
+  }, [clone, actions, variant]);
+  const isChild = variant % 6 === 0;
+  return <primitive object={clone} scale={isChild ? 1.35 : 2.2} />;
 }
 
 function KekeMesh() {
@@ -322,7 +338,7 @@ function Pedestrians() {
           }}
           position={[w.pts[0]?.[0] ?? 0, 0, w.pts[0]?.[1] ?? 0]}
         >
-          <PedBody />
+          <PedBody variant={i} />
         </group>
       ))}
     </>
