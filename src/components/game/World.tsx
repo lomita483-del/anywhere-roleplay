@@ -49,6 +49,22 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
           <meshStandardMaterial map={sign} roughness={0.6} emissive="#ffffff" emissiveMap={sign} emissiveIntensity={0.25} />
         </mesh>
       )}
+      {/* Physical entrance and glowing yellow interaction marker. */}
+      {side && b.label && (
+        <group position={[side.dx * (b.w / 2 + 0.72), 0, side.dz * (b.d / 2 + 0.72)]}>
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.075, 0]}>
+            <ringGeometry args={[0.65, 0.9, 28]} />
+            <meshStandardMaterial color="#ffd257" emissive="#ffbf24" emissiveIntensity={1.35} transparent opacity={0.95} />
+          </mesh>
+          <mesh position={[0, 1.1, 0]} castShadow>
+            <octahedronGeometry args={[0.23, 0]} />
+            <meshStandardMaterial color="#fff0a3" emissive="#ffc928" emissiveIntensity={1.6} metalness={0.15} roughness={0.25} />
+          </mesh>
+          <Html position={[0, 1.75, 0]} center distanceFactor={18} occlude>
+            <div className="whitespace-nowrap rounded-md border border-amber-300/70 bg-[#12150c]/90 px-2 py-1 text-[9px] font-black text-amber-100 shadow-[0_0_14px_rgba(255,201,40,.45)]">E · ENTER</div>
+          </Html>
+        </group>
+      )}
       {/* Door hint on the front face */}
       {side && (
         <mesh position={[side.dx * (b.w / 2 + 0.06), 1.4, side.dz * (b.d / 2 + 0.06)]} rotation-y={side.ry}>
