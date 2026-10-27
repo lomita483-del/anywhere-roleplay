@@ -825,7 +825,7 @@ export default function GameWorld() {
       if (!g.vehicles.has(saved.id)) {
         g.vehicles.set(saved.id, {
           id: saved.id, model: saved.model, px: saved.x, pz: saved.z,
-          vx: 0, vz: 0, yaw: saved.rotY, speed: 0, color: "#c94a3c",
+          vx: 0, vz: 0, yaw: saved.rotY, speed: 0, color: "#c94a3c", fuel: saved.fuel ?? 100,
         });
       }
     }
