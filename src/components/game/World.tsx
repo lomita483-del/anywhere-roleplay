@@ -479,6 +479,52 @@ function ApartmentInterior() {
           <Html position={[0, 2.65, -3.8]} center distanceFactor={13}><div className="rounded-md border border-emerald-300/40 bg-emerald-950/90 px-3 py-1 text-[10px] font-bold text-emerald-100">PRAYER HALL · PRAYER MATS</div></Html>
         </group>
       )}
+      {(interiorLabel.toLowerCase().includes("university") || interiorLabel.toLowerCase().includes("school") || interiorLabel.toLowerCase().includes("campus")) && (
+        <group>
+          {[-3.2, 0, 3.2].map((x) => <group key={x} position={[x, 0, -1.2]}>
+            <mesh position={[0, 0.65, 0]} castShadow><boxGeometry args={[2.5, 1.25, 1.2]} /><meshStandardMaterial color="#8a6848" roughness={0.9} /></mesh>
+            {[-0.65, 0, 0.65].map((dx) => <mesh key={dx} position={[dx, 1.31, 0]}><boxGeometry args={[0.5, 0.08, 0.8]} /><meshStandardMaterial color="#cbb68d" /></mesh>)}
+            <mesh position={[0, 1.65, -0.28]}><boxGeometry args={[2.1, 0.55, 0.08]} /><meshStandardMaterial color="#273f54" roughness={0.8} /></mesh>
+          </group>)}
+          <mesh position={[0, 0.7, 2.5]} castShadow><boxGeometry args={[5.8, 1.25, 0.8]} /><meshStandardMaterial color="#d7c6a8" /></mesh>
+          <Html position={[0, 2.5, 2.4]} center distanceFactor={13}><div className="rounded-md border border-sky-300/40 bg-slate-950/90 px-3 py-1 text-[10px] font-bold text-sky-100">REGISTRAR · LECTURE HALL</div></Html>
+        </group>
+      )}
+      {(interiorLabel.toLowerCase().includes("court") || interiorLabel.toLowerCase().includes("government") || interiorLabel.toLowerCase().includes("civic")) && (
+        <group>
+          <mesh position={[0, 0.5, -1.6]} castShadow><boxGeometry args={[6.5, 0.9, 1.1]} /><meshStandardMaterial color="#4b382a" roughness={0.8} /></mesh>
+          <mesh position={[0, 1.1, -1.6]}><boxGeometry args={[6.6, 0.12, 1.15]} /><meshStandardMaterial color="#d4b25f" metalness={0.35} /></mesh>
+          {[-2.4, 0, 2.4].map((x) => <group key={x} position={[x, 0, 1.6]}>
+            <mesh position={[0, 0.45, 0]} castShadow><boxGeometry args={[1.8, 0.85, 0.8]} /><meshStandardMaterial color="#7c5b40" /></mesh>
+            <mesh position={[0, 1.25, -0.25]}><boxGeometry args={[1.25, 0.65, 0.08]} /><meshStandardMaterial color="#29465a" /></mesh>
+          </group>)}
+          <Html position={[0, 2.6, -3.8]} center distanceFactor={13}><div className="rounded-md border border-amber-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-amber-100">PUBLIC SERVICE · CASE DESK</div></Html>
+        </group>
+      )}
+      {(interiorLabel.toLowerCase().includes("real estate") || interiorLabel.toLowerCase().includes("property") || interiorLabel.toLowerCase().includes("estate")) && (
+        <group>
+          <mesh position={[0, 0.62, 1.5]} castShadow><boxGeometry args={[6.6, 1.15, 0.9]} /><meshStandardMaterial color="#6d4d30" roughness={0.7} /></mesh>
+          <mesh position={[0, 1.23, 1.5]}><boxGeometry args={[6.7, 0.1, 0.95]} /><meshStandardMaterial color="#d5b35d" metalness={0.45} /></mesh>
+          {[-2.5, 0, 2.5].map((x) => <group key={x} position={[x, 0, -1.6]}>
+            <mesh position={[0, 1.25, 0]}><boxGeometry args={[1.8, 1.25, 0.1]} /><meshStandardMaterial color="#234b52" roughness={0.4} /></mesh>
+            <mesh position={[0, 1.25, 0.07]}><boxGeometry args={[1.55, 0.95, 0.04]} /><meshStandardMaterial color="#9cc4bd" emissive="#315d54" emissiveIntensity={0.08} /></mesh>
+          </group>)}
+          <Html position={[0, 2.65, -3.8]} center distanceFactor={13}><div className="rounded-md border border-emerald-300/40 bg-emerald-950/90 px-3 py-1 text-[10px] font-bold text-emerald-100">PROPERTY VIEWINGS · SALES DESK</div></Html>
+        </group>
+      )}
+      {(interiorLabel.toLowerCase().includes("hospital") || interiorLabel.toLowerCase().includes("clinic")) && (
+        <group>
+          {[-2.6, 0.8].map((x) => <group key={x} position={[x, 0, -1.4]}>
+            <mesh position={[0, 0.55, 0]} castShadow><boxGeometry args={[2.6, 0.25, 1.2]} /><meshStandardMaterial color="#f0eee7" /></mesh>
+            <mesh position={[0, 0.9, -0.48]}><boxGeometry args={[2.6, 0.65, 0.18]} /><meshStandardMaterial color="#f0eee7" /></mesh>
+            <mesh position={[0, 0.71, 0]}><boxGeometry args={[1.7, 0.06, 0.82]} /><meshStandardMaterial color="#8ebbc3" /></mesh>
+            <mesh position={[0, 1.55, -0.8]}><boxGeometry args={[0.9, 0.65, 0.08]} /><meshStandardMaterial color="#e8f0f0" /></mesh>
+            <mesh position={[0, 1.55, -0.74]}><boxGeometry args={[0.18, 0.5, 0.05]} /><meshStandardMaterial color="#c64c45" /></mesh>
+            <mesh position={[0, 1.55, -0.74]}><boxGeometry args={[0.5, 0.18, 0.05]} /><meshStandardMaterial color="#c64c45" /></mesh>
+          </group>)}
+          <Html position={[0, 2.6, 2.4]} center distanceFactor={13}><div className="rounded-md border border-sky-300/40 bg-slate-950/90 px-3 py-1 text-[10px] font-bold text-sky-100">RECEPTION · PATIENT BEDS</div></Html>
+        </group>
+      )}
       {interiorLabel.toLowerCase().includes("polling") && (
         <group>
           <mesh position={[0, 0.65, 1.4]} castShadow><boxGeometry args={[4.5, 1.1, 0.85]} /><meshStandardMaterial color="#d5c7a8" roughness={0.9} /></mesh>
