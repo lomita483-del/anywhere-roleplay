@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { WORLD } from "@/game/city";
-import { g } from "@/game/state";
+import { useGame } from "@/game/store";
 
 /** A compact, deep oval stadium with a large open pitch, animated match and cheering crowd. */
 type MatchPlayerData = { x: number; z: number; team: number; index: number };
@@ -136,15 +136,7 @@ export default function NewMapWorld() {
     return crowd;
   }, []);
 
-  const enterStadium = () => {
-    g.playerPos.set(0, 0, 18.2);
-    g.playerYaw = Math.PI;
-    g.camYaw = 0;
-    g.camPitch = 0.52;
-    g.camDistance = 10;
-    g.drivingId = null;
-    g.playerSpeed = 0;
-  };
+  const enterStadium = () => useGame.getState().enterStadium();
 
   return (
     <group>
@@ -155,15 +147,15 @@ export default function NewMapWorld() {
       </mesh>
 
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
-      <group scale={[0.72, 0.72, 0.72]}>
+      <group scale={[0.45, 0.45, 0.45]}>
         {/* Thick outer shell walls; these sit outside the open pitch rather than over the player */}
         <mesh position={[0, 5.2, 0]} scale={[60, 1, 40]} castShadow receiveShadow>
           <cylinderGeometry args={[1, 0.96, 10.4, 96, 1, true]} />
-          <meshStandardMaterial color="#444d56" roughness={0.78} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#172431" roughness={0.58} side={THREE.DoubleSide} />
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.12, 0]} scale={[60, 40, 1]} receiveShadow>
           <ringGeometry args={[0.72, 1, 96]} />
-          <meshStandardMaterial color="#777f83" roughness={0.92} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#35434d" roughness={0.78} side={THREE.DoubleSide} />
         </mesh>
 
         {/* Structural concrete bands and tier fascia make the bowl feel thick and architectural */}
@@ -174,11 +166,11 @@ export default function NewMapWorld() {
           </mesh>
         ))}
         {[
-          { rx: 57, rz: 37.5, y: 5.3, color: "#d4d4cd" },
-          { rx: 54, rz: 35.1, y: 8.7, color: "#c83e50" },
-          { rx: 51, rz: 32.8, y: 12.1, color: "#e0e0d8" },
-          { rx: 48, rz: 30.4, y: 15.5, color: "#356cb2" },
-          { rx: 45, rz: 28.2, y: 18.2, color: "#d7d9d3" },
+          { rx: 57, rz: 37.5, y: 5.3, color: "#d6b66e" },
+          { rx: 54, rz: 35.1, y: 8.7, color: "#253b4a" },
+          { rx: 51, rz: 32.8, y: 12.1, color: "#c8a65f" },
+          { rx: 48, rz: 30.4, y: 15.5, color: "#0f625d" },
+          { rx: 45, rz: 28.2, y: 18.2, color: "#d6d9dc" },
         ].map((tier, index) => (
           <mesh key={index} rotation-x={-Math.PI / 2} position={[0, tier.y, 0]} scale={[tier.rx, tier.rz, 1]} castShadow receiveShadow>
             <ringGeometry args={[0.84, 1, 112]} />
@@ -189,7 +181,7 @@ export default function NewMapWorld() {
         {/* Roof rim is narrow and elevated so it does not cover the field or spectators */}
         <mesh rotation-x={-Math.PI / 2} position={[0, 21, 0]} scale={[59, 39, 1]} castShadow>
           <ringGeometry args={[0.94, 1, 112]} />
-          <meshStandardMaterial color="#252f3a" metalness={0.4} roughness={0.45} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#101923" metalness={0.58} roughness={0.32} side={THREE.DoubleSide} />
         </mesh>
 
         {/* Open football pitch at ground level, unobstructed by the stadium shell */}
@@ -266,9 +258,69 @@ export default function NewMapWorld() {
             <div style={{ whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 8, color: "#f5d58a", background: "rgba(8,20,29,.92)", border: "1px solid rgba(245,213,138,.7)", fontWeight: 900, letterSpacing: 2, fontSize: 12 }}>ALWAYS ROLEPLAY STADIUM</div>
           </Html>
           <Html position={[0, 2.2, 2]} center distanceFactor={16} style={{ pointerEvents: "auto" }}>
-            <button onClick={enterStadium} style={{ whiteSpace: "nowrap", cursor: "pointer", padding: "11px 18px", borderRadius: 999, color: "#071b13", background: "linear-gradient(135deg,#f5dc9b,#c7a354)", border: "2px solid #fff0c6", boxShadow: "0 5px 22px #0008", fontSize: 13, fontWeight: 900, letterSpacing: 1 }}>⚽ ENTER STADIUM</button>
+            <button onClick={enterStadium} style={{ whiteSpace: "nowrap", cursor: "pointer", padding: "11px 18px", borderRadius: 999, color: "#071b13", background: "linear-gradient(135deg,#f5dc9b,#c7a354)", border: "2px solid #fff0c6", boxShadow: "0 5px 22px #0008", fontSize: 13, fontWeight: 900, letterSpacing: 1 }}>⚽ ENTER STADIUM · FREE</button>
           </Html>
         </group>
+
+      </group>
+
+      {/* Premium forecourt outside the compact stadium */}
+      <group>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 28]} receiveShadow>
+          <circleGeometry args={[43, 96]} />
+          <meshStandardMaterial color="#a9b0b0" roughness={0.92} />
+        </mesh>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 28]} receiveShadow>
+          <ringGeometry args={[31, 33, 96]} />
+          <meshStandardMaterial color="#d1b16c" metalness={0.15} roughness={0.55} side={THREE.DoubleSide} />
+        </mesh>
+        {[
+          { x: -35, z: 18, title: "MATCH DAY GRILL", color: "#9e3e35" },
+          { x: 35, z: 18, title: "FAN SHOP", color: "#0c615b" },
+          { x: -35, z: 37, title: "CHILL & DRINKS", color: "#263d58" },
+          { x: 35, z: 37, title: "SPORTS STORE", color: "#72532d" },
+        ].map((shop) => (
+          <group key={shop.title} position={[shop.x, 0, shop.z]}>
+            <mesh position={[0, 2.1, 0]} castShadow receiveShadow>
+              <boxGeometry args={[10, 4.2, 7]} />
+              <meshStandardMaterial color="#e6e1d6" roughness={0.84} />
+            </mesh>
+            <mesh position={[0, 2.25, 3.56]}>
+              <boxGeometry args={[6.8, 2.5, 0.12]} />
+              <meshStandardMaterial color="#14212a" roughness={0.5} />
+            </mesh>
+            <mesh position={[0, 3.65, 0]} castShadow>
+              <boxGeometry args={[12, 0.34, 9]} />
+              <meshStandardMaterial color="#d5b36b" metalness={0.25} roughness={0.45} />
+            </mesh>
+            <mesh position={[0, 4.15, 0]} castShadow>
+              <boxGeometry args={[12.8, 0.7, 9.8]} />
+              <meshStandardMaterial color={shop.color} metalness={0.18} roughness={0.4} />
+            </mesh>
+            {[-4.8, 4.8].map((x) => <mesh key={x} position={[x, 3.2, 0]}><cylinderGeometry args={[0.14, 0.18, 1.5, 10]} /><meshStandardMaterial color="#d6b66e" metalness={0.6} roughness={0.3} /></mesh>)}
+            <Html position={[0, 4.55, 5.1]} center distanceFactor={13} style={{ pointerEvents: "none" }}>
+              <div style={{ whiteSpace: "nowrap", padding: "5px 9px", borderRadius: 5, background: "rgba(9,20,29,.94)", border: "1px solid rgba(214,182,110,.8)", color: "#f5dfaa", fontSize: 10, fontWeight: 900, letterSpacing: 1.4, boxShadow: "0 3px 12px #0007" }}>{shop.title}</div>
+            </Html>
+          </group>
+        ))}
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i / 12) * Math.PI * 2;
+          const x = Math.cos(a) * 39;
+          const z = 28 + Math.sin(a) * 39;
+          return (
+            <group key={i} position={[x, 0, z]}>
+              <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
+              <mesh position={[0, 2.2, 0]}><cylinderGeometry args={[0.22, 0.32, 3.6, 8]} /><meshStandardMaterial color="#765638" roughness={0.9} /></mesh>
+              {[0, 1, 2, 3, 4].map((leaf) => <mesh key={leaf} position={[Math.cos(leaf * 1.25) * 0.8, 3.3 + (leaf % 2) * 0.25, Math.sin(leaf * 1.25) * 0.8]} rotation-z={Math.cos(leaf * 1.25) * 0.65} rotation-x={Math.sin(leaf * 1.25) * 0.45}><coneGeometry args={[0.35, 2.1, 5]} /><meshStandardMaterial color="#23664d" roughness={0.85} /></mesh>)}
+              <mesh position={[1.8, 1.25, 0]}><cylinderGeometry args={[0.13, 0.17, 2.5, 8]} /><meshStandardMaterial color="#303a42" metalness={0.55} /></mesh>
+              <mesh position={[1.8, 2.5, 0]}><sphereGeometry args={[0.23, 10, 8]} /><meshStandardMaterial color="#ffe8a5" emissive="#ffcb66" emissiveIntensity={0.8} /></mesh>
+              <pointLight position={[1.8, 2.6, 0]} color="#ffd88b" intensity={1.2} distance={8} />
+            </group>
+          );
+        })}
+        <Html position={[0, 5, 10]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+          <div style={{ whiteSpace: "nowrap", textAlign: "center", color: "#f3d99a", textShadow: "0 2px 8px #000", fontWeight: 900, letterSpacing: 3, fontSize: 12 }}>ALWAYS ROLEPLAY · MATCH DAY PLAZA</div>
+        </Html>
       </group>
     </group>
   );
