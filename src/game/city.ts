@@ -25,13 +25,13 @@ export const SIDEWALK = 3; // sidewalk band on each side of the road
 
 export const BUILDINGS: BuildingDef[] = [
   // North-west block
-  { x: -38, z: -46, w: 26, d: 20, h: 15, color: "#c9b08a", kind: "bank", label: "LAGOS UNION BANK" },
-  { x: -56, z: -60, w: 24, d: 16, h: 9, color: "#7f9ec4", kind: "police", label: "POLICE HQ" },
+  { x: -38, z: -46, w: 26, d: 20, h: 15, color: "#c9b08a", kind: "bank", label: "ZENITH  /  KUDA BANK" },
+  { x: -56, z: -60, w: 24, d: 16, h: 9, color: "#7f9ec4", kind: "police", label: "LAGOS POLICE STATION" },
   { x: -58, z: -18, w: 16, d: 16, h: 22, color: "#d8a681" },
   { x: -24, z: -20, w: 14, d: 12, h: 12, color: "#b7c4a0" },
   { x: -38, z: -22, w: 10, d: 10, h: 8, color: "#c98f6d" },
   // North-east block
-  { x: 40, z: -50, w: 32, d: 16, h: 8, color: "#e0b13e", kind: "dealership", label: "OJOTO MOTORS" },
+  { x: 40, z: -50, w: 32, d: 16, h: 8, color: "#e0b13e", kind: "dealership", label: "OJOTO CAR DEALERSHIP" },
   { x: 20, z: -22, w: 16, d: 14, h: 24, color: "#9db8c9" },
   { x: 58, z: -22, w: 20, d: 16, h: 13, color: "#c4a3d1" },
   { x: 56, z: -46, w: 12, d: 10, h: 6, color: "#a0b89a" },
@@ -60,7 +60,7 @@ export const POIS: Poi[] = [
   { id: "atm-bank", kind: "atm", x: -19, z: -40, label: "ATM" },
   { id: "atm-market", kind: "atm", x: 30, z: 9, label: "ATM" },
   { id: "atm-se", kind: "atm", x: 62, z: 10, label: "ATM" },
-  { id: "bank", kind: "bank", x: -19, z: -30, label: "Lagos Union Bank" },
+  { id: "bank", kind: "bank", x: -19, z: -30, label: "Zenith / Kuda Bank" },
   { id: "police", kind: "police", x: -41, z: -64, label: "Police HQ" },
   { id: "dealership", kind: "dealership", x: 40, z: -61, label: "Ojoto Motors" },
   { id: "home", kind: "apartments", x: 42, z: 38, label: "Ikoyi Towers" },
