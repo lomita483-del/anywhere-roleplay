@@ -448,6 +448,7 @@ function WardrobeApp() {
   const choices = {
     skinTone: [{label:"Warm brown",value:"#a86f48"},{label:"Deep brown",value:"#69402d"},{label:"Light brown",value:"#c58b61"},{label:"Dark",value:"#3e2b24"}],
     hair: [{label:"Short fade",value:"short"},{label:"Locs",value:"locs"},{label:"Braids",value:"braids"},{label:"Low cut",value:"lowcut"}],
+    hairColor: [{label:"Deep purple",value:"#4b1877"},{label:"Natural black",value:"#171513"},{label:"Dark brown",value:"#35241c"},{label:"Blonde",value:"#d4b477"}],
     top: [{label:"Streetwear",value:"streetwear"},{label:"Formal",value:"formal"},{label:"Traditional Agbada",value:"agbada"},{label:"Police uniform",value:"uniform"}],
     bottom: [{label:"Jeans",value:"jeans"},{label:"Formal trousers",value:"formal"},{label:"Traditional trousers",value:"traditional"},{label:"Cargo pants",value:"cargo"}],
     accessory: [{label:"None",value:"none"},{label:"Gold chain",value:"chain"},{label:"Cap",value:"cap"},{label:"Sunglasses",value:"shades"}],
@@ -468,7 +469,7 @@ function WardrobeApp() {
       <div className="mt-3 flex items-center gap-3"><div className="h-12 w-12 rounded-full border-2 border-white/20" style={{backgroundColor:outfit.skinTone}}/><div><div className="text-xs font-semibold text-white">{outfit.top === "agbada" ? "Traditional Agbada" : outfit.top.charAt(0).toUpperCase()+outfit.top.slice(1)}</div><div className="text-[10px] text-hud-muted">{outfit.hair} hair · {outfit.accessory}</div></div></div>
     </div>
     {notice && <div role="status" className="rounded-lg bg-[#eab308]/10 p-2 text-[10px] text-[#f4d16a]">{notice}</div>}
-    <div className="grid grid-cols-1 gap-2">{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
+    <div className="grid grid-cols-1 gap-2">{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("hairColor","Hair colour")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
     <button className="rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a]" onClick={() => setNotice("Wardrobe saved to this character.")}>Save outfit</button>
   </div>;
 }
