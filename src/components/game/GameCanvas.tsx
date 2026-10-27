@@ -182,8 +182,8 @@ function AdminCommandSync() {
           const payload = command.payload ?? {};
           switch (command.command) {
             case "teleport":
-              if (Number.isFinite(Number(payload.x)) && Number.isFinite(Number(payload.z))) {
-                g.playerPos.set(Number(payload.x), 0, Number(payload.z));
+              if (Number.isFinite(Number(payload["x"])) && Number.isFinite(Number(payload["z"]))) {
+                g.playerPos.set(Number(payload["x"]), 0, Number(payload["z"]));
                 g.adminFlyHeight = 0;
               }
               break;
@@ -196,11 +196,11 @@ function AdminCommandSync() {
             case "fly":
               g.adminFlying = true; g.adminLevitating = false;
               g.adminFlyHeight = Math.max(8, g.adminFlyHeight);
-              g.adminFlySpeed = Math.max(8, Math.min(100, Number(payload.speed) || 28));
+              g.adminFlySpeed = Math.max(8, Math.min(100, Number(payload["speed"]) || 28));
               break;
             case "stop_fly": g.adminFlying = false; g.adminFlyHeight = 0; break;
             case "spawn_vehicle": {
-              const model = String(payload.model ?? "sedan");
+              const model = String(payload["model"] ?? "sedan");
               if (VEHICLE_CATALOG[model]) {
                 const id = "admin-" + (crypto.randomUUID?.() ?? String(Date.now()));
                 useGame.getState().addSpawned({ id, model, x: g.playerPos.x + 2.5, z: g.playerPos.z + 2.5, rotY: g.playerYaw, fuel: 100 });
@@ -211,11 +211,11 @@ function AdminCommandSync() {
             }
             case "spawn_npc": {
               const id = "npc-" + (crypto.randomUUID?.() ?? String(Date.now()));
-              g.adminSpawnedNpcs = [...g.adminSpawnedNpcs, { id, x: g.playerPos.x + (Math.random() * 4 - 2), z: g.playerPos.z + (Math.random() * 4 - 2), name: String(payload.name ?? "Admin NPC").slice(0, 32) }];
+              g.adminSpawnedNpcs = [...g.adminSpawnedNpcs, { id, x: g.playerPos.x + (Math.random() * 4 - 2), z: g.playerPos.z + (Math.random() * 4 - 2), name: String(payload["name"] ?? "Admin NPC").slice(0, 32) }];
               break;
             }
             case "remove_npc":
-              g.adminSpawnedNpcs = payload.id ? g.adminSpawnedNpcs.filter(n => n.id !== String(payload.id)) : [];
+              g.adminSpawnedNpcs = payload["id"] ? g.adminSpawnedNpcs.filter(n => n.id !== String(payload["id"])) : [];
               break;
           }
           await (supabase as any).from("admin_commands").update({ acknowledged_at: new Date().toISOString() })
