@@ -611,7 +611,7 @@ function CityNamedTraffic() {
     }
     for(let i=count;i<refs.current.length;i++){const group=refs.current[i];if(group)group.visible=false;}
   });
-  return <>{models.map((model,i)=><group key={model+"-"+i} ref={el=>{refs.current[i]=el;}} scale={model==="danfo" ? 0.72 : model==="keke" ? 0.8 : 0.78}><VehicleBody model={model}/></group>)}</>;
+  return <>{models.slice(0,count).map((model,i)=><group key={model+"-"+i} ref={el=>{refs.current[i]=el;}} scale={model==="danfo" ? 0.72 : model==="keke" ? 0.8 : 0.78}><VehicleBody model={model}/></group>)}</>;
 }
 
 function CityTraffic() {
