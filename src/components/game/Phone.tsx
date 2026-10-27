@@ -627,7 +627,7 @@ function RideApp() {
       { id: "ride" as const, title: "Book a ride", desc: "Comfortable city car", fare: 1600, Icon: Car },
       { id: "bike" as const, title: "Call Bike Man", desc: "Okada — faster through busy streets", fare: 700, Icon: Bike },
       { id: "private" as const, title: "Hire private driver", desc: "Premium chauffeur service", fare: 4200, Icon: User },
-    ].map(({ id, title, desc, fare, Icon }) => <button key={id} disabled={!waypoint || booking || driving} onClick={() => book(id)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left transition hover:bg-white/10 disabled:opacity-45">
+    ].map(({ id, title, desc, fare, Icon }) => <button key={id} disabled={!waypoint || !!rideRequest || driving} onClick={() => book(id)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left transition hover:bg-white/10 disabled:opacity-45">
       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Icon className="h-5 w-5" /></span>
       <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">{title}</span><span className="mt-0.5 block text-[10px] text-hud-muted">{desc}</span></span>
       <span className="text-xs font-bold text-emerald-200">{naira(fare)}</span>
