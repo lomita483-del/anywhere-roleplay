@@ -447,6 +447,68 @@ export default function GameWorld() {
   const activeJob = useGame((s) => s.activeJob);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone: string; top: string } }>>({});
 
+  useEffect(() => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return;
+    const pointers = new Map<number, { x: number; y: number }>();
+    let lastX = 0;
+    let lastY = 0;
+    let pinchDistance = 0;
+    let dragging = false;
+    const down = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size === 1) {
+        lastX = event.clientX; lastY = event.clientY; dragging = true;
+      } else if (pointers.size === 2) {
+        const pts = [...pointers.values()];
+        pinchDistance = Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y);
+        dragging = false;
+      }
+    };
+    const move = (event: PointerEvent) => {
+      if (!pointers.has(event.pointerId)) return;
+      const old = pointers.get(event.pointerId)!;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size >= 2) {
+        const pts = [...pointers.values()];
+        const distance = Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y);
+        if (pinchDistance > 0) g.camDistance = THREE.MathUtils.clamp(g.camDistance - (distance - pinchDistance) * 0.055, 4, 95);
+        pinchDistance = distance;
+        return;
+      }
+      if (!dragging) return;
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      lastX = event.clientX; lastY = event.clientY;
+      g.camYaw -= dx * 0.006;
+      g.camPitch = THREE.MathUtils.clamp(g.camPitch + dy * 0.0045, 0.12, 1.48);
+    };
+    const up = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) pinchDistance = 0;
+      if (!pointers.size) dragging = false;
+    };
+    const wheel = (event: WheelEvent) => {
+      event.preventDefault();
+      g.camDistance = THREE.MathUtils.clamp(g.camDistance + event.deltaY * 0.025, 4, 95);
+    };
+    canvas.addEventListener("pointerdown", down);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    canvas.addEventListener("wheel", wheel, { passive: false });
+    return () => {
+      canvas.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      canvas.removeEventListener("wheel", wheel);
+    };
+  }, []);
+
+
+
   const register = (id: string, grp: THREE.Group | null) => {
     vehRefs.current.set(id, grp);
   };
@@ -606,12 +668,12 @@ export default function GameWorld() {
     // Camera rig — orbit yaw + smooth follow
     const driving = !!g.drivingId;
     _target.set(g.playerPos.x, driving ? 1.5 : 1.1, g.playerPos.z);
-    const dist = driving ? 12 : 8;
-    const height = driving ? 5.5 : 4.5;
+    const dist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
+    const pitch = driving ? Math.min(g.camPitch, 0.85) : g.camPitch;
     _ideal.set(
-      _target.x + Math.sin(g.camYaw) * dist,
-      _target.y + height,
-      _target.z + Math.cos(g.camYaw) * dist
+      _target.x + Math.sin(g.camYaw) * dist * Math.cos(pitch),
+      _target.y + Math.sin(pitch) * dist,
+      _target.z + Math.cos(g.camYaw) * dist * Math.cos(pitch)
     );
     const alpha = 1 - Math.exp(-5 * dt);
     camera.position.lerp(_ideal, alpha);
