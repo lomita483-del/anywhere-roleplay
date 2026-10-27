@@ -6,7 +6,7 @@ import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
+import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
 
 type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel";
 
@@ -285,8 +285,37 @@ function MapApp() {
       const S = c.width;
       ctx.clearRect(0, 0, S, S);
       // Draw the same world bounds, road widths and building footprints used by the 3D scene.
-      ctx.fillStyle = "#9da78a";
+      ctx.fillStyle = "#87967b";
       ctx.fillRect(0, 0, S, S);
+      // Makoko lagoon / waterfront edge.
+      {
+        const [wx1, wz1] = to(-WORLD / 2, 88, S);
+        const [wx2, wz2] = to(-112, WORLD / 2, S);
+        ctx.fillStyle = "#477d88";
+        ctx.fillRect(wx1, wz1, wx2 - wx1, wz2 - wz1);
+        ctx.strokeStyle = "rgba(204,235,230,.28)";
+        ctx.lineWidth = 1;
+        for (let y = wz1 + 8; y < wz2; y += 11) {
+          ctx.beginPath(); ctx.moveTo(wx1 + 3, y); ctx.lineTo(wx2 - 3, y - 2); ctx.stroke();
+        }
+      }
+      // District land zones.
+      const districts = [
+        { name: "YABA / SURULERE", x: -76, z: -76, w: 152, h: 152, color: "#a5ad8b" },
+        { name: "OSHODI / MUSHIN", x: -WORLD / 2, z: -110, w: 68, h: 108, color: "#b8a27a" },
+        { name: "IKEJA / AIRPORT", x: 112, z: -WORLD / 2, w: 68, h: 110, color: "#a5b6b7" },
+        { name: "LEKKI / VI", x: 112, z: -20, w: 68, h: 130, color: "#a3b5a6" },
+        { name: "AJEGUNLE / MAKOKO", x: -WORLD / 2, z: -20, w: 68, h: 110, color: "#b7a27e" },
+        { name: "EKO ATLANTIC", x: 112, z: 110, w: 68, h: 70, color: "#b2c4ca" },
+      ];
+      for (const district of districts) {
+        const [x1, z1] = to(district.x, district.z, S);
+        const [x2, z2] = to(district.x + district.w, district.z + district.h, S);
+        ctx.fillStyle = district.color;
+        ctx.globalAlpha = 0.45;
+        ctx.fillRect(x1, z1, x2 - x1, z2 - z1);
+        ctx.globalAlpha = 1;
+      }
       // City blocks / undeveloped plots
       ctx.fillStyle = "#b9bba6";
       for (let bx = -40; bx <= 40; bx += 80) {
@@ -350,14 +379,14 @@ function MapApp() {
         ctx.lineWidth = 1;
         ctx.strokeRect(x1, z1, x2 - x1, z2 - z1);
       }
-      // Airport runway and live construction parcel are drawn at the same coordinates as the 3D world props.
+      // Main airport runway and live construction parcel use expanded world coordinates.
       {
-        const [rx1, rz1] = to(24, -101, S);
-        const [rx2, rz2] = to(78, -91, S);
+        const [rx1, rz1] = to(116, -151, S);
+        const [rx2, rz2] = to(174, -125, S);
         ctx.fillStyle = "#363d46";
         ctx.fillRect(rx1, rz1, rx2 - rx1, rz2 - rz1);
         ctx.strokeStyle = "#f4f0dc"; ctx.lineWidth = 1;
-        for (const z of [-100, -96, -92]) {
+        for (const z of [-146, -139, -132]) {
           const [, py] = to(0, z, S);
           ctx.beginPath(); ctx.moveTo(rx1, py); ctx.lineTo(rx2, py); ctx.stroke();
         }
@@ -373,6 +402,30 @@ function MapApp() {
         ctx.font = "bold 7px sans-serif";
         ctx.fillText("CONSTRUCTION", cx1 + 3, cz1 + 10);
       }
+      // District names and major road labels.
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "bold 7px sans-serif";
+      const districtLabels: [string, number, number][] = [
+        ["YABA / SURULERE", -30, -10], ["OSHODI / MUSHIN", -144, -45],
+        ["IKEJA / AIRPORT", 142, -96], ["LEKKI / V.I.", 143, 46],
+        ["AJEGUNLE / MAKOKO", -143, 62], ["EKO ATLANTIC", 142, 143],
+        ["OUTSKIRTS VILLAGE", 98, 77],
+      ];
+      for (const [label, x, z] of districtLabels) {
+        const [px, pz] = to(x, z, S);
+        ctx.fillStyle = "rgba(10,24,27,.72)";
+        const width = ctx.measureText(label).width + 7;
+        ctx.fillRect(px - width / 2, pz - 5, width, 10);
+        ctx.fillStyle = "#f2e8c8";
+        ctx.fillText(label, px, pz);
+      }
+      ctx.font = "bold 6px sans-serif";
+      ctx.fillStyle = "#f0d26c";
+      const [roadX, roadZ] = to(0, -82, S);
+      ctx.fillText("MAINLAND EXPRESS", roadX + 18, roadZ);
+      const [lekkiRoadX, lekkiRoadZ] = to(140, 4, S);
+      ctx.fillText("LEKKI-EPE LINK", lekkiRoadX + 15, lekkiRoadZ);
       // Landmark pins
       for (const p of POIS) {
         const [px, pz] = to(p.x, p.z, S);
@@ -385,6 +438,14 @@ function MapApp() {
         if (t) { const [px, pz] = to(t[0], t[1], S); ctx.fillStyle = "#ff5c5c"; ctx.beginPath(); ctx.arc(px, pz, 5, 0, Math.PI * 2); ctx.fill(); }
       }
       if (waypoint) {
+        const [currentX, currentZ] = to(g.playerPos.x, g.playerPos.z, S);
+        const [targetX, targetZ] = to(waypoint.x, waypoint.z, S);
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,72,72,.88)";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(currentX, currentZ); ctx.lineTo(targetX, targetZ); ctx.stroke();
+        ctx.restore();
         const [wx, wz] = to(waypoint.x, waypoint.z, S);
         ctx.strokeStyle = "rgba(255,83,83,.3)"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(wx, wz); ctx.lineTo(wx, wz); ctx.stroke();
         ctx.fillStyle = "#ff5757"; ctx.beginPath(); ctx.arc(wx, wz, 6, 0, Math.PI * 2); ctx.fill();
@@ -411,8 +472,8 @@ function MapApp() {
       setSelectedPoi(nearest.p);
       return;
     }
-    const x = Math.max(-118, Math.min(118, (cx / canvas.width) * 240 - 120));
-    const z = Math.max(-118, Math.min(118, (cy / canvas.height) * 240 - 120));
+    const x = Math.max(-BOUND, Math.min(BOUND, (cx / canvas.width) * WORLD - WORLD / 2));
+    const z = Math.max(-BOUND, Math.min(BOUND, (cy / canvas.height) * WORLD - WORLD / 2));
     setSelectedPoi(null);
     setWaypoint({ x, z, label: "Custom GPS destination", kind: "custom" });
   };
