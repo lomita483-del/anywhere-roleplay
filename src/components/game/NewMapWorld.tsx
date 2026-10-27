@@ -794,6 +794,8 @@ function CityBirdsAndFlags() {
 }
 
 function CityEcosystem() {
+  const craneRefs=useRef<(THREE.Group|null)[]>([]);
+  useFrame((state)=>{craneRefs.current.forEach((crane,i)=>{if(crane)crane.rotation.y=Math.sin(state.clock.elapsedTime*.32+i*1.4)*.08;});});
   const buildings = useMemo<CityBlock[]>(() => {
     const out: CityBlock[] = [];
     // Industrial and corporate skyline, north-west.
@@ -839,7 +841,7 @@ function CityEcosystem() {
     <Html position={[-112,8,84]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
-      {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
+      {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]} rotation-y={x < 0 ? -0.16 : 0.16}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[9, 82]} /><meshStandardMaterial color="#4a5054" roughness={1} /></mesh>
         {Array.from({ length: 8 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.015, -34 + i * 9]}><planeGeometry args={[0.22, 4]} /><meshBasicMaterial color="#f5f1df" /></mesh>)}
       </group>)}
@@ -873,7 +875,7 @@ function CityEcosystem() {
       <mesh rotation-x={-Math.PI / 2} position={[5, 0, 0]}><planeGeometry args={[88, 64]} /><meshStandardMaterial color="#267b9c" roughness={0.34} metalness={0.1} /></mesh>
       <mesh position={[-22, 0.28, -1]}><boxGeometry args={[47, 0.55, 17]} /><meshStandardMaterial color="#777e7e" roughness={0.9} /></mesh>
       {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]!} roughness={0.8} /></mesh>)}
-      {([[-27, -11], [8, -12]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0, z]}>
+      {([[-27, -11], [8, -12]] as [number, number][]).map(([x,z],i) => <group key={i} ref={el=>{craneRefs.current[i]=el;}} position={[x, 0, z]}>
         <mesh position={[0, 7, 0]}><boxGeometry args={[1, 14, 1]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
         <mesh position={[4, 13, 0]}><boxGeometry args={[9, 0.8, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
         <mesh position={[7, 6, 0]}><boxGeometry args={[0.8, 12, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
