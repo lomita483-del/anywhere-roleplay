@@ -194,7 +194,7 @@ export default function Hud() {
           ] as [string, number, string][]).map(([label, value, color]) => (
             <div key={label} className="min-w-[66px]">
               <div className="mb-0.5 flex justify-between gap-2 text-[8px] uppercase tracking-wider text-hud-muted"><span>{label}</span><span>{Math.round(value)}%</span></div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full transition-[width] duration-300" style={{ width: Math.max(0, Math.min(100, value)) + "%", backgroundColor: color }} /></div>
+              <div className="h-2 overflow-hidden rounded-full border border-white/10 bg-black/45 shadow-inner"><div className="h-full rounded-full transition-[width] duration-300 shadow-[0_0_7px_rgba(255,255,255,.18)]" style={{ width: Math.max(0, Math.min(100, value)) + "%", backgroundImage: "linear-gradient(90deg, " + color + ", #f8fafc88)", boxShadow: "inset 0 1px 1px rgba(255,255,255,.42)" }} /></div>
             </div>
           ))}
         </div>
