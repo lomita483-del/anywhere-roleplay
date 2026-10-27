@@ -1,6 +1,6 @@
 /** Single source of truth for the NEW MAP world layout. Coordinates are game-space units. */
 export const NEW_MAP_SCALE = 0.48;
-export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
+export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "school" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; buildingId?: string; }
 export interface NewMapBuilding { id: string; label: string; kind: string; district: string; x: number; z: number; w: number; d: number; h: number; color: string; doorSide: "north" | "south" | "east" | "west"; doorX?: number; doorZ?: number; }
 export interface NewMapDistrict { id: string; label: string; x: number; z: number; w: number; d: number; color: string; }
@@ -101,7 +101,7 @@ export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
  return {...b,doorX:b.x+(b.doorSide==="east"?doorOffset:b.doorSide==="west"?doorOffset:0),doorZ:b.z+(b.doorSide==="north"||b.doorSide==="south"?doorOffset:0)};
 });
 export const NEW_MAP_POIS: NewMapPoi[] = [
- ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"||b.kind==="school"||b.kind==="residential"?"shop":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
+ ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
  {id:"stadium",label:"CITY STADIUM",kind:"stadium",x:0,z:0},
  {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-112,z:118},
  {id:"atm-market",label:"MARKET ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorZ!,buildingId:"market"},
