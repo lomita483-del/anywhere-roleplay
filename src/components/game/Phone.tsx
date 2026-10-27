@@ -195,6 +195,8 @@ function MarketplaceApp() {
   const bank = useGame((s) => s.bank);
   const inventory = useGame((s) => s.inventory);
   const purchase = useGame((s) => s.purchaseMarketItem);
+  const rent = useGame((s) => s.rentMarketItem);
+  const rentals = useGame((s) => s.rentals);
   const [notice, setNotice] = useState("");
   return (
     <div className="flex flex-col gap-3 p-3 text-sm">
@@ -218,22 +220,22 @@ function MarketplaceApp() {
                   </div>
                   <div className="shrink-0 text-xs font-bold text-[#8de3bf]">{naira(item.price)}</div>
                 </div>
-                <button
-                  disabled={owned}
-                  className="mt-3 w-full rounded-xl border border-[#59d6a2]/30 bg-[#59d6a2]/15 px-3 py-2 text-xs font-bold text-[#a6f0d0] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45"
-                  onClick={() => {
+                <div className="mt-3 flex gap-2">
+                  <button disabled={owned} className="flex-1 rounded-xl border border-[#59d6a2]/30 bg-[#59d6a2]/15 px-3 py-2 text-xs font-bold text-[#a6f0d0] disabled:opacity-45" onClick={() => {
                     const ok = purchase(item.id);
-                    setNotice(ok ? `Purchased ${item.name}. It is saved in your inventory.` : "Purchase failed — check your balance or ownership.");
-                  }}
-                >
-                  {owned ? "Owned ✓" : "Purchase"}
-                </button>
+                    setNotice(ok ? "Purchased " + item.name + ". Saved in inventory." : "Purchase failed — check bank funds or ownership.");
+                  }}>{owned ? "Owned ✓" : "Buy"}</button>
+                  {category === "Property" && <button disabled={owned || (rentals[item.id] ?? 0) > Date.now()} className="flex-1 rounded-xl border border-[#eab308]/30 bg-[#eab308]/10 px-2 py-2 text-[10px] font-bold text-[#f4d16a] disabled:opacity-45" onClick={() => {
+                    const ok = rent(item.id);
+                    setNotice(ok ? "Rented " + item.name + " for 7 days using bank funds." : "Rental failed — check bank funds or current rental.");
+                  }}>{(rentals[item.id] ?? 0) > Date.now() ? "Rented ✓" : "Rent 7 days · " + naira(Math.max(1000, Math.round(item.price * 0.2)))}</button>}
+                </div>
               </div>
             );
           })}
         </section>
       ))}
-      <div className="text-[10px] leading-relaxed text-hud-muted">Purchases are deducted from your bank balance first, then cash. Items remain in your saved inventory.</div>
+      <div className="text-[10px] leading-relaxed text-hud-muted">Property purchases and seven-day rentals use bank funds. Other purchases use bank first, then cash; inventory remains saved.</div>
     </div>
   );
 }
