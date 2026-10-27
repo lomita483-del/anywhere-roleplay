@@ -331,23 +331,24 @@ export const useGame = create<GameStore>((set, get) => ({
   start: (fresh) => {
     const saved = fresh ? null : loadSave();
     if (saved) {
-      const savedCity: CityId = saved.city === "lagos" || !saved.city ? "newmap" : saved.city;
+      const migratedToNewMap = saved.city === "lagos" || !saved.city;
+      const savedCity: CityId = migratedToNewMap ? "newmap" : saved.city;
       setCityWorld(savedCity);
-      g.playerPos.set(saved.x, 0, saved.z);
+      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 0 : saved.z);
       g.time = saved.time;
       set({
         started: true, city: savedCity, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
-        activeJob: saved.activeJob ?? null,
-        waypoint: saved.waypoint ?? null,
+        activeJob: savedCity === "newmap" ? null : saved.activeJob ?? null,
+        waypoint: savedCity === "newmap" ? null : saved.waypoint ?? null,
         outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
         needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
         background: { ...DEFAULTS.background, ...(saved.background ?? {}) },
         characterTraits: saved.characterTraits ?? DEFAULTS.characterTraits,
         unlockedDistricts: saved.unlockedDistricts ?? ["Yaba / Surulere"],
         rentals: saved.rentals ?? {},
-        spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
+        spawnedVehicles: savedCity === "newmap" ? [] : Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
         hasSave: true,
       });
