@@ -67,6 +67,10 @@ export default function Hud() {
   const prompt = useGame((s) => s.prompt);
   const phoneOpen = useGame((s) => s.phoneOpen);
   const job = useGame((s) => s.activeJob);
+  const waypoint = useGame((s) => s.waypoint);
+  const clearWaypoint = useGame((s) => s.clearWaypoint);
+  const [gpsDistance, setGpsDistance] = useState(0);
+  const [gpsBearing, setGpsBearing] = useState(0);
   const nearTarget = useGame((s) => s.nearJobTarget);
   const openPhone = useGame((s) => s.openPhone);
   const [night, setNight] = useState(false);
@@ -110,6 +114,15 @@ export default function Hud() {
           </div>
         )}
       </div>
+
+      {waypoint && !phoneOpen && (
+        <div className="hud-panel pointer-events-auto absolute left-1/2 top-[5.4rem] flex -translate-x-1/2 items-center gap-2 rounded-full border border-red-400/30 bg-[#160f12]/85 px-3 py-2 backdrop-blur-md">
+          <MapPin className="h-4 w-4 text-red-400" />
+          <div className="max-w-[44vw]"><div className="truncate text-[10px] font-bold text-white">{waypoint.label}</div><div className="text-[9px] text-red-200">{gpsDistance}m · GPS ACTIVE</div></div>
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500/15" style={{ transform: `rotate(${gpsBearing * 180 / Math.PI}deg)` }}><span className="text-sm font-black text-red-300">↑</span></div>
+          <button aria-label="Clear GPS route" className="ml-1 text-xs text-white/60" onClick={clearWaypoint}>✕</button>
+        </div>
+      )}
 
       {/* Speedometer */}
       {driving && (
