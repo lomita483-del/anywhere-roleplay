@@ -335,7 +335,7 @@ export const useGame = create<GameStore>((set, get) => ({
       const savedCity: CityId = migratedToNewMap ? "newmap" : (saved.city ?? "newmap");
       setCityWorld(savedCity);
       g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 18.2 : saved.z);
-      if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16; }
+      if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 10; }
       g.time = saved.time;
       set({
         started: true, city: savedCity, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
