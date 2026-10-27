@@ -68,8 +68,8 @@ function CloudSaveSync() {
             if (inventorySync.error) console.warn("[Anywhere Roleplay] Inventory sync skipped:", inventorySync.error.message);
           }
           const propertyRows = [
-            ...current.inventory["mainland-studio"] ? [{ owner_id: userId, property_key: "mainland-studio", property_name: "Mainland Studio", status: "owned", rent_until: null }] : [],
-            ...current.inventory["ikoyi-apartment"] ? [{ owner_id: userId, property_key: "ikoyi-apartment", property_name: "Ikoyi Apartment", status: "owned", rent_until: null }] : [],
+            ...(current.inventory["mainland-studio"] ? [{ owner_id: userId, property_key: "mainland-studio", property_name: "Mainland Studio", status: "owned", rent_until: null }] : []),
+            ...(current.inventory["ikoyi-apartment"] ? [{ owner_id: userId, property_key: "ikoyi-apartment", property_name: "Ikoyi Apartment", status: "owned", rent_until: null }] : []),
             ...Object.entries(current.rentals).filter(([, expiry]) => expiry > Date.now()).map(([property_key, expiry]) => ({
               owner_id: userId, property_key, property_name: property_key === "ikoyi-apartment" ? "Ikoyi Apartment" : "Mainland Studio", status: "rented", rent_until: new Date(expiry).toISOString(),
             })),
