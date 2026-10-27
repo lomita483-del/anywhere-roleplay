@@ -31,7 +31,7 @@ export interface ActiveJob {
   hint: string;
 }
 
-export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | null;
+export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | "fuel" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface RideRequest { id: string; service: "ride" | "bike" | "private"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
