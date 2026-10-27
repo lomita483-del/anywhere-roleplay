@@ -711,6 +711,57 @@ function AnimatedAircraft() {
   return <><group ref={first}>{plane}</group><group ref={second}>{plane}</group></>;
 }
 
+function AnimatedWatercraft() {
+  const cargo=useRef<THREE.Group>(null);
+  const boats=useRef<(THREE.Group|null)[]>([]);
+  useFrame((state)=>{
+    const t=state.clock.elapsedTime;
+    if(cargo.current){cargo.current.position.set(116+Math.sin(t*.035)*18,.15,120+Math.sin(t*.055)*5);cargo.current.rotation.y=Math.sin(t*.035)*.12;}
+    boats.current.forEach((boat,i)=>{if(!boat)return;const a=t*.18+i*2.2;boat.position.set(-112+Math.cos(a)*(5+i*2),.2,118+Math.sin(a)*(3+i));boat.rotation.y=-a;});
+  });
+  return <>
+    <group ref={cargo}>
+      <mesh position={[0,.35,0]}><boxGeometry args={[16,.8,4.4]}/><meshStandardMaterial color="#263d49" roughness={.8}/></mesh>
+      <mesh position={[5,.95,0]}><boxGeometry args={[3,1.4,3.8]}/><meshStandardMaterial color="#e3e0d4" roughness={.8}/></mesh>
+      {Array.from({length:6},(_,i)=><mesh key={i} position={[-5+(i%3)*3,1.35,Math.floor(i/3)*1.4-.7]}><boxGeometry args={[2.7,1.1,1.25]}/><meshStandardMaterial color=["#d04e3e","#d5ad45","#367a9c","#47784f"][i%4]! roughness={.85}/></mesh>)}
+    </group>
+    {[0,1,2].map(i=><group key={i} ref={el=>{boats.current[i]=el;}}><mesh><boxGeometry args={[3,.28,1.1]}/><meshStandardMaterial color="#6b4d34" roughness={.9}/></mesh><mesh position={[0,.35,0]}><boxGeometry args={[.8,.35,.65]}/><meshStandardMaterial color="#e6d8b8" roughness={.8}/></mesh></group>)}
+  </>;
+}
+
+function AnimatedSmoke() {
+  const smoke=useRef<THREE.InstancedMesh>(null);
+  useFrame((state)=>{
+    const mesh=smoke.current;if(!mesh)return;
+    const dummy=new THREE.Object3D(),t=state.clock.elapsedTime;
+    for(let i=0;i<18;i++){
+      const stack=i%3,x=-153+stack*10,z=-46;
+      const phase=(t*.35+i*.41)%5;
+      dummy.position.set(x+Math.sin(t*.2+i)*.45,10+phase,z+Math.cos(t*.2+i)*.4);
+      const size=.55+phase*.18;dummy.scale.set(size,size,size);dummy.rotation.set(0,t*.15+i,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate=true;
+  });
+  return <instancedMesh ref={smoke} args={[undefined,undefined,18]} frustumCulled={false}><sphereGeometry args={[1,6,5]}/><meshStandardMaterial color="#b8b8ad" transparent opacity={.22} depthWrite={false} roughness={1}/></instancedMesh>;
+}
+
+function CityBirdsAndFlags() {
+  const birds=useRef<THREE.InstancedMesh>(null);
+  const flags=useRef<(THREE.Group|null)[]>([]);
+  useFrame((state)=>{
+    const mesh=birds.current,t=state.clock.elapsedTime;
+    if(mesh){const dummy=new THREE.Object3D();for(let i=0;i<18;i++){const a=t*.12+i*2.4;dummy.position.set(Math.cos(a)*(38+(i%4)*13),18+(i%5)*1.6,Math.sin(a)*(32+(i%3)*15));dummy.rotation.y=-a;dummy.scale.set(1,.08,.32);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);}mesh.instanceMatrix.needsUpdate=true;}
+    flags.current.forEach((flag,i)=>{if(flag)flag.rotation.z=Math.sin(t*2.2+i*1.7)*.09;});
+  });
+  return <>
+    <instancedMesh ref={birds} args={[undefined,undefined,18]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#273238" roughness={.9}/></instancedMesh>
+    {[[ -110,6,32],[116,6,104],[0,5,17],[6,5,-92]].map(([x,y,z],i)=><group key={i} ref={el=>{flags.current[i]=el;}} position={[x,y,z]}>
+      <mesh><cylinderGeometry args={[.06,.08,5,5]}/><meshStandardMaterial color="#b6b5a7" metalness={.3}/></mesh>
+      <mesh position={[.7,1.55,0]}><boxGeometry args={[1.4,.8,.06]}/><meshStandardMaterial color={i%2?"#13834b":"#f3f0e5"} side={THREE.DoubleSide}/></mesh>
+    </group>)}
+  </>;
+}
+
 function CityEcosystem() {
   const buildings = useMemo<CityBlock[]>(() => {
     const out: CityBlock[] = [];
@@ -747,6 +798,9 @@ function CityEcosystem() {
     <CityPedestrians />
     <WaterShimmer />
     <AnimatedAircraft />
+    <AnimatedWatercraft />
+    <AnimatedSmoke />
+    <CityBirdsAndFlags />
     <RoadFurniture />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
