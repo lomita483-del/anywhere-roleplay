@@ -73,7 +73,7 @@ function InstancedCrowd() {
       const rx = 45 + row * 3.1;
       const rz = 28 + row * 2.05;
       const y = 4.8 + row * 3.15;
-      const count = 88;
+      const count = 128;
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2 + (row % 2) * 0.018;
         crowd.push({ x: Math.cos(angle) * rx, z: Math.sin(angle) * rz, y, angle: -angle, color: colors[index % colors.length]!, index });
@@ -360,7 +360,7 @@ function CityEcosystem() {
       {[-1, 1].map((side) => <group key={side} position={[side * 12, 0.3, 0]}><mesh><boxGeometry args={[5, 0.6, 3.5]} /><meshStandardMaterial color="#c5a779" /></mesh><mesh position={[0, 1.8, -0.7]}><boxGeometry args={[5, 3, 0.3]} /><meshStandardMaterial color="#876344" /></mesh><mesh position={[0, 3.4, 0]}><boxGeometry args={[6, 0.3, 4.5]} /><meshStandardMaterial color="#cfa85d" /></mesh></group>)}
     </group>
     {/* District labels and premium map title. */}
-    <Html position={[0, 8, -166]} center distanceFactor={48} style={{ pointerEvents: "none" }}>
+    <Html position={[-25, 8, -166]} center distanceFactor={48} style={{ pointerEvents: "none" }}>
       <div style={{ whiteSpace: "nowrap", textAlign: "center", padding: "12px 22px", borderRadius: 9, color: "#f8e4ac", background: "linear-gradient(135deg,rgba(7,19,29,.97),rgba(19,46,48,.94))", border: "2px solid rgba(224,188,105,.9)", boxShadow: "0 8px 28px #0008", fontWeight: 1000, letterSpacing: 5, fontSize: 25 }}>LAGOS METROPLEX<div style={{ marginTop: 4, fontSize: 10, letterSpacing: 3, color: "#d8e3d9" }}>A LIVING OPEN-WORLD CITY · ALWAYS ROLEPLAY</div></div>
     </Html>
     <CityTrees />
