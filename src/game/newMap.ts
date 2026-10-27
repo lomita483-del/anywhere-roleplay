@@ -43,9 +43,16 @@ function roadIntersections() {
 }
 export const NEW_MAP_JUNCTIONS = roadIntersections();
 const roadNodeId=(p:[number,number])=>`road-node-${p[0]}-${p[1]}`;
+const graphEdges: NewMapRoadEdge[] = roadEdges.flatMap(road => road.points.slice(1).flatMap((point,index)=>{
+ const a=road.points[index]!,b=point,dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;
+ const cuts:{p:[number,number];t:number}[]=[{p:a,t:0},{p:b,t:1}];
+ for(const j of NEW_MAP_JUNCTIONS){const t=den?((j[0]-a[0])*dx+(j[1]-a[1])*dz)/den:0;if(t>0.001&&t<0.999&&Math.hypot(a[0]+t*dx-j[0],a[1]+t*dz-j[1])<0.2)cuts.push({p:j,t});}
+ cuts.sort((x,y)=>x.t-y.t);
+ return cuts.slice(1).map((cut,i)=>{const previous=cuts[i]!.p;return {...road,id:`${road.id}-segment-${index}-${i}`,from:roadNodeId(previous),to:roadNodeId(cut.p),points:[previous,cut.p] as [number,number][]};});
+}));
 export const NEW_MAP_ROAD_GRAPH = {
- nodes: Array.from(new Map(roadEdges.flatMap(e=>e.points.map(p=>[roadNodeId(p),{id:roadNodeId(p),x:p[0],z:p[1]}] as const)).concat(NEW_MAP_JUNCTIONS.map(p=>[roadNodeId(p),{id:roadNodeId(p),x:p[0],z:p[1]}] as const))).values()),
- edges: roadEdges.map(e=>({...e,from:roadNodeId(e.points[0]!),to:roadNodeId(e.points[e.points.length-1]!)}))
+ nodes: Array.from(new Map(graphEdges.flatMap(e=>e.points.map(p=>[roadNodeId(p),{id:roadNodeId(p),x:p[0],z:p[1]}] as const))).values()),
+ edges: graphEdges
 };
 export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
