@@ -145,6 +145,9 @@ interface GameStore {
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
   outfit: PlayerOutfit;
+  needs: PlayerNeeds;
+  tickNeeds: (seconds: number) => void;
+  eatFood: (kind: "mama-put" | "snack" | "water") => boolean;
   rentals: Record<string, number>;
   rentMarketItem: (key: string) => boolean;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
@@ -212,7 +215,8 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
-  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,\n  needs: { ...DEFAULT_NEEDS },
+  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  needs: { ...DEFAULT_NEEDS },
   rentals: {} as Record<string, number>,
   interior: false,
   interiorLabel: "Ikoyi Apartment",
@@ -244,7 +248,8 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
-        outfit: saved.outfit ?? DEFAULTS.outfit,\n        needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
+        outfit: saved.outfit ?? DEFAULTS.outfit,
+        needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
@@ -360,7 +365,25 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save();
     return true;
   },
-  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },\n  tickNeeds: (seconds) => {\n    if (!Number.isFinite(seconds) || seconds <= 0 || !get().started) return;\n    const n = get().needs;\n    const hunger = Math.max(0, n.hunger - seconds / 30);\n    const energy = Math.max(0, n.energy - seconds / 45);\n    const stress = Math.min(100, n.stress + (g.playerSpeed > 5 ? seconds * 0.035 : seconds * 0.008));\n    const hygiene = Math.max(0, n.hygiene - seconds / 180);\n    const health = Math.max(0, Math.min(100, n.health + (hunger > 15 && energy > 10 ? seconds * 0.006 : -seconds * 0.06)));\n    set({ needs: { hunger, energy, health, stress, hygiene } });\n  },\n  eatFood: (kind) => {\n    const choices = { "mama-put": { price: 900, hunger: 42, energy: 12, stress: -8, hygiene: 0, message: "🍲 Mama Put rice and stew — belle don full!" }, snack: { price: 250, hunger: 12, energy: 3, stress: -2, hygiene: 0, message: "🥟 Quick roadside snack bought." }, water: { price: 150, hunger: 0, energy: 2, stress: -4, hygiene: 0, message: "💧 Cold sachet water. Refreshing!" } } as const;\n    const item = choices[kind];\n    if (!get().spend(item.price, "cash") && !get().spend(item.price, "bank")) return false;\n    const n = get().needs;\n    set({ needs: { hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), health: n.health, stress: Math.max(0, n.stress + item.stress), hygiene: n.hygiene } });\n    get().radio(item.message); get().save(); return true;\n  },
+  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  tickNeeds: (seconds) => {
+    if (!Number.isFinite(seconds) || seconds <= 0 || !get().started) return;
+    const n = get().needs;
+    const hunger = Math.max(0, n.hunger - seconds / 30);
+    const energy = Math.max(0, n.energy - seconds / 45);
+    const stress = Math.min(100, n.stress + (g.playerSpeed > 5 ? seconds * 0.035 : seconds * 0.008));
+    const hygiene = Math.max(0, n.hygiene - seconds / 180);
+    const health = Math.max(0, Math.min(100, n.health + (hunger > 15 && energy > 10 ? seconds * 0.006 : -seconds * 0.06)));
+    set({ needs: { hunger, energy, health, stress, hygiene } });
+  },
+  eatFood: (kind) => {
+    const choices = { "mama-put": { price: 900, hunger: 42, energy: 12, stress: -8, hygiene: 0, message: "🍲 Mama Put rice and stew — belle don full!" }, snack: { price: 250, hunger: 12, energy: 3, stress: -2, hygiene: 0, message: "🥟 Quick roadside snack bought." }, water: { price: 150, hunger: 0, energy: 2, stress: -4, hygiene: 0, message: "💧 Cold sachet water. Refreshing!" } } as const;
+    const item = choices[kind];
+    if (!get().spend(item.price, "cash") && !get().spend(item.price, "bank")) return false;
+    const n = get().needs;
+    set({ needs: { hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), health: n.health, stress: Math.max(0, n.stress + item.stress), hygiene: n.hygiene } });
+    get().radio(item.message); get().save(); return true;
+  },
   setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
