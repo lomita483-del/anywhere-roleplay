@@ -30,16 +30,23 @@ export const BUILDINGS: BuildingDef[] = [
   { x: -58, z: -18, w: 16, d: 16, h: 22, color: "#d8a681" },
   { x: -24, z: -20, w: 14, d: 12, h: 12, color: "#b7c4a0" },
   { x: -38, z: -22, w: 10, d: 10, h: 8, color: "#c98f6d" },
+  { x: -62, z: -40, w: 12, d: 12, h: 10, color: "#b5a18b" },
+  { x: -18, z: -48, w: 12, d: 10, h: 7, color: "#d5c6a5" },
+  { x: -20, z: -62, w: 12, d: 10, h: 8, color: "#b3c0b1" },
   // North-east block
   { x: 40, z: -50, w: 32, d: 16, h: 8, color: "#e0b13e", kind: "dealership", label: "OJOTO CAR DEALERSHIP" },
   { x: 20, z: -22, w: 16, d: 14, h: 24, color: "#9db8c9" },
   { x: 58, z: -22, w: 20, d: 16, h: 13, color: "#c4a3d1" },
   { x: 56, z: -46, w: 12, d: 10, h: 6, color: "#a0b89a" },
+  { x: 35, z: -31, w: 12, d: 10, h: 12, color: "#b7a9a0" },
+  { x: 65, z: -57, w: 12, d: 10, h: 9, color: "#c4b49b" },
+  { x: 18, z: -53, w: 10, d: 10, h: 7, color: "#9caeac" },
   // South-west block — Balogun-style market
   { x: -40, z: 46, w: 34, d: 20, h: 6, color: "#e2954f", kind: "market", label: "BALOGUN MARKET" },
   { x: -20, z: 60, w: 16, d: 14, h: 14, color: "#b8b0a0" },
   { x: -58, z: 30, w: 14, d: 12, h: 18, color: "#c9a0a0" },
   { x: -58, z: 60, w: 18, d: 14, h: 10, color: "#a0c4b8" },
+  { x: -12, z: 43, w: 10, d: 10, h: 8, color: "#d6b49c" },
   // Airport district at the edge of the playable city
   { x: 91, z: -96, w: 20, d: 13, h: 8, color: "#b9c7c8", kind: "airport", label: "LAGOS INTERNATIONAL AIRPORT" },
   // South-east block
@@ -47,6 +54,8 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 62, z: 24, w: 16, d: 14, h: 9, color: "#c4d1a3" },
   { x: 24, z: 26, w: 14, d: 12, h: 11, color: "#d1bfa3" },
   { x: 22, z: 58, w: 14, d: 16, h: 8, color: "#a3b8d1", kind: "depot", label: "TRADE DEPOT" },
+  { x: 65, z: 45, w: 10, d: 10, h: 11, color: "#c2b39c" },
+  { x: 12, z: 42, w: 10, d: 10, h: 7, color: "#b9c4ba" },
   { x: 2, z: 42, w: 18, d: 14, h: 8, color: "#d2b46b", kind: "clothing", label: "LAGOS BOUTIQUE" },
 ];
 
