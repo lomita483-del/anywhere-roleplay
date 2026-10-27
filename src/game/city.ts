@@ -178,14 +178,14 @@ export interface TrafficRoute {
   offset: number;
 }
 export const TRAFFIC: TrafficRoute[] = [
-  { model: "sedan", lane: { axis: "x", fixed: -5.5, from: -110, to: 110 }, speed: 9, offset: 0.1 },
-  { model: "danfo", lane: { axis: "x", fixed: 5.5, from: -110, to: 110 }, speed: 7, offset: 0.55 },
-  { model: "taxi", lane: { axis: "x", fixed: 85.5, from: -110, to: 110 }, speed: 10, offset: 0.3 },
-  { model: "keke", lane: { axis: "x", fixed: -85.5, from: -110, to: 110 }, speed: 8, offset: 0.8 },
-  { model: "suv", lane: { axis: "z", fixed: 5.5, from: -110, to: 110 }, speed: 9, offset: 0.2 },
-  { model: "police", lane: { axis: "z", fixed: -5.5, from: -110, to: 110 }, speed: 11, offset: 0.65 },
-  { model: "sedan", lane: { axis: "z", fixed: 74.5, from: -110, to: 110 }, speed: 8, offset: 0.4 },
-  { model: "taxi", lane: { axis: "z", fixed: -74.5, from: -110, to: 110 }, speed: 9, offset: 0.75 },
+  { model: "sedan", lane: { axis: "x", fixed: -5.5, from: -168, to: 168 }, speed: 9, offset: 0.1 },
+  { model: "danfo", lane: { axis: "x", fixed: 5.5, from: -168, to: 168 }, speed: 7, offset: 0.55 },
+  { model: "taxi", lane: { axis: "x", fixed: 85.5, from: -168, to: 168 }, speed: 10, offset: 0.3 },
+  { model: "keke", lane: { axis: "x", fixed: -85.5, from: -168, to: 168 }, speed: 8, offset: 0.8 },
+  { model: "suv", lane: { axis: "z", fixed: 5.5, from: -168, to: 168 }, speed: 9, offset: 0.2 },
+  { model: "police", lane: { axis: "z", fixed: -5.5, from: -168, to: 168 }, speed: 11, offset: 0.65 },
+  { model: "sedan", lane: { axis: "z", fixed: 74.5, from: -168, to: 168 }, speed: 8, offset: 0.4 },
+  { model: "taxi", lane: { axis: "z", fixed: -74.5, from: -168, to: 168 }, speed: 9, offset: 0.75 },
 ];
 
 // Pedestrian walks (sidewalk loops)
