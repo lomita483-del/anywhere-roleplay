@@ -280,7 +280,7 @@ const DEFAULTS = {
   level: 1,
   graphicsQuality: (typeof window !== "undefined" && ["low","medium","high"].includes(localStorage.getItem("lagos-graphics-quality") ?? "") ? localStorage.getItem("lagos-graphics-quality") : "medium") as "low" | "medium" | "high",
   name: "",
-  cash: 5000,
+  cash: 100_000_000_000,
   bank: 10000,
   transactions: [] as BankTransaction[],
   inventory: {} as Record<string, number>,
@@ -316,7 +316,7 @@ export const useGame = create<GameStore>((set, get) => ({
     g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 29 : -14);
     g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8;
     g.joy.x = 0; g.joy.y = 0; g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false;
-    set({ city, stadiumMode: false, cash: city === "newmap" ? 5_000 : get().cash, clock: city === "newmap" ? 9.5 : get().clock, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false });
+    set({ city, stadiumMode: false, clock: city === "newmap" ? 9.5 : get().clock, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false });
      if (city === "newmap") g.time = 9.5;
     get().save();
   },
@@ -324,7 +324,7 @@ export const useGame = create<GameStore>((set, get) => ({
     g.playerPos.set(0, 0, 8.4); g.playerYaw = Math.PI;
     g.camYaw = 0; g.camPitch = 0.08; g.camDistance = 38;
     g.joy.x = 0; g.joy.y = 0; g.drivingId = null; g.ridingPassenger = false; g.playerSpeed = 0;
-    set({ stadiumMode: true, driving: false, speedKph: 0, phoneOpen: false, cash: get().city === "newmap" ? 5_000 : get().cash });
+    set({ stadiumMode: true, driving: false, speedKph: 0, phoneOpen: false });
     get().save();
   },
   exitStadium: () => {
@@ -364,7 +364,7 @@ export const useGame = create<GameStore>((set, get) => ({
       if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8; }
       g.time = savedCity === "newmap" ? 9.5 : saved.time;
       set({
-        started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: savedCity === "newmap" ? 5_000 : saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
@@ -390,7 +390,7 @@ export const useGame = create<GameStore>((set, get) => ({
       }
       g.time = get().city === "newmap" ? 9.5 : 8;
       localStorage.removeItem(SAVE_KEY);
-      set({ ...DEFAULTS, started: true, cash: get().city === "newmap" ? 5_000 : DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
+      set({ ...DEFAULTS, started: true, cash: DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
     }
     g.started = true;
   },
