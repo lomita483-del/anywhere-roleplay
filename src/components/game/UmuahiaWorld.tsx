@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Html } from "@react-three/drei";
-import * as THREE from "three";
 import { BUILDINGS, WORLD, ROADS_X, ROADS_Z, ROAD_HALF, SIDEWALK } from "@/game/city";
 import { groundTexture, asphaltTexture, sidewalkTexture } from "@/game/textures";
 
