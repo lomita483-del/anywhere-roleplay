@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -839,7 +839,7 @@ function CityEcosystem() {
     <Html position={[112,12,78]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
     <Html position={[-112,8,84]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
-    <group position={[34, 0, -140]}>
+    <group position={[airportTerminal.x, 0, airportTerminal.z-48]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]} rotation-y={x < 0 ? -0.16 : 0.16}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[9, 82]} /><meshStandardMaterial color="#4a5054" roughness={1} /></mesh>
         {Array.from({ length: 8 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.015, -34 + i * 9]}><planeGeometry args={[0.22, 4]} /><meshBasicMaterial color="#f5f1df" /></mesh>)}
@@ -856,13 +856,13 @@ function CityEcosystem() {
       <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>LAGOS INTERNATIONAL AIRPORT</div></Html>
     </group>
     {/* University sports court and landscaped quad. */}
-    <group position={[-132, 0, 72]}>
+    <group position={[NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.x+13, 0, NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.z+16]}>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><planeGeometry args={[22, 13]} /><meshStandardMaterial color="#2d7a43" roughness={1} /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><planeGeometry args={[0.12, 12]} /><meshBasicMaterial color="#f3f0dc" /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[3.1, 3.2, 24]} /><meshBasicMaterial color="#f3f0dc" side={THREE.DoubleSide} /></mesh>
     </group>
     {/* Port and waterfront with container stacks, crane frames and ships. */}
-    <group position={[105, 0, 142]}>
+    <group position={[NEW_MAP_BUILDINGS.find(b=>b.id==="port-terminal")!.x, 0, NEW_MAP_BUILDINGS.find(b=>b.id==="port-terminal")!.z]}>
       <mesh rotation-x={-Math.PI / 2} position={[5, 0, 0]}><planeGeometry args={[88, 64]} /><meshStandardMaterial color="#267b9c" roughness={0.34} metalness={0.1} /></mesh>
       <mesh position={[-22, 0.28, -1]}><boxGeometry args={[47, 0.55, 17]} /><meshStandardMaterial color="#777e7e" roughness={0.9} /></mesh>
       {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]!} roughness={0.8} /></mesh>)}
@@ -878,7 +878,7 @@ function CityEcosystem() {
       <Html position={[8, 8, 28]} center distanceFactor={35} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>PORT OF LAGOS</div></Html>
     </group>
     {/* Scenic lake and sandy recreational edge, south-west. */}
-    <group position={[-112, 0, 118]}>
+    <group position={[NEW_MAP_POIS.find(p=>p.id==="lake")!.x, 0, NEW_MAP_POIS.find(p=>p.id==="lake")!.z]}>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><circleGeometry args={[27, 40]} /><meshStandardMaterial color="#287f9d" roughness={0.35} /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[27, 32, 40]} /><meshStandardMaterial color="#d7c391" roughness={1} side={THREE.DoubleSide} /></mesh>
       {[-1, 1].map((side) => <group key={side} position={[side * 29, 0.3, 0]}><mesh><boxGeometry args={[5, 0.6, 3.5]} /><meshStandardMaterial color="#c5a779" /></mesh><mesh position={[0, 1.8, -0.7]}><boxGeometry args={[5, 3, 0.3]} /><meshStandardMaterial color="#876344" /></mesh><mesh position={[0, 3.4, 0]}><boxGeometry args={[6, 0.3, 4.5]} /><meshStandardMaterial color="#cfa85d" /></mesh></group>)}
