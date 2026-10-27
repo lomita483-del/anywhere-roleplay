@@ -561,6 +561,24 @@ function CurvedRoadNetwork() {
   );
 }
 
+function DrainCovers() {
+  const ref=useRef<THREE.InstancedMesh>(null);
+  const points=useMemo(()=>{
+    const out:{x:number;z:number;yaw:number}[]=[];
+    NEW_MAP_ROADS.forEach((path,ri)=>{
+      const curve=new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22);
+      for(const t of [.22,.52,.82]){const p=curve.getPointAt(t),tan=curve.getTangentAt(t);out.push({x:p.x+tan.z*5.1,z:p.z-tan.x*5.1,yaw:Math.atan2(-tan.z,tan.x)});}
+    });
+    return out;
+  },[]);
+  useEffect(()=>{
+    const mesh=ref.current;if(!mesh)return;const dummy=new THREE.Object3D();
+    points.forEach((p,i)=>{dummy.position.set(p.x,.055,p.z);dummy.rotation.y=p.yaw;dummy.scale.set(1.2,.035,.62);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);});
+    mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
+  },[points]);
+  return <instancedMesh ref={ref} args={[undefined,undefined,points.length]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#30383a" metalness={.35} roughness={.72} polygonOffset polygonOffsetFactor={-3} polygonOffsetUnits={-3}/></instancedMesh>;
+}
+
 function CityTraffic() {
   const bodyRef=useRef<THREE.InstancedMesh>(null);
   const glassRef=useRef<THREE.InstancedMesh>(null);
@@ -812,6 +830,7 @@ function CityEcosystem() {
     <AnimatedSmoke />
     <CityBirdsAndFlags />
     <RoadFurniture />
+    <DrainCovers />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
