@@ -786,7 +786,7 @@ function CityBirdsAndFlags() {
   });
   return <>
     <instancedMesh ref={birds} args={[undefined,undefined,18]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#273238" roughness={.9}/></instancedMesh>
-    {[[ -110,6,32],[116,6,104],[0,5,17],[6,5,-92]].map(([x,y,z],i)=><group key={i} ref={el=>{flags.current[i]=el;}} position={[x,y,z]}>
+    {([[ -110,6,32],[116,6,104],[0,5,17],[6,5,-92]] as [number,number,number][]).map(([x,y,z],i)=><group key={i} ref={el=>{flags.current[i]=el;}} position={[x,y,z]}>
       <mesh><cylinderGeometry args={[.06,.08,5,5]}/><meshStandardMaterial color="#b6b5a7" metalness={.3}/></mesh>
       <mesh position={[.7,1.55,0]}><boxGeometry args={[1.4,.8,.06]}/><meshStandardMaterial color={i%2?"#13834b":"#f3f0e5"} side={THREE.DoubleSide}/></mesh>
     </group>)}
