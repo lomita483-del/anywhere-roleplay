@@ -1,6 +1,6 @@
 import { g } from "./state";
 import { useGame, VEHICLE_CATALOG } from "./store";
-import { ROADS_X, ROADS_Z, isBlocked, clampWorld } from "./city";
+import { ROADS_X, ROADS_Z, BOUND, isBlocked, clampWorld } from "./city";
 
 export function enterVehicle(id: string) {
   const v = g.vehicles.get(id);
@@ -100,12 +100,12 @@ export function deliverOwnedVehicle(model: string) {
   for (const rx of ROADS_X) {
     const lane = px < rx ? rx - 5.5 : rx + 5.5;
     const d = Math.hypot(lane - px, pz - pz);
-    if (Math.abs(pz) <= 115 && d < bestD) { bestD = d; best = { x: lane, z: Math.max(-110, Math.min(110, pz)), yaw: 0 }; }
+    if (Math.abs(pz) <= BOUND - 8 && d < bestD) { bestD = d; best = { x: lane, z: Math.max(-BOUND + 8, Math.min(BOUND - 8, pz)), yaw: 0 }; }
   }
   for (const rz of ROADS_Z) {
     const lane = pz < rz ? rz - 5.5 : rz + 5.5;
     const d = Math.hypot(px - px, lane - pz);
-    if (Math.abs(px) <= 115 && d < bestD) { bestD = d; best = { x: Math.max(-110, Math.min(110, px)), z: lane, yaw: Math.PI / 2 }; }
+    if (Math.abs(px) <= BOUND - 8 && d < bestD) { bestD = d; best = { x: Math.max(-BOUND + 8, Math.min(BOUND - 8, px)), z: lane, yaw: Math.PI / 2 }; }
   }
   if (!best) return;
   const id = `own-${model}-${Date.now()}`;
