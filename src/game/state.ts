@@ -30,6 +30,8 @@ export const g = {
   joy: { x: 0, y: 0 }, // virtual joystick (-1..1)
   drivingId: null as string | null,
   ridingPassenger: false,
+  raining: false,
+  powerOutage: false,
   sirenOn: false,
   vehicles: new Map<string, VehicleRuntime>(),
   sprint: false,
