@@ -5,7 +5,7 @@
 export const NEW_MAP_SCALE = 0.48;
 export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; }
-export const NEW_MAP_LOCAL_ROAD_START_INDEX = 9;
+export const NEW_MAP_LOCAL_ROAD_START_INDEX = 7;
 export const NEW_MAP_ROADS: [number, number][][] = [
   // West-side distributor follows the outside edge of the lake, university and industrial plots,
   // then skirts the south edge of downtown before joining the market.
@@ -16,8 +16,6 @@ export const NEW_MAP_ROADS: [number, number][][] = [
   [[28, -94], [36, -94], [36, -88], [49, -75], [60, -59], [67, -50], [67, -27], [72, 3], [84, 8], [96, 27], [101, 48], [108, 64], [103, 75], [90, 84], [76, 92], [70, 103]],
   // University access road joins the west distributor directly to the stadium loop.
   [[-100, 43], [-96, 35], [-85, 22], [-78, 10], [-72, 1]],
-  // Market-to-boulevard connector, aligned with the market's south-east entrance.
-  [[-38, -76], [-42, -66], [-47, -52]],
   // Residential access street stays along the west edge of the housing grid.
   [[67, -27], [72, -30], [73, -40], [74, -52], [73, -56.4], [72, -64], [60, -72], [49, -75]],
   // Bank access spur runs beside the stadium plaza and terminates outside the bank frontage.
