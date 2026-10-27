@@ -64,14 +64,35 @@ export function facadeTexture(color: string, lit: boolean) {
   const [c, ctx] = canvas(64);
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, 64, 64);
-  for (let wy = 0; wy < 2; wy++) {
-    for (let wx = 0; wx < 2; wx++) {
-      const x = 10 + wx * 26;
-      const y = 10 + wy * 26;
-      ctx.fillStyle = lit ? "#f5d98a" : "#2f3b4c";
-      ctx.fillRect(x, y, 12, 14);
-      ctx.fillStyle = "rgba(255,255,255,0.25)";
-      ctx.fillRect(x, y, 12, 3);
+  // Concrete tint variation and faint weather streaks keep the facade from reading as a flat game texture.
+  ctx.fillStyle = "rgba(46,37,28,0.10)";
+  ctx.fillRect(0, 0, 4, 64);
+  ctx.fillRect(31, 0, 2, 64);
+  ctx.fillRect(57, 0, 3, 64);
+  ctx.fillStyle = "rgba(255,255,255,0.10)";
+  ctx.fillRect(0, 0, 64, 3);
+  ctx.fillRect(0, 31, 64, 2);
+  for (let wy = 0; wy < 3; wy++) {
+    for (let wx = 0; wx < 3; wx++) {
+      const x = 5 + wx * 20;
+      const y = 5 + wy * 20;
+      const warmLit = lit || ((wx * 3 + wy * 5) % 7 === 0);
+      // Recessed frame, glazing, mullions and a subtle reflection strip make tidy window grids.
+      ctx.fillStyle = "#b9b4a6";
+      ctx.fillRect(x - 1, y - 1, 13, 15);
+      ctx.fillStyle = "#1d2b35";
+      ctx.fillRect(x, y, 11, 13);
+      ctx.fillStyle = warmLit ? "#b69b5e" : ((wx + wy) % 3 === 0 ? "#506d7a" : "#2a4656");
+      ctx.fillRect(x + 1, y + 1, 9, 11);
+      if (warmLit) {
+        ctx.fillStyle = "rgba(255,226,151,0.75)";
+        ctx.fillRect(x + 1, y + 1, 9, 11);
+      }
+      ctx.fillStyle = "rgba(255,255,255,0.24)";
+      ctx.fillRect(x + 1, y + 1, 9, 2);
+      ctx.fillStyle = "#172630";
+      ctx.fillRect(x + 5, y, 1, 13);
+      ctx.fillRect(x, y + 6, 11, 1);
     }
   }
   const t = new THREE.CanvasTexture(c);
