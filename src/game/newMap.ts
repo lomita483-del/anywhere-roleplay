@@ -21,12 +21,15 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
   { id: "industrial", label: "INDUSTRIAL DISTRICT", kind: "shop", x: -143, z: -46 },
   { id: "corporate", label: "DOWNTOWN / CORPORATE", kind: "shop", x: -145, z: -82 },
   { id: "university", label: "UNIVERSITY DISTRICT", kind: "university", x: -110, z: 32 },
+  { id: "school", label: "COMMUNITY SECONDARY SCHOOL", kind: "university", x: -88, z: 52 },
   { id: "stadium", label: "CITY STADIUM", kind: "stadium", x: 0, z: 0 },
   { id: "residential", label: "RESIDENTIAL DISTRICT", kind: "residential", x: 98, z: -40 },
   { id: "civic", label: "CIVIC & OFFICE BLOCKS", kind: "shop", x: 78, z: 10 },
   { id: "lake", label: "LAKE PARK & RESORT", kind: "lake", x: -112, z: 118 },
   { id: "port", label: "PORT OF LAGOS", kind: "port", x: 116, z: 120 },
-  { id: "bank", label: "COMMUNITY BANK & ATMs", kind: "bank", x: 38, z: 24 },
+  { id: "bank", label: "COMMUNITY BANK", kind: "bank", x: 38, z: 24 },
+  { id: "atm-market", label: "MARKET ATM", kind: "bank", x: -20, z: -65 },
+  { id: "atm-university", label: "UNIVERSITY ATM", kind: "bank", x: -94, z: 26 },
   { id: "hospital", label: "CITY HOSPITAL", kind: "hospital", x: 78, z: 28 },
   { id: "police", label: "POLICE STATION", kind: "police", x: -130, z: -38 },
   { id: "fuel", label: "FUEL STATION", kind: "fuel", x: 58, z: -34 },
@@ -35,4 +38,24 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
   { id: "dealership", label: "CAR DEALERSHIP", kind: "dealership", x: 96, z: 36 },
   { id: "real-estate", label: "REAL ESTATE OFFICE", kind: "real-estate", x: 110, z: 54 },
 ];
+
+export const NEW_MAP_BUILDINGS = [
+  ...Array.from({ length: 64 }, (_, i) => ({
+    x: 82 + (i % 8) * 10.4, z: -63 + Math.floor(i / 8) * 10.3,
+    w: 6.1 + (i % 3) * 0.35, d: 6.1 + (i % 2) * 0.5,
+    h: 6.2 + ((i * 7) % 8) * 1.25, color: ["#d9c9a8","#d7d4c8","#c9b39a","#d7b8a5","#b9c9bd","#d8cdbb","#c3b7a6","#e0d1b4"][i % 8],
+    ...(i % 8 === 0 ? { kind: "apartments" as const, label: "Walk-up Apartments" } : {}),
+  })),
+  { x: 38, z: 18, w: 12, d: 10, h: 9, color: "#c8b78c", kind: "bank" as const, label: "Community Bank" },
+  { x: -38, z: -82, w: 22, d: 12, h: 6, color: "#c7864b", kind: "market" as const, label: "Central Market" },
+  { x: -24, z: 28, w: 9, d: 8, h: 4, color: "#d7b37a", kind: "clothing" as const, label: "Mama Put Buka" },
+  { x: 58, z: -40, w: 12, d: 9, h: 5, color: "#d7bd65", kind: "fuel" as const, label: "Fuel Station" },
+  { x: -130, z: -42, w: 14, d: 12, h: 8, color: "#8ba2b4", kind: "police" as const, label: "Police Station" },
+  { x: 78, z: 22, w: 15, d: 12, h: 10, color: "#d9d2bd", label: "City Hospital" },
+  { x: -36, z: 2, w: 8, d: 7, h: 5, color: "#b8c7b9", label: "Neighbourhood Pharmacy" },
+  { x: -110, z: 38, w: 24, d: 17, h: 9, color: "#b8a28d", label: "University District" },
+  { x: 96, z: 40, w: 14, d: 10, h: 7, color: "#b5b6a7", kind: "dealership" as const, label: "Car Dealership" },
+  { x: 110, z: 58, w: 12, d: 9, h: 7, color: "#c7b89c", label: "Real Estate Office" },
+];
 export const NEW_MAP_BOUNDS = { minX: -180, maxX: 180, minZ: -180, maxZ: 180 };
+
