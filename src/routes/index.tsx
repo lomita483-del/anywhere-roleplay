@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import type { Session } from "@supabase/supabase-js";
 import { ArrowRight, CarFront, Cloud, Gamepad2, MapPin, Smartphone, Wallet, LogIn, UserPlus, LogOut } from "lucide-react";
 import GameCanvas from "@/components/game/GameCanvas";
@@ -236,7 +236,7 @@ function Index() {
           <div className="mt-7 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/25"><Gamepad2 className="h-3.5 w-3.5" /> Built for desktop and mobile</div>
         </div>
       </section>
-      <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-white/20">ANYWHERE ROLEPLAY · EARLY ACCESS</p>
+      <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-3 text-[10px] text-white/25"><span>ANYWHERE ROLEPLAY · EARLY ACCESS</span><span>·</span><Link to="/admin" className="font-semibold uppercase tracking-widest text-amber-200/60 hover:text-amber-100">Admin Center</Link></div>
     </main>
   );
 }
