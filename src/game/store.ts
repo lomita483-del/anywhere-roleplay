@@ -46,6 +46,7 @@ export interface SaveData {
   z: number;
   activeJob?: ActiveJob | null;
   outfit?: PlayerOutfit;
+  rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
 
@@ -202,7 +203,7 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
-  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,\n  rentals: {} as Record<string, number>,
   interior: false,
   waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
@@ -232,7 +233,7 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
-        outfit: saved.outfit ?? DEFAULTS.outfit,
+        outfit: saved.outfit ?? DEFAULTS.outfit,\n        rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
         hasSave: true,
@@ -253,7 +254,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, outfit: s.outfit, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, outfit: s.outfit, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
@@ -335,7 +336,7 @@ export const useGame = create<GameStore>((set, get) => ({
   cancelJob: () => set({ activeJob: null }),
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
-  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  rentMarketItem: (key) => {\n    const item = MARKET_ITEMS.find((entry) => entry.id === key && entry.category === "Property");\n    if (!item || (get().inventory[key] ?? 0) > 0) return false;\n    const expiry = get().rentals[key] ?? 0;\n    if (expiry > Date.now()) return false;\n    const rentPrice = Math.max(1000, Math.round(item.price * 0.2));\n    if (!get().spend(rentPrice, "bank")) return false;\n    set({ rentals: { ...get().rentals, [key]: Date.now() + 7 * 24 * 60 * 60 * 1000 } });\n    get().save();\n    return true;\n  },\n  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
   setInterior: (inside) => set({ interior: inside }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
