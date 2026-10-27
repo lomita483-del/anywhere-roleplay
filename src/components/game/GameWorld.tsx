@@ -1082,7 +1082,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     return;
   }
 
-  const poi = nearestPoi(x, z, 4.5);
+  const poi = nearestPoi(x, z, 3.0);
   if (poi) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
     else if (poi.kind === "bank") st.setPrompt({ kind: "atm", label: "Enter Bank / Use ATM" });
