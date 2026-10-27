@@ -164,25 +164,6 @@ export default function NewMapWorld() {
     return [...home.map(([x, z], index) => ({ x, z, team: 0, index })), ...away.map(([x, z], index) => ({ x, z, team: 1, index: index + 11 }))];
   }, []);
 
-  const supporters = useMemo(() => {
-    const crowd: { x: number; z: number; y: number; angle: number; color: string; index: number }[] = [];
-    const colors = ["#f2f0e7", "#d53d4c", "#24579a", "#e2b84f", "#243c35", "#b9c6d1", "#8a4d37"];
-    let index = 0;
-    // Audience is placed on the stepped seating decks, facing inward toward the pitch.
-    for (let row = 0; row < 3; row++) {
-      const rx = 48 + row * 3.3;
-      const rz = 29 + row * 2.3;
-      const y = 4.8 + row * 3.5;
-      const count = 38;
-      for (let i = 0; i < count; i++) {
-        const angle = (i / count) * Math.PI * 2;
-        crowd.push({ x: Math.cos(angle) * rx, z: Math.sin(angle) * rz, y, angle: -angle, color: colors[index % colors.length]!, index });
-        index++;
-      }
-    }
-    return crowd;
-  }, []);
-
   const enterStadium = () => useGame.getState().enterStadium();
   const stadiumMode = useGame((s) => s.stadiumMode);
 
