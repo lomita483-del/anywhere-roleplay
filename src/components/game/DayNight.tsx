@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Sky } from "@react-three/drei";
 import * as THREE from "three";
 import { g, advanceTime } from "@/game/state";
+import { useGame } from "@/game/store";
 
 const DAY_COLOR = new THREE.Color("#cfe4ee");
 const DUSK_COLOR = new THREE.Color("#e8b78a");
@@ -48,7 +49,7 @@ export default function DayNight() {
   useEffect(() => {
     let rainTimer: number | undefined;
     const cycle = window.setInterval(() => {
-      const rain = Math.random() < 0.38;
+      const rain = useGame.getState().city === "newmap" ? Math.random() < 0.08 : Math.random() < 0.38;
       const outage = Math.random() < 0.22;
       g.raining = rain;
       g.powerOutage = outage;
