@@ -386,7 +386,7 @@ function MapApp() {
         const [lx,ly] = to(-112,118,S);
         ctx.fillStyle = "#d5c08e"; ctx.beginPath(); ctx.ellipse(lx,ly,22*S/WORLD,18*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = "#287f9d"; ctx.beginPath(); ctx.ellipse(lx,ly,18*S/WORLD,14*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
-        const [wx,wy] = to(116,120,S); ctx.fillStyle="#2b7e9d"; ctx.fillRect(wx-35*S/WORLD,wy-27*S/WORLD,70*S/WORLD,54*S/WORLD);
+        const [wx,wy] = to(105,142,S); ctx.fillStyle="#2b7e9d"; ctx.fillRect(wx-35*S/WORLD,wy-27*S/WORLD,70*S/WORLD,54*S/WORLD);
         NEW_MAP_DISTRICTS.forEach(d=>{const a=to(d.x-d.w/2,d.z-d.d/2,S),b=to(d.x+d.w/2,d.z+d.d/2,S);ctx.fillStyle=d.color;ctx.globalAlpha=.64;ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);});ctx.globalAlpha=1;
         ctx.lineCap="round";ctx.lineJoin="round";
         NEW_MAP_ROADS.forEach((path,i)=>{const width=NEW_MAP_ROAD_WIDTHS[i]??5;const draw=(color:string,w:number)=>{ctx.beginPath();path.forEach(([x,z],j)=>{const q=to(x,z,S);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,w*S/WORLD);ctx.stroke();};draw("#d2d0c4",width+2.4);draw("#3f464a",width);if(width>=8){ctx.setLineDash([4*S/WORLD,3*S/WORLD]);draw("#f0eee2",.8);ctx.setLineDash([]);}});
