@@ -8,6 +8,7 @@ import {
 } from "@/game/city";
 import { asphaltTexture, sidewalkTexture, groundTexture, facadeTexture, signTexture } from "@/game/textures";
 import { g } from "@/game/state";
+import { useGame } from "@/game/store";
 
 const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
   bank: { dx: 1, dz: 0, ry: Math.PI / 2 },
@@ -327,6 +328,9 @@ function ConstructionSite() {
 }
 
 function ApartmentInterior() {
+  const interior = useGame((s) => s.interior);
+  const interiorLabel = useGame((s) => s.interiorLabel);
+  if (!interior) return null;
   return (
     <group position={[104, 0, 104]}>
       <mesh position={[0, 0.04, 0]} receiveShadow><boxGeometry args={[12, 0.12, 10]} /><meshStandardMaterial color="#8b7355" roughness={0.85} /></mesh>
@@ -337,7 +341,13 @@ function ApartmentInterior() {
       <mesh position={[-2.4, 0.62, -2.5]} castShadow><boxGeometry args={[3.2, 0.9, 1.1]} /><meshStandardMaterial color="#174b3b" roughness={0.7} /></mesh>
       <mesh position={[0.7, 0.42, -1.2]} castShadow><boxGeometry args={[1.7, 0.45, 1.1]} /><meshStandardMaterial color="#4b3927" roughness={0.65} /></mesh>
       <mesh position={[3.8, 1.3, 4.72]}><boxGeometry args={[2.2, 1.2, 0.12]} /><meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.15} /></mesh>
+      <Html position={[3.8, 2.15, 4.65]} center distanceFactor={12}>
+        <div className="whitespace-nowrap rounded-lg border border-[#eab308]/50 bg-[#0b1720]/95 px-3 py-1.5 text-[10px] font-bold tracking-wide text-[#ffe38a]">{interiorLabel}</div>
+      </Html>
       <mesh position={[3.7, 0.55, 2.5]} castShadow><boxGeometry args={[1.5, 1.1, 1.5]} /><meshStandardMaterial color="#3c504b" roughness={0.8} /></mesh>
+      <mesh position={[-3.7, 0.65, -2.4]} castShadow><boxGeometry args={[2.8, 1.2, 1.8]} /><meshStandardMaterial color="#8a6b55" roughness={0.86} /></mesh>
+      <mesh position={[-3.7, 1.28, -2.4]} castShadow><boxGeometry args={[2.9, 0.12, 1.9]} /><meshStandardMaterial color="#d7c6a8" roughness={0.92} /></mesh>
+      <mesh position={[0.2, 1.05, -4.78]}><boxGeometry args={[2.3, 1.35, 0.08]} /><meshStandardMaterial color="#8fc4d4" emissive="#397a8a" emissiveIntensity={0.12} roughness={0.35} /></mesh>
     </group>
   );
 }
