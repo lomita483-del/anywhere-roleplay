@@ -134,6 +134,15 @@ export function clampWorld(x: number, z: number, r = 0.5): [number, number] {
   return [Math.max(-lim, Math.min(lim, x)), Math.max(-lim, Math.min(lim, z))];
 }
 
+export function districtAt(x: number, z: number): string | null {
+  if (x > 110 && z > 110) return "Eko Atlantic";
+  if (x > 110 && z >= -20) return "Lekki / Victoria Island";
+  if (x > 110 && z < -20) return "Ikeja / Airport";
+  if (x < -110 && z >= -20) return "Ajegunle / Makoko";
+  if (x < -110 && z < -20) return "Oshodi / Mushin";
+  return null;
+}
+
 // Market stall canopies in front of the market building
 export const STALLS: { x: number; z: number; color: string }[] = [
   { x: -50, z: 30, color: "#e2574c" },
