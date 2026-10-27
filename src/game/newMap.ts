@@ -26,13 +26,22 @@ const roadEdges: NewMapRoadEdge[] = [
  {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[82,96],[110,96],[138,96],[160,96]]},
  {id:"market-link",from:"market-west",to:"airport-avenue",type:"street",width:5,points:[[-58,-88],[-32,-88],[0,-88]]},
 ];
+function roadIntersections() {
+ const out:[number,number][]=[];
+ const cross=(a:[number,number],b:[number,number],c:[number,number],d:[number,number]):[number,number]|null=>{
+  const den=(a[0]-b[0])*(c[1]-d[1])-(a[1]-b[1])*(c[0]-d[0]);if(Math.abs(den)<1e-8)return null;
+  const t=((a[0]-c[0])*(c[1]-d[1])-(a[1]-c[1])*(c[0]-d[0]))/den;
+  const u=-((a[0]-b[0])*(a[1]-c[1])-(a[1]-b[1])*(a[0]-c[0]))/den;
+  if(t<0||t>1||u<0||u>1)return null;return [Math.round((a[0]+t*(b[0]-a[0]))*10)/10,Math.round((a[1]+t*(b[1]-a[1]))*10)/10];
+ };
+ for(let i=0;i<roadEdges.length;i++)for(let j=i+1;j<roadEdges.length;j++){const e=roadEdges[i]!,f=roadEdges[j]!;for(let a=1;a<e.points.length;a++)for(let b=1;b<f.points.length;b++){const p=cross(e.points[a-1]!,e.points[a]!,f.points[b-1]!,f.points[b]!);if(p&&!out.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1))out.push(p);}}
+ return out;
+}
+export const NEW_MAP_JUNCTIONS = roadIntersections();
+const roadNodeId=(p:[number,number])=>`road-node-${p[0]}-${p[1]}`;
 export const NEW_MAP_ROAD_GRAPH = {
- nodes: [
-  {id:"boulevard-north",x:0,z:-78},{id:"boulevard-south",x:0,z:78},{id:"boulevard-east",x:78,z:0},{id:"boulevard-west",x:-78,z:0},
-  {id:"perimeter-north",x:0,z:-160},{id:"perimeter-east",x:160,z:0},{id:"perimeter-west",x:-160,z:0},{id:"perimeter-south-east",x:160,z:160},
-  {id:"market-junction",x:0,z:-104},{id:"civic-junction",x:78,z:0},{id:"port-junction",x:78,z:78},{id:"university-junction",x:-78,z:0}
- ],
- edges: roadEdges
+ nodes: Array.from(new Map(roadEdges.flatMap(e=>e.points.map(p=>[roadNodeId(p),{id:roadNodeId(p),x:p[0],z:p[1]}] as const)).concat(NEW_MAP_JUNCTIONS.map(p=>[roadNodeId(p),{id:roadNodeId(p),x:p[0],z:p[1]}] as const))).values()),
+ edges: roadEdges.map(e=>({...e,from:roadNodeId(e.points[0]!),to:roadNodeId(e.points[e.points.length-1]!)}))
 };
 export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
@@ -94,7 +103,7 @@ const treeCandidates: NewMapTree[] = [
  ...Array.from({length:14},(_,i)=>({x:-137+(i%7)*7,z:119+Math.floor(i/7)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.4,park:"lake-park"})),
  ...Array.from({length:12},(_,i)=>({x:104+(i%6)*9,z:112+Math.floor(i/6)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.2,park:"port"})),
  ...Array.from({length:12},(_,i)=>({x:75+(i%6)*8,z:94+Math.floor(i/6)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.1,park:"civic"})),
- ...Array.from({length:10},(_,i)=>({x:-145+(i%5)*12,z:126+Math.floor(i/5)*8,type:(i%2===0?"palm":"round") as "palm"|"round",h:2.4,park:"lake-park"}))
+
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
