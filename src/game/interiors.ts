@@ -14,7 +14,7 @@ const commonHome=[
  p("bed",-2.2,1.8,"#b5a2a0",[1.8,.45,1.4]),p("fridge",2.5,2.1,"#c6d2d1",[.55,1.5,.55]),p("counter",1.3,2.1,"#80644a",[1.4,.8,.65]),
  p("wardrobe",-3.4,1.7,"#79543e",[.7,1.7,.6]),p("plant",3.4,-2.4,"#3c875a",[.6,1,.6])
 ];
-export const INTERIOR_DEFS = {
+export const INTERIOR_DEFS: Record<string, InteriorDef> = {
   home:{name:"Home / Apartment",size:[10,9],floorColor:"#695b4d",wallColor:"#c8bda7",accent:"#e6bb69",props:commonHome,npcs:[npc("Neighbour",3,-.5,["Morning o, hope you slept well.","You don chop? There is food in the fridge."])],hotspots:[h("bed","Bed",-2.2,1.8,"sleep"),h("fridge","Fridge",2.5,2.1,"eat"),h("wardrobe","Wardrobe",-3.4,1.7,"openPhone:wardrobe"),h("tv","TV",2.4,-1.4,"openModal:news"),h("generator","Generator switch",3.5,2.9,"openModal:generator"),h("rent","Rent board",0,3.1,"openModal:home")],exit:{x:0,z:4}},
   bank:{name:"Bank Lobby",size:[12,10],floorColor:"#4d5e61",wallColor:"#b5c1bd",accent:"#d5b86a",props:[p("counter",-3,-1,"#a68b5e",[2,.8,.55]),p("counter",0,-1,"#a68b5e",[2,.8,.55]),p("counter",3,-1,"#a68b5e",[2,.8,.55]),p("atm",-4,1.6,"#263c47",[.65,1.2,.5]),p("atm",-2.5,1.6,"#263c47",[.65,1.2,.5]),p("desk",3.5,2.3,"#6e5138",[1.4,.8,.8]),p("vault",4.6,-3.1,"#59676b",[1.2,2,.35]),p("chair",-3,-2,"#394d54",[.5,.7,.5]),p("chair",0,-2,"#394d54",[.5,.7,.5]),p("chair",3,-2,"#394d54",[.5,.7,.5])],npcs:[npc("Teller",0,-.4,["Good day, how can I help?","Please join the queue, oga."]),npc("Bank manager",3.5,1.6,["We offer personal loans to qualified customers.","Bring your account details and let's talk."])],hotspots:[h("teller","Teller",0,-1,"openPhone:bank"),h("atm","ATM",-4,1.6,"openPhone:bank"),h("manager","Manager",3.5,2.3,"openModal:loan")],exit:{x:0,z:4.5}},
   "mama-put":{name:"Mama Put Buka",size:[11,10],floorColor:"#8c7357",wallColor:"#d4b98c",accent:"#e4a544",props:[p("counter",0,-2,"#89512e",[3,.9,.7]),p("stove",2,-3,"#363b3c",[1,.7,.8]),p("table",-2,0,"#9a7048",[1.5,.45,.8]),p("table",1,0,"#9a7048",[1.5,.45,.8]),p("bench",-2,.6,"#68452f",[1.8,.35,.35]),p("bench",1,.6,"#68452f",[1.8,.35,.35]),p("menu",0,-3.4,"#f1d487",[1.6,.9,.1])],npcs:[npc("Customer 1",-3,1,["Aunty, one plate rice please.","This stew sweet die!"]),npc("Customer 2",-1,1.5,["Abeg add small meat.","Na this buka I dey come every day."]),npc("Customer 3",2,1.5,["How much be the beans today?","No wahala, I go pay."]),npc("Customer 4",3,0,["The food hot well well.","Make I sit small."])],hotspots:[h("counter","Counter",0,-2,"openPhone:food"),h("seat","Seat",-2,.6,"eat")],exit:{x:0,z:4.5}},
@@ -34,7 +34,7 @@ export const INTERIOR_DEFS = {
   port:{name:"Port Terminal",size:[14,11],floorColor:"#5e6b68",wallColor:"#b8c4bd",accent:"#d8a64d",props:[p("desk",-3,-2,"#74543b",[2,.8,.7]),p("container",2,0,"#bd594b",[1.4,1.4,2.2]),p("container",4,0,"#3f8296",[1.4,1.4,2.2]),p("container",2,2,"#d2a84b",[1.4,1.4,2.2]),p("rack",-3,1,"#697e79",[1,1.5,.7])],npcs:[npc("Dock supervisor",0,-2,["Cargo needs to move before tide changes.","Ready for a shift?"]),npc("Customs clerk",-3,-1,["Show the manifest, please.","No paperwork, no clearance."])],hotspots:[h("dock","Dock worker shift",2,0,"startShift:dock-worker"),h("customs","Customs clerk",-3,-2,"startShift:customs-clerk")],exit:{x:0,z:5}},
   resort:{name:"Lake Park Resort",size:[12,10],floorColor:"#9b896d",wallColor:"#d9d1b9",accent:"#5cbba4",props:[p("desk",-3,-2,"#9b7651",[1.8,.8,.7]),p("table",0,-1,"#906e4d",[1.5,.5,1]),p("chair",1,0,"#4b7775",[.5,.8,.5]),p("pool",3,1,"#277f9b",[2,.2,1.4]),p("plant",-4,2,"#3e8b58",[.8,1.4,.8])],npcs:[npc("Receptionist",-3,-1,["Welcome to the resort, relax small.","A short rest will help you recharge."]),npc("Lifeguard",3,0,["Pool is open, enjoy yourself.","Please be safe in the water."])],hotspots:[h("reception","Reception",-3,-2,"heal"),h("pool","Pool",3,1,"openModal:swim")],exit:{x:0,z:4.5}},
   generic:{name:"City Interior",size:[10,9],floorColor:"#777a73",wallColor:"#c7c8bd",accent:"#d6b15e",props:[p("counter",0,-2,"#80664a",[2,.8,.7]),p("chair",-2,0,"#705744",[.6,.7,.6]),p("plant",3,1,"#3b8052",[.7,1.2,.7])],npcs:[npc("Staff member",1,-1,["Welcome in, how can I help?","Please ask if you need anything."])],hotspots:[h("service","Service counter",0,-2,"openModal:service")],exit:{x:0,z:4}}
-} satisfies Record<string,InteriorDef>;
+};
 export function getInteriorKind(label: string, kind?: string): string {
   const k=(kind??"").toLowerCase();
   const known=["home","bank","mama-put","hospital","pharmacy","police","market","depot","fuel","dealership","real-estate","tower","factory","university","school","airport","port","resort"];
@@ -61,6 +61,6 @@ export function getInteriorKind(label: string, kind?: string): string {
   return "generic";
 }
 export function getInteriorDefinition(label: string, kind?: string): InteriorDef {
-  const key = getInteriorKind(label,kind) as keyof typeof INTERIOR_DEFS;
-  return INTERIOR_DEFS[key] ?? INTERIOR_DEFS.generic;
+  const key = getInteriorKind(label,kind);
+  return INTERIOR_DEFS[key] ?? INTERIOR_DEFS["generic"];
 }
