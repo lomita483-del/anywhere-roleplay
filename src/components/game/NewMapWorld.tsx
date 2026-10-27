@@ -531,6 +531,12 @@ function CurvedRoadNetwork() {
     return out;
   }, [roadData]);
   const marksRef = useRef<THREE.InstancedMesh>(null);
+  const edgeRef = useRef<THREE.InstancedMesh>(null);
+  const edgeData = useMemo(() => {
+    const out:{x:number;z:number;yaw:number}[]=[];
+    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===6?8.8:road.index<2?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
+    return out;
+  },[roadData]);
   useEffect(() => {
     const mesh = marksRef.current;
     if (!mesh) return;
@@ -544,7 +550,9 @@ function CurvedRoadNetwork() {
     });
     mesh.instanceMatrix.needsUpdate = true;
     mesh.computeBoundingSphere();
-  }, [dashData]);
+    const edges=edgeRef.current;
+    if(edges){edgeData.forEach((e,i)=>{dummy.position.set(e.x,.075,e.z);dummy.rotation.set(0,e.yaw,0);dummy.scale.set(2.7,1,1);dummy.updateMatrix();edges.setMatrixAt(i,dummy.matrix);});edges.instanceMatrix.needsUpdate=true;edges.computeBoundingSphere();}
+  }, [dashData,edgeData]);
   return (
     <>
       {roadData.map((road) => <mesh key={"sidewalk-"+road.index} geometry={road.sidewalk.geometry} receiveShadow>
@@ -556,6 +564,10 @@ function CurvedRoadNetwork() {
       <instancedMesh ref={marksRef} args={[undefined, undefined, dashData.length]} frustumCulled={false}>
         <boxGeometry args={[1, 0.035, 0.16]} />
         <meshBasicMaterial color="#f4f0df" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+      </instancedMesh>
+      <instancedMesh ref={edgeRef} args={[undefined,undefined,edgeData.length]} frustumCulled={false}>
+        <boxGeometry args={[1,0.025,0.12]}/>
+        <meshBasicMaterial color="#f8f5e8" polygonOffset polygonOffsetFactor={-3} polygonOffsetUnits={-3}/>
       </instancedMesh>
     </>
   );
