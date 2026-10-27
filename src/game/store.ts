@@ -22,7 +22,7 @@ export interface ActiveJob {
   hint: string;
 }
 
-export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | null;
+export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface PlayerOutfit { skinTone: string; hair: string; top: string; bottom: string; accessory: string; }
@@ -139,6 +139,8 @@ interface GameStore {
   phoneOpen: boolean;
   outfit: PlayerOutfit;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
+  interior: boolean;
+  setInterior: (inside: boolean) => void;
   waypoint: GpsWaypoint | null;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
@@ -201,6 +203,7 @@ const DEFAULTS = {
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
   outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  interior: false,
   waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
   prompt: null as GameStore["prompt"],
@@ -304,7 +307,7 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!item) return false;
     const state = get();
     if ((state.inventory[key] ?? 0) > 0) return false;
-    const paid = state.spend(item.price, "bank") || state.spend(item.price, "cash");
+    const paid = item.category === "Property" ? state.spend(item.price, "bank") : (state.spend(item.price, "bank") || state.spend(item.price, "cash"));
     if (!paid) return false;
     state.addItem(key, 1);
     state.save();
@@ -333,6 +336,7 @@ export const useGame = create<GameStore>((set, get) => ({
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
   setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  setInterior: (inside) => set({ interior: inside }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
