@@ -177,6 +177,9 @@ interface GameStore {
   started: boolean;
   city: CityId;
   setCity: (city: CityId) => void;
+  stadiumMode: boolean;
+  enterStadium: () => void;
+  exitStadium: () => void;
   onlinePlayers: Record<string, OnlinePlayer>;
   setOnlinePlayers: (players: Record<string, OnlinePlayer>) => void;
   xp: number;
@@ -271,6 +274,7 @@ function loadSave(): SaveData | null {
 const DEFAULTS = {
   started: false,
   city: "newmap" as CityId,
+  stadiumMode: false,
   onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
@@ -307,7 +311,28 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
-  setCity: (city) => { setCityWorld(city); g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 18.2 : -14); if (city === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 10; } g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
+  setCity: (city) => {
+    setCityWorld(city);
+    g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 29 : -14);
+    g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.42; g.camDistance = 8;
+    g.joy.x = 0; g.joy.y = 0; g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false;
+    set({ city, stadiumMode: false, cash: city === "newmap" ? 1_000_000_000 : get().cash, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false });
+    get().save();
+  },
+  enterStadium: () => {
+    g.playerPos.set(0, 0, 12.4); g.playerYaw = Math.PI;
+    g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 9;
+    g.joy.x = 0; g.joy.y = 0; g.drivingId = null; g.ridingPassenger = false; g.playerSpeed = 0;
+    set({ stadiumMode: true, driving: false, speedKph: 0, phoneOpen: false, cash: get().city === "newmap" ? 1_000_000_000 : get().cash });
+    get().save();
+  },
+  exitStadium: () => {
+    g.playerPos.set(0, 0, 29); g.playerYaw = Math.PI;
+    g.camYaw = 0; g.camPitch = 0.42; g.camDistance = 8;
+    g.joy.x = 0; g.joy.y = 0; g.playerSpeed = 0;
+    set({ stadiumMode: false, driving: false, speedKph: 0, phoneOpen: false });
+    get().save();
+  },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -334,11 +359,11 @@ export const useGame = create<GameStore>((set, get) => ({
       const migratedToNewMap = saved.city === "lagos" || !saved.city;
       const savedCity: CityId = migratedToNewMap ? "newmap" : (saved.city ?? "newmap");
       setCityWorld(savedCity);
-      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 18.2 : saved.z);
-      if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 10; }
+      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 29 : saved.z);
+      if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.42; g.camDistance = 8; }
       g.time = saved.time;
       set({
-        started: true, city: savedCity, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: savedCity === "newmap" ? 1_000_000_000 : saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: savedCity === "newmap" ? null : saved.activeJob ?? null,
@@ -359,7 +384,7 @@ export const useGame = create<GameStore>((set, get) => ({
       g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16;
       g.time = 8;
       localStorage.removeItem(SAVE_KEY);
-      set({ ...DEFAULTS, started: true, name: get().name || "Hustler" });
+      set({ ...DEFAULTS, started: true, cash: 1_000_000_000, name: get().name || "Hustler" });
     }
     g.started = true;
   },
