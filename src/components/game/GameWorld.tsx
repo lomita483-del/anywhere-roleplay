@@ -657,7 +657,7 @@ function RideDriver() {
     const dx = targetX - r.x;
     const dz = targetZ - r.z;
     const distance = Math.hypot(dx, dz);
-    const speed = r.status === "approaching" ? (ride.service === "bike" ? 10 : 8) : (ride.service === "bike" ? 14 : ride.service === "private" ? 11 : 9);
+    const speed = r.status === "approaching" ? (ride.service === "bike" ? 10 : ride.service === "danfo" ? 5 : ride.service === "keke" ? 7 : 8) : (ride.service === "bike" ? 14 : ride.service === "private" ? 11 : ride.service === "danfo" ? 6 : ride.service === "keke" ? 8 : 9);
     if (distance > (r.status === "approaching" ? 2.8 : 2.2)) {
       const step = Math.min(distance, speed * dt);
       r.x += (dx / distance) * step;
@@ -670,7 +670,7 @@ function RideDriver() {
       g.ridingPassenger = true;
       g.playerPos.set(r.x, 0, r.z);
       useGame.getState().setRideRequest({ ...ride, status: "travelling", x: r.x, z: r.z, yaw: r.yaw });
-      useGame.getState().radio(ride.service === "bike" ? "🏍️ Okada arrived. Oya, your trip has started!" : "🚘 Your driver has arrived. Trip started.");
+      useGame.getState().radio(ride.service === "bike" ? "🏍️ Okada arrived. Oya, your trip has started!" : ride.service === "danfo" ? "🚌 Danfo arrived. Your trip has started." : ride.service === "keke" ? "🛺 Keke arrived. Your trip has started." : "🚘 Your driver has arrived. Trip started.");
     } else if (r.routeIndex < r.route.length - 1) {
       r.routeIndex += 1;
     } else {
@@ -687,10 +687,10 @@ function RideDriver() {
   });
 
   if (!ride) return null;
-  const model = ride.service === "bike" ? "bike" : ride.service === "private" ? "sedan" : "taxi";
+  const model = ride.service === "bike" ? "bike" : ride.service === "private" ? "sedan" : ride.service === "danfo" ? "danfo" : ride.service === "keke" ? "keke" : "taxi";
   return <group ref={ref} position={[ride.x, 0, ride.z]} rotation-y={ride.yaw}>
     <VehicleBody model={model} />
-    {ride.status === "approaching" && <Html position={[0, 2.6, 0]} center distanceFactor={18}><div className="whitespace-nowrap rounded-full border border-emerald-300/40 bg-[#071c16]/90 px-2 py-1 text-[9px] font-bold text-emerald-100">{ride.service === "bike" ? "OKADA" : ride.service === "private" ? "PRIVATE DRIVER" : "RIDE PICKUP"}</div></Html>}
+    {ride.status === "approaching" && <Html position={[0, 2.6, 0]} center distanceFactor={18}><div className="whitespace-nowrap rounded-full border border-emerald-300/40 bg-[#071c16]/90 px-2 py-1 text-[9px] font-bold text-emerald-100">{ride.service === "bike" ? "OKADA · DRIVER ARRIVING" : ride.service === "private" ? "PRIVATE DRIVER · ARRIVING" : ride.service === "danfo" ? "DANFO · ARRIVING" : ride.service === "keke" ? "KEKE · ARRIVING" : "TAXI · DRIVER ARRIVING"}</div></Html>}
   </group>;
 }
 
@@ -1059,7 +1059,7 @@ export default function GameWorld() {
       {!isNewMap && <JobMarker />}
       {!isNewMap && <JobPickupVisual job={activeJob} />}
       {!isNewMap && <GpsRoute waypoint={waypoint} />}
-      {!isNewMap && <RideDriver />}
+      <RideDriver />
     </>
   );
 }
