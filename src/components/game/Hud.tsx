@@ -69,6 +69,7 @@ export default function Hud() {
   const job = useGame((s) => s.activeJob);
   const waypoint = useGame((s) => s.waypoint);
   const interior = useGame((s) => s.interior);
+  const interiorLabel = useGame((s) => s.interiorLabel);
   const clearWaypoint = useGame((s) => s.clearWaypoint);
   const [gpsDistance, setGpsDistance] = useState(0);
   const [gpsBearing, setGpsBearing] = useState(0);
@@ -189,7 +190,7 @@ export default function Hud() {
         <ChevronsUp className="h-5 w-5 text-hud-bright" />
       </button>
 
-      {interior && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit Apartment ↗</button>}
+      {interior && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit {interiorLabel} ↗</button>}
 
       {/* Phone toggle */}
       {!phoneOpen && (
