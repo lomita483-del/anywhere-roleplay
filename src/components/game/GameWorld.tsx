@@ -331,13 +331,13 @@ export function VehicleBody({ model }: { model: string }) {
   return <CarGlb name={model} />;
 }
 
-function ParkedVehicle({ id, model, register }: { id: string; model: string; register: (id: string, grp: THREE.Group | null) => void }) {
+function ParkedVehicle({ id, model, register, scale = 1 }: { id: string; model: string; register: (id: string, grp: THREE.Group | null) => void; scale?: number }) {
   const ref = useRef<THREE.Group | null>(null);
   useFrame(() => {
     const v = g.vehicles.get(id);
     const grp = ref.current;
     if (!v || !grp) return;
-    grp.position.set(v.px, 0, v.pz);
+    grp.position.set(v.px * scale, 0, v.pz * scale);
     grp.rotation.y = v.yaw;
   });
   return (
@@ -346,6 +346,7 @@ function ParkedVehicle({ id, model, register }: { id: string; model: string; reg
         ref.current = o;
         register(id, o);
       }}
+      scale={scale}
     >
       <VehicleBody model={model} />
       {model === "police" && g.sirenOn && <group position={[0, 1.8, 0]}><mesh position={[-0.28, 0, 0]}><boxGeometry args={[0.28, 0.16, 0.35]} /><meshStandardMaterial color="#ff2638" emissive="#ff2638" emissiveIntensity={2.2} /></mesh><mesh position={[0.28, 0, 0]}><boxGeometry args={[0.28, 0.16, 0.35]} /><meshStandardMaterial color="#268bff" emissive="#268bff" emissiveIntensity={2.2} /></mesh></group>}
@@ -1040,8 +1041,15 @@ export default function GameWorld() {
       {!isNewMap && VEHICLE_SPAWNS.map((v) => (
         <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
       ))}
-      {!isNewMap && spawned.map((v) => (
-        <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
+      {spawned.map((v) => (
+        <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} scale={isNewMap ? NEW_MAP_SCALE : 1} />
+      ))}
+      {g.adminSpawnedNpcs.map((npc) => (
+        <group key={npc.id} position={[npc.x * (isNewMap ? NEW_MAP_SCALE : 1), 0, npc.z * (isNewMap ? NEW_MAP_SCALE : 1)]}>
+          <mesh position={[0, 0.95, 0]} castShadow><capsuleGeometry args={[0.28, 0.9, 4, 8]} /><meshStandardMaterial color="#d4a72c" roughness={0.8} /></mesh>
+          <mesh position={[0, 1.72, 0]} castShadow><sphereGeometry args={[0.23, 12, 12]} /><meshStandardMaterial color="#8a5a3c" roughness={0.8} /></mesh>
+          <Html position={[0, 2.2, 0]} center distanceFactor={15}><div className="whitespace-nowrap rounded-md border border-amber-300/40 bg-black/80 px-2 py-1 text-[10px] font-semibold text-amber-100">{npc.name}</div></Html>
+        </group>
       ))}
       {!isNewMap && <Traffic />}
       {!isNewMap && <Pedestrians />}
