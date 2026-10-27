@@ -15,6 +15,7 @@ const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
   market: { dx: 0, dz: -1, ry: 0 },
   apartments: { dx: 0, dz: -1, ry: 0 },
   depot: { dx: 0, dz: -1, ry: 0 },
+  clothing: { dx: 0, dz: -1, ry: 0 },
 };
 
 function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
