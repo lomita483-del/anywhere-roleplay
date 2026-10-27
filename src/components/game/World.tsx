@@ -20,6 +20,7 @@ const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
   depot: { dx: 0, dz: -1, ry: 0 },
   clothing: { dx: 0, dz: -1, ry: 0 },
   airport: { dx: 0, dz: -1, ry: 0 },
+  civic: { dx: 0, dz: -1, ry: 0 },
 };
 
 function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
@@ -242,8 +243,8 @@ function LagosStreetProps() {
 function RoadMarkings() {
   const dashes = useMemo(() => {
     const items: { x: number; z: number; horizontal: boolean }[] = [];
-    for (const x of ROADS_X) for (let z = -112; z <= 112; z += 15) items.push({ x, z, horizontal: false });
-    for (const z of ROADS_Z) for (let x = -112; x <= 112; x += 15) items.push({ x, z, horizontal: true });
+    for (const x of ROADS_X) for (let z = -WORLD / 2 + 8; z <= WORLD / 2 - 8; z += 15) items.push({ x, z, horizontal: false });
+    for (const z of ROADS_Z) for (let x = -WORLD / 2 + 8; x <= WORLD / 2 - 8; x += 15) items.push({ x, z, horizontal: true });
     return items;
   }, []);
   return (
