@@ -622,7 +622,7 @@ function MapApp() {
           <div className="text-sm font-bold text-white">{selectedPoi.label}</div>
           <div className="mt-1 text-xs capitalize text-slate-200">{selectedPoi.kind} · Lagos Life landmark</div>
           <div className="mt-1 text-xs text-slate-300">{Math.round(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z))} m away · about {Math.max(1,Math.ceil(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z)/1.4))} min walk</div>
-          <button className="mt-2 min-h-11 w-full rounded-lg bg-emerald-400/20 px-3 py-2 text-sm font-bold text-emerald-100" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind}); setSelectedPoi(null); }}>
+          <button className="mt-2 min-h-11 w-full rounded-lg bg-emerald-400/20 px-3 py-2 text-sm font-bold text-emerald-100" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind ?? "landmark"}); setSelectedPoi(null); }}>
             Set Destination
           </button>
         </div>
