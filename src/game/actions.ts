@@ -1,6 +1,7 @@
 import { g } from "./state";
 import { useGame, VEHICLE_CATALOG } from "./store";
 import { ROADS_X, ROADS_Z, BOUND, isBlocked, clampWorld } from "./city";
+import { getInteriorDefinition } from "./interiors";
 
 export function enterVehicle(id: string) {
   const v = g.vehicles.get(id);
@@ -46,20 +47,21 @@ export function enterBuilding(label: string, kind = "building"): boolean {
   if (/mama.?put|buka|food/.test(lower)) {
     if (s.city === "newmap" && /mama.?put|buka/.test(lower)) {
       g.interiorReturn.copy(g.playerPos); g.playerPos.set(104,0,104);
-      s.setInterior(true, label); s.setWaypoint(null); s.openPhone("food");
+      s.setInterior(true, label, "mama-put"); s.setWaypoint(null); s.openPhone("food");
       s.radio("🍲 Welcome to Mama Put. Order your meal from the food app, then exit back to the street.");
     } else s.openPhone("food");
     return true;
   }
-  if (/market|trade depot|transport hub/.test(lower)) { s.openPhone("market"); return true; }
+  if (/market|trade depot|transport hub/.test(lower)) { g.interiorReturn.copy(g.playerPos); g.playerPos.set(104,0,104); s.setInterior(true,label,kind); s.setWaypoint(null); s.openPhone("market"); return true; }
   if (/police/.test(lower)) {
+    g.interiorReturn.copy(g.playerPos); g.playerPos.set(104,0,104); s.setInterior(true,label,"police"); s.setWaypoint(null);
     s.setOutfit({ top: "uniform" }); s.acceptJob("security");
     s.radio("🚔 Police duty started. Patrol uniform equipped.");
     return true;
   }
   g.interiorReturn.copy(g.playerPos);
   g.playerPos.set(104, 0, 104);
-  s.setInterior(true, label);
+  s.setInterior(true, label, kind);
   s.setWaypoint(null);
   if (/bank|atm/.test(lower)) {
     s.openPhone("bank"); s.radio("🏦 Welcome to the bank. Use the banking app for account services.");
@@ -77,6 +79,41 @@ export function interact() {
   if (s.modal) { s.setModal(null); return; }
   const p = s.prompt;
   if (!p) return;
+  if (p.kind === "interior-hotspot" && p.hotspotId) {
+    const hotspot = getInteriorDefinition(s.interiorLabel, s.interiorKind).hotspots.find(h => h.id === p.hotspotId);
+    if (!hotspot) return;
+    const [action, value] = hotspot.action.includes(":") ? hotspot.action.split(":", 2) : [hotspot.action, ""];
+    if (action === "openPhone") s.openPhone(value as any);
+    else if (action === "sleep") s.sleep();
+    else if (action === "eat") { if (!s.eatFood("mama-put")) s.radio("🍲 You need to buy food first."); }
+    else if (action === "heal") {
+      const fee = 2500;
+      if (!s.spend(fee, "cash") && !s.spend(fee, "bank")) s.radio("Not enough money for treatment. You need ₦2,500.");
+      else { useGame.setState(state => ({ needs: { ...state.needs, health: 100, stress: Math.max(0,state.needs.stress-12) } })); s.radio("🩺 Check-up complete. Health restored."); }
+    } else if (action === "startShift") {
+      const jobMap: Record<string, any> = { security:"security", courier:"courier", "office-clerk":"retail", packer:"construction", loader:"construction", "dock-worker":"construction", "customs-clerk":"retail", teacher:"retail" };
+      const job = jobMap[value];
+      if (job) { s.acceptJob(job); s.radio("🧾 Shift started: " + hotspot.label + ". Follow the job target markers."); }
+      else s.radio("This shift is not available yet.");
+    } else if (action === "openModal") {
+      if (value === "uniform") { s.setOutfit({ top: "uniform" }); s.radio("Uniform equipped."); }
+      else if (value === "property") s.openPhone("market");
+      else if (value === "loan") s.radio("Loan information: visit the Bank app to review your balance and transactions.");
+      else if (value === "interview") s.radio("Reception interview: speak clearly and show your experience. Level 2 is required for office work.");
+      else if (value === "enrol") s.radio("University admissions: enrolment opens when the education service is available.");
+      else if (value === "dealer") s.setModal("dealer");
+      else if (value === "home") s.setModal("home");
+      else if (value === "bank") s.openPhone("bank");
+      else if (value === "service") s.radio("A staff member will assist you shortly.");
+      else s.radio("You interacted with " + hotspot.label + ".");
+    } else if (action === "study") {
+      useGame.setState(state => ({ xp: state.xp + 15, needs: { ...state.needs, energy: Math.max(0,state.needs.energy-3) } }));
+      s.radio("📚 Study session complete. +15 skill XP.");
+    } else if (action === "haggle") s.radio(Math.random() < 0.25 ? "🤝 You bargained well — the vendor offered a small discount." : "The vendor says: 'Last price, my customer!' Try again later.");
+    else if (action === "buyCar") s.setModal("dealer");
+    else if (action === "exit") exitApartment();
+    return;
+  }
   if (p.kind === "vehicle" && p.vehicleId === "__exit__") exitVehicle();
   else if (p.kind === "vehicle" && p.vehicleId) enterVehicle(p.vehicleId);
   else if (p.kind === "atm") s.openPhone("bank");
@@ -85,7 +122,7 @@ export function interact() {
     if (s.city === "newmap" || (s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0 || (s.rentals["mainland-studio"] ?? 0) > Date.now() || (s.rentals["ikoyi-apartment"] ?? 0) > Date.now()) {
       g.interiorReturn.copy(g.playerPos);
       g.playerPos.set(104, 0, 104);
-      s.setInterior(true, s.city === "newmap" ? (p.label.replace("Enter ", "") || "Residential Apartment") : "Ikoyi Apartment");
+      s.setInterior(true, s.city === "newmap" ? (p.label.replace("Enter ", "") || "Residential Apartment") : "Ikoyi Apartment", "home");
       s.setWaypoint(null);
       s.radio("🏠 Welcome inside. Use Exit to return to the street.");
     } else s.setModal("home");
@@ -94,7 +131,7 @@ export function interact() {
     if (s.city === "newmap" && /mama put|buka/i.test(p.label)) {
       g.interiorReturn.copy(g.playerPos);
       g.playerPos.set(104, 0, 104);
-      s.setInterior(true, "Mama Put Buka");
+      s.setInterior(true, "Mama Put Buka", "mama-put");
       s.openPhone("food");
       s.radio("🍲 Welcome to Mama Put. Order your meal from the food app, then exit back to the street.");
     } else s.openPhone("food");
@@ -104,7 +141,7 @@ export function interact() {
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
   else if (p.kind === "jobboard") s.openPhone("jobs");
   else if (p.kind === "police") { s.setOutfit({ top: "uniform" }); s.acceptJob("security"); s.radio("🚔 Police duty started. Patrol uniform equipped."); }
-  else if (p.kind === "building") enterBuilding(p.buildingLabel ?? "City Building", "building");}
+  else if (p.kind === "building") enterBuilding(p.buildingLabel ?? "City Building", p.buildingKind ?? "building");}
 
 // Spawn an owned vehicle on the nearest road lane to the player.
 export function deliverOwnedVehicle(model: string) {
