@@ -43,7 +43,7 @@ export const NEW_MAP_BUILDINGS = [
   ...Array.from({ length: 64 }, (_, i) => ({
     x: 82 + (i % 8) * 10.4, z: -63 + Math.floor(i / 8) * 10.3,
     w: 6.1 + (i % 3) * 0.35, d: 6.1 + (i % 2) * 0.5,
-    h: 6.2 + ((i * 7) % 8) * 1.25, color: ["#d9c9a8","#d7d4c8","#c9b39a","#d7b8a5","#b9c9bd","#d8cdbb","#c3b7a6","#e0d1b4"][i % 8],
+    h: 6.2 + ((i * 7) % 8) * 1.25, color: ["#d9c9a8","#d7d4c8","#c9b39a","#d7b8a5","#b9c9bd","#d8cdbb","#c3b7a6","#e0d1b4"][i % 8]!,
     ...(i % 8 === 0 ? { kind: "apartments" as const, label: "Walk-up Apartments" } : {}),
   })),
   { x: 38, z: 18, w: 12, d: 10, h: 9, color: "#c8b78c", kind: "bank" as const, label: "Community Bank" },
