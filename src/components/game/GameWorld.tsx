@@ -142,8 +142,54 @@ function CarGlb({ name }: { name: string }) {
   );
 }
 
+function DanfoMesh() {
+  return (
+    <group>
+      <mesh position={[0, 0.82, 0]} castShadow>
+        <boxGeometry args={[1.9, 1.55, 4.2]} />
+        <meshStandardMaterial color="#f4c928" roughness={0.58} />
+      </mesh>
+      <mesh position={[0, 1.55, -0.05]} castShadow>
+        <boxGeometry args={[1.82, 0.72, 3.05]} />
+        <meshStandardMaterial color="#f7d54a" roughness={0.45} />
+      </mesh>
+      {[-0.63, 0.63].map((x) => [-1.25, -0.15, 1.15].map((z) => (
+        <mesh key={x + ":" + z} position={[x, 1.48, z]} rotation-y={x < 0 ? -0.05 : 0.05}>
+          <planeGeometry args={[0.48, 0.48]} />
+          <meshStandardMaterial color="#243946" metalness={0.25} roughness={0.3} />
+        </mesh>
+      )))}
+      <mesh position={[0, 1.4, 2.115]}>
+        <planeGeometry args={[1.25, 0.62]} />
+        <meshStandardMaterial color="#243946" metalness={0.25} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.52, 2.12]}>
+        <boxGeometry args={[1.65, 0.16, 0.12]} />
+        <meshStandardMaterial color="#c7cbd0" metalness={0.65} roughness={0.3} />
+      </mesh>
+      {[-0.68, 0.68].map((x) => (
+        <mesh key={x} position={[x, 0.42, 1.38]}>
+          <boxGeometry args={[0.22, 0.14, 0.08]} />
+          <meshStandardMaterial color="#fff0b5" emissive="#ffd257" emissiveIntensity={0.65} />
+        </mesh>
+      ))}
+      {[-0.82, 0.82].map((x) => [-1.35, 1.35].map((z) => (
+        <mesh key={x + ":" + z} position={[x, 0.38, z]} rotation-z={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[0.36, 0.36, 0.18, 12]} />
+          <meshStandardMaterial color="#17191d" roughness={0.9} />
+        </mesh>
+      )))}
+      <mesh position={[0, 0.93, 2.18]}>
+        <boxGeometry args={[0.7, 0.18, 0.04]} />
+        <meshStandardMaterial color="#fff1c2" emissive="#ffd257" emissiveIntensity={0.35} />
+      </mesh>
+    </group>
+  );
+}
+
 function VehicleBody({ model }: { model: string }) {
   if (model === "keke") return <KekeMesh />;
+  if (model === "danfo") return <DanfoMesh />;
   return <CarGlb name={model} />;
 }
 
