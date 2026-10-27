@@ -67,16 +67,29 @@ function CharacterBody() {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
-      const name = mesh.name.toLowerCase();
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const name = (mesh.name + " " + materials.map((m) => m.name).join(" ")).toLowerCase();
       for (const material of materials) {
         const standard = material as THREE.MeshStandardMaterial;
         if (!standard.color) continue;
-        if (/skin|face|head|body/.test(name)) standard.color.set(outfit.skinTone);
-        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(topColors[outfit.top] ?? topColors["streetwear"]!);
-        else if (/pants|trouser|bottom|leg/.test(name)) standard.color.set(bottomColors[outfit.bottom] ?? bottomColors["jeans"]!);
-        else if (/hair/.test(name)) standard.color.set(outfit.hair === "locs" ? "#171411" : outfit.hair === "braids" ? "#231a17" : "#2b211c");
-        else if (/hat|cap|accessory/.test(name) && outfit.accessory === "cap") standard.color.set("#d4a72c");
+        if (/skin|face|head|body/.test(name)) {
+          standard.color.set(outfit.skinTone);
+          standard.roughness = Math.max(0.72, standard.roughness);
+          standard.metalness = 0;
+        } else if (/shirt|top|jacket|torso|coat|dress/.test(name)) {
+          standard.color.set(topColors[outfit.top] ?? topColors["streetwear"]!);
+          standard.roughness = Math.max(0.58, standard.roughness);
+        } else if (/pants|trouser|bottom|leg/.test(name)) {
+          standard.color.set(bottomColors[outfit.bottom] ?? bottomColors["jeans"]!);
+          standard.roughness = Math.max(0.68, standard.roughness);
+        } else if (/hair/.test(name)) {
+          standard.color.set(outfit.hair === "locs" ? "#171411" : outfit.hair === "braids" ? "#231a17" : "#2b211c");
+          standard.roughness = 0.82;
+        } else if (/hat|cap|accessory/.test(name) && outfit.accessory === "cap") {
+          standard.color.set("#d4a72c");
+          standard.metalness = 0.12;
+          standard.roughness = 0.48;
+        }
       }
     });
   }, [clone, outfit]);
