@@ -7,7 +7,7 @@ import { g } from "@/game/state";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, isBlocked, clampWorld } from "@/game/city";
+import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, isBlocked, clampWorld, districtAt } from "@/game/city";
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
 const MODEL_FLIP = Math.PI;
@@ -814,7 +814,9 @@ export default function GameWorld() {
         v.vz = fdz * vLong + rdz * vLat;
         const nx = v.px + v.vx * dt;
         const nz = v.pz + v.vz * dt;
-        if (!isBlocked(nx, nz, 1.5)) {
+        const targetDistrict = districtAt(nx, nz);
+        const districtOpen = !targetDistrict || (st.unlockedDistricts.includes(targetDistrict) && (targetDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
+        if (districtOpen && !isBlocked(nx, nz, 1.5)) {
           v.px = nx;
           v.pz = nz;
         } else {
@@ -847,9 +849,13 @@ export default function GameWorld() {
         const speed = (sprint ? 6.2 : 3.2) * (exhausted ? 0.6 : 1);
         const step = speed * dt;
         const nx = g.playerPos.x + dx * step;
-        if (!isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
+        const xDistrict = districtAt(nx, g.playerPos.z);
+        const xOpen = !xDistrict || (st.unlockedDistricts.includes(xDistrict) && (xDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
+        if (xOpen && !isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
         const nz = g.playerPos.z + dz * step;
-        if (!isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
+        const zDistrict = districtAt(g.playerPos.x, nz);
+        const zOpen = !zDistrict || (st.unlockedDistricts.includes(zDistrict) && (zDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
+        if (zOpen && !isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
         if (st.interior) {
           // Keep the avatar inside the room boundaries while exploring an interior.
           g.playerPos.x = THREE.MathUtils.clamp(g.playerPos.x, 98.8, 109.2);
