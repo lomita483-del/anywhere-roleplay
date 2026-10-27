@@ -76,6 +76,7 @@ export default function Hud() {
   const openPhone = useGame((s) => s.openPhone);
   const [night, setNight] = useState(false);
   const [run, setRun] = useState(false);
+  const [sirenOn, setSirenOn] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -132,6 +133,10 @@ export default function Hud() {
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500/15" style={{ transform: `rotate(${gpsBearing * 180 / Math.PI}deg)` }}><span className="text-sm font-black text-red-300">↑</span></div>
           <button aria-label="Clear GPS route" className="ml-1 text-xs text-white/60" onClick={clearWaypoint}>✕</button>
         </div>
+      )}
+
+      {driving && job?.type === "security" && (
+        <button className={`pointer-events-auto absolute bottom-28 right-5 rounded-xl border px-3 py-2 text-[10px] font-black tracking-wider ${sirenOn ? "border-red-400 bg-red-500/30 text-red-100 animate-pulse" : "border-hud-line bg-hud-dim text-hud-bright"}`} onClick={() => { g.sirenOn = !g.sirenOn; setSirenOn(g.sirenOn); g.radio(g.sirenOn ? "🚨 Emergency siren activated." : "🚨 Emergency siren switched off."); }}>{sirenOn ? "SIREN ON" : "SIREN OFF"}</button>
       )}
 
       {/* Speedometer */}
