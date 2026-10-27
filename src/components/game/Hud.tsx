@@ -61,6 +61,7 @@ function Joystick() {
 export default function Hud() {
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
+  const needs = useGame((s) => s.needs);
   const clock = useGame((s) => s.clock);
   const speed = useGame((s) => s.speedKph);
   const driving = useGame((s) => s.driving);
@@ -110,6 +111,19 @@ export default function Hud() {
           <Landmark className="h-4 w-4 text-hud-accent" />
           <span className="font-semibold text-hud-bright">{naira(bank)}</span>
           <span className="text-hud-muted">bank</span>
+        </div>
+        <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-white/10 pt-2">
+          {([
+            ["Hunger", needs.hunger, "#f59e0b"],
+            ["Energy", needs.energy, "#60a5fa"],
+            ["Health", needs.health, "#34d399"],
+            ["Stress", 100 - needs.stress, "#f87171"],
+          ] as [string, number, string][]).map(([label, value, color]) => (
+            <div key={label} className="min-w-[66px]">
+              <div className="mb-0.5 flex justify-between gap-2 text-[8px] uppercase tracking-wider text-hud-muted"><span>{label}</span><span>{Math.round(value)}%</span></div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full transition-[width] duration-300" style={{ width: Math.max(0, Math.min(100, value)) + "%", backgroundColor: color }} /></div>
+            </div>
+          ))}
         </div>
       </div>
 
