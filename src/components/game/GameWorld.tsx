@@ -678,6 +678,8 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
     else if (poi.kind === "dealership") st.setPrompt({ kind: "dealer", label: "Browse Ojoto Motors" });
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
+    else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
+    else if (poi.kind === "jobboard") st.setPrompt({ kind: "jobboard", label: "Browse City Job Board" });
     else {
       st.setPrompt(null);
       return;
