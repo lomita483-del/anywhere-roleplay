@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Landmark, Moon, Sun, Wallet, Phone as PhoneIcon, ChevronsUp, MapPin } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira } from "@/game/store";
-import { interact } from "@/game/actions";
+import { exitApartment, interact } from "@/game/actions";
 import Phone from "./Phone";
 
 function fmtTime(h: number) {
@@ -68,6 +68,7 @@ export default function Hud() {
   const phoneOpen = useGame((s) => s.phoneOpen);
   const job = useGame((s) => s.activeJob);
   const waypoint = useGame((s) => s.waypoint);
+  const interior = useGame((s) => s.interior);
   const clearWaypoint = useGame((s) => s.clearWaypoint);
   const [gpsDistance, setGpsDistance] = useState(0);
   const [gpsBearing, setGpsBearing] = useState(0);
@@ -167,6 +168,8 @@ export default function Hud() {
       >
         <ChevronsUp className="h-5 w-5 text-hud-bright" />
       </button>
+
+      {interior && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit Apartment ↗</button>}
 
       {/* Phone toggle */}
       {!phoneOpen && (
