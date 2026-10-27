@@ -109,13 +109,14 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
+export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}];
 export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
 export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
 export function validateNewMapLayout() {
  const errors:string[]=[];
+ for(let i=0;i<NEW_MAP_GROUND_PATCHES.length;i++){const p=NEW_MAP_GROUND_PATCHES[i]!;if(Math.hypot(p.x,p.z)<31)errors.push(`ground patch overlaps stadium plaza at ${p.x},${p.z}`);for(const e of NEW_MAP_ROAD_GRAPH.edges)for(let j=1;j<e.points.length;j++){const a=e.points[j-1]!,b=e.points[j]!,dx=Math.abs(b[0]-a[0]),dz=Math.abs(b[1]-a[1]),extent=dx>dz?p.d/2:dz>dx?p.w/2:Math.max(p.w,p.d)/2;if(pointSegmentDistance(p.x,p.z,a,b)<e.width/2+extent+1)errors.push(`ground patch intersects road at ${p.x},${p.z}`);}if(NEW_MAP_BUILDINGS.some(b=>Math.abs(p.x-b.x)<(p.w+b.w)/2&&Math.abs(p.z-b.z)<(p.d+b.d)/2))errors.push(`ground patch intersects building at ${p.x},${p.z}`);if(NEW_MAP_HILLS.some(h=>Math.abs(p.x-h.x)<(p.w+h.w)/2&&Math.abs(p.z-h.z)<(p.d+h.d)/2))errors.push(`ground patch intersects hill at ${p.x},${p.z}`);for(let j=i+1;j<NEW_MAP_GROUND_PATCHES.length;j++){const q=NEW_MAP_GROUND_PATCHES[j]!;if(Math.abs(p.x-q.x)<(p.w+q.w)/2&&Math.abs(p.z-q.z)<(p.d+q.d)/2)errors.push(`ground patch collision at ${p.x},${p.z} / ${q.x},${q.z}`);}}
  for(let i=0;i<NEW_MAP_BUILDINGS.length;i++){
   const a=NEW_MAP_BUILDINGS[i]!;
   if(Math.hypot(a.x,a.z)<28)errors.push(`building ${a.id} overlaps stadium plaza`);
