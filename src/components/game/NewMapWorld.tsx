@@ -450,6 +450,7 @@ function RoadFurniture() {
     const crossings: {x:number;z:number;yaw:number}[] = [];
     const signs: {x:number;z:number;yaw:number}[] = [];
     NEW_MAP_ROADS.forEach((path, r) => {
+      if(r>=NEW_MAP_LOCAL_ROAD_START_INDEX && r<NEW_MAP_ROADS.length-1) return;
       const curve = new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",0.22);
       const length=curve.getLength();
       for(let d=12;d<length;d+=r===NEW_MAP_ROADS.length-1?24:32){
