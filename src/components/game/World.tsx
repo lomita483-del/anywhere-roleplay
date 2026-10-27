@@ -161,6 +161,60 @@ function Atm({ x, z }: { x: number; z: number }) {
   );
 }
 
+const STREET_SIGNS = [
+  { x: -11, z: -19, label: "VICTORIA ISLAND" },
+  { x: 12, z: 12, label: "LEKKI  •  MAINLAND" },
+  { x: 67, z: 12, label: "BALOGUN MARKET" },
+];
+const BILLBOARDS = [
+  { x: 13, z: -20, label: "LAGOS LIFE  •  LIVE YOUR STORY", color: "#17392f" },
+  { x: -14, z: 18, label: "OJOTO MOTORS  •  DRIVE YOUR DREAM", color: "#7b5419" },
+  { x: 67, z: 36, label: "YOUR HUSTLE. YOUR CITY.", color: "#1d3d54" },
+];
+
+function LagosStreetProps() {
+  const signs = useMemo(() => STREET_SIGNS.map((s) => ({ ...s, texture: signTexture(s.label, "#174c3a") })), []);
+  const boards = useMemo(() => BILLBOARDS.map((b) => ({ ...b, texture: signTexture(b.label, b.color) })), []);
+  return (
+    <group>
+      {signs.map((s) => (
+        <group key={s.label} position={[s.x, 0, s.z]}>
+          <mesh position={[0, 1.45, 0]} castShadow>
+            <cylinderGeometry args={[0.055, 0.075, 2.9, 6]} />
+            <meshStandardMaterial color="#8a9299" metalness={0.6} roughness={0.45} />
+          </mesh>
+          <mesh position={[0.65, 2.45, 0]}>
+            <boxGeometry args={[1.35, 0.48, 0.12]} />
+            <meshStandardMaterial color="#175b3d" roughness={0.7} />
+          </mesh>
+          <mesh position={[0.65, 2.45, 0.075]}>
+            <planeGeometry args={[1.22, 0.35]} />
+            <meshStandardMaterial map={s.texture} emissive="#ffffff" emissiveMap={s.texture} emissiveIntensity={0.15} />
+          </mesh>
+        </group>
+      ))}
+      {boards.map((b) => (
+        <group key={b.label} position={[b.x, 0, b.z]} rotation-y={-0.18}>
+          <mesh position={[0, 2.6, 0]} castShadow>
+            <boxGeometry args={[6.4, 2.5, 0.22]} />
+            <meshStandardMaterial color={b.color} metalness={0.25} roughness={0.55} />
+          </mesh>
+          <mesh position={[0, 2.6, 0.13]}>
+            <planeGeometry args={[6.05, 2.15]} />
+            <meshStandardMaterial map={b.texture} emissive="#ffffff" emissiveMap={b.texture} emissiveIntensity={0.22} />
+          </mesh>
+          {[-2.3, 2.3].map((x) => (
+            <mesh key={x} position={[x, 0.95, 0]} castShadow>
+              <cylinderGeometry args={[0.12, 0.16, 1.9, 6]} />
+              <meshStandardMaterial color="#555d66" metalness={0.55} roughness={0.55} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+}
+
 export default function World() {
   const ground = useMemo(groundTexture, []);
   const asphalt = useMemo(asphaltTexture, []);
@@ -214,6 +268,7 @@ export default function World() {
       ))}
 
       {BUILDINGS.map((b, i) => <Building key={i} b={b} />)}
+      <LagosStreetProps />
       <Lamps />
       <Trees />
       {STALLS.map((s, i) => <Stall key={i} s={s} />)}
