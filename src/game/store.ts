@@ -4,6 +4,15 @@ import { g } from "./state";
 
 export type JobType = "courier" | "driver" | "trader" | "security";
 
+export const MARKET_ITEMS = [
+  { id: "streetwear-fit", name: "Lagos Streetwear Fit", category: "Clothing", description: "A fresh street-ready look.", price: 4500 },
+  { id: "emerald-luxury-fit", name: "Emerald Luxury Fit", category: "Clothing", description: "Premium emerald-and-gold outfit.", price: 12000 },
+  { id: "engine-tune", name: "Engine Tune", category: "Car upgrade", description: "A permanent performance upgrade token.", price: 18000 },
+  { id: "premium-rims", name: "Premium Rims", category: "Car upgrade", description: "A cosmetic vehicle upgrade token.", price: 9000 },
+  { id: "mainland-studio", name: "Mainland Studio", category: "Property", description: "Your first property deed.", price: 85000 },
+  { id: "ikoyi-apartment", name: "Ikoyi Apartment", category: "Property", description: "A premium apartment deed.", price: 250000 },
+] as const;
+
 export interface ActiveJob {
   type: JobType;
   stage: number;
@@ -146,6 +155,7 @@ interface GameStore {
   addItem: (item: string, count?: number) => void;
   removeItem: (item: string, count?: number) => void;
   buyVehicle: (key: string) => boolean;
+  purchaseMarketItem: (key: string) => boolean;
   acceptJob: (type: JobType) => void;
   advanceJob: () => void;
   cancelJob: () => void;
@@ -272,9 +282,20 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   buyVehicle: (key) => {
     const v = VEHICLE_CATALOG[key];
-    if (!v) return false;
+    if (!v || get().owned.includes(key)) return false;
     if (!get().spend(v.price, "bank")) return false;
     set({ owned: [...get().owned, key] });
+    return true;
+  },
+  purchaseMarketItem: (key) => {
+    const item = MARKET_ITEMS.find((entry) => entry.id === key);
+    if (!item) return false;
+    const state = get();
+    if ((state.inventory[key] ?? 0) > 0) return false;
+    const paid = state.spend(item.price, "bank") || state.spend(item.price, "cash");
+    if (!paid) return false;
+    state.addItem(key, 1);
+    state.save();
     return true;
   },
 
