@@ -229,6 +229,7 @@ function Pedestrians() {
     const dt = Math.min(rawDelta, 0.05);
     peds.forEach((p, i) => {
       const wp = p.pts[p.wi];
+      if (!wp) return;
       const dx = wp[0] - p.x;
       const dz = wp[1] - p.z;
       const d = Math.hypot(dx, dz);
@@ -331,7 +332,7 @@ export default function GameWorld() {
         g.drivingId = null;
         st.setDriving(false);
       } else {
-        const cat = VEHICLE_CATALOG[v.model] ?? VEHICLE_CATALOG.sedan;
+        const cat = VEHICLE_CATALOG[v.model] ?? VEHICLE_CATALOG["sedan"]!;
         const kf = (k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0);
         const ks = (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0);
         const forward = Math.max(-1, Math.min(1, kf - g.joy.y));
@@ -449,7 +450,7 @@ export default function GameWorld() {
     }
     if (T.radio > 45) {
       T.radio = 0;
-      if (Math.random() < 0.7) st.radio(RADIO[Math.floor(Math.random() * RADIO.length)]);
+      if (Math.random() < 0.7) st.radio(RADIO[Math.floor(Math.random() * RADIO.length)] ?? RADIO[0]!);
     }
   });
 
@@ -480,7 +481,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   const job = s2.activeJob;
   if (job) {
     const t = job.targets[job.stage];
-    s2.setNearTarget(Math.hypot(x - t[0], z - t[1]));
+    if (t) s2.setNearTarget(Math.hypot(x - t[0], z - t[1]));
   }
 
   if (g.drivingId) {
