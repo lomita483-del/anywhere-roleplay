@@ -972,7 +972,7 @@ export default function GameWorld() {
       _target.set(g.playerPos.x * (isNewMap ? NEW_MAP_SCALE : 1), driving ? 1.5 : 1.1, g.playerPos.z * (isNewMap ? NEW_MAP_SCALE : 1));
       const worldScale = isNewMap ? NEW_MAP_SCALE : 1;
       const requestedDist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
-      const dist = g.camSatellite && isNewMap ? 168 * NEW_MAP_SCALE : isNewMap ? Math.max(4.2, requestedDist * worldScale) : requestedDist;
+      const dist = isNewMap ? Math.max(2.5, requestedDist * worldScale) : requestedDist;
       const pitch = driving ? Math.min(g.camPitch, 0.85) : g.camPitch;
       _ideal.set(
         _target.x + Math.sin(g.camYaw) * dist * Math.cos(pitch),
