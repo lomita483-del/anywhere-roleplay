@@ -10,7 +10,7 @@ export interface Box {
 
 export interface BuildingDef extends Box {
   color: string;
-  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "airport";
+  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "airport" | "civic";
   label?: string;
 }
 
@@ -206,6 +206,11 @@ export const PED_WALKS: { pts: [number, number][] }[] = [
   { pts: [[-94, 40], [-94, 70], [-76, 70], [-76, 40]] },
   { pts: [[-26, -8], [-8, -8], [-8, 8], [-26, 8]] },
   { pts: [[12, 6], [26, 6], [26, 22], [12, 22]] },
+  { pts: [[-160, -78], [-128, -78], [-128, -48], [-160, -48]] },
+  { pts: [[118, -154], [160, -154], [160, -116], [118, -116]] },
+  { pts: [[118, 36], [162, 36], [162, 68], [118, 68]] },
+  { pts: [[-160, 42], [-128, 42], [-128, 86], [-160, 86]] },
+  { pts: [[112, 126], [154, 126], [154, 158], [112, 158]] },
 ];
 
 // POI points used by job generators
@@ -225,14 +230,14 @@ export const JOB_POINTS: { pickups: [number, number][]; dropoffs: [number, numbe
 export function lampPositions(): [number, number][] {
   const lamps: [number, number][] = [];
   for (const rx of ROADS_X) {
-    for (let z = -110; z <= 110; z += 40) {
+    for (let z = -170; z <= 170; z += 40) {
       if (Math.abs(z % 80) < 1 || Math.abs(Math.abs(z) - 80) < 1) continue;
       lamps.push([rx - ROAD_HALF - 1.5, z]);
       lamps.push([rx + ROAD_HALF + 1.5, z + 20]);
     }
   }
   for (const rz of ROADS_Z) {
-    for (let x = -100; x <= 100; x += 40) {
+    for (let x = -170; x <= 170; x += 40) {
       lamps.push([x, rz - ROAD_HALF - 1.5]);
       lamps.push([x + 20, rz + ROAD_HALF + 1.5]);
     }
