@@ -139,6 +139,8 @@ interface GameStore {
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
   outfit: PlayerOutfit;
+  rentals: Record<string, number>;
+  rentMarketItem: (key: string) => boolean;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
   interior: boolean;
   setInterior: (inside: boolean) => void;
@@ -203,7 +205,8 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
-  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,\n  rentals: {} as Record<string, number>,
+  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  rentals: {} as Record<string, number>,
   interior: false,
   waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
@@ -233,7 +236,8 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
-        outfit: saved.outfit ?? DEFAULTS.outfit,\n        rentals: saved.rentals ?? {},
+        outfit: saved.outfit ?? DEFAULTS.outfit,
+        rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
         clock: Number.isFinite(saved.time) ? saved.time : 8,
         hasSave: true,
