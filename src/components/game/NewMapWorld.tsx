@@ -229,7 +229,7 @@ export default function NewMapWorld() {
         <BigScreen z={26} rotate />
 
         {/* Floodlights and visible lighting fixtures */}
-        {[[-53, -35], [53, -35], [-53, 35], [53, 35]].map(([x, z], index) => <Floodlight key={index} x={x} z={z} />)}
+        {([[-53, -35], [53, -35], [-53, 35], [53, 35]] as [number, number][]).map(([x, z], index) => <Floodlight key={index} x={x} z={z} />)}
 
         {/* Dedicated ground-level spectator deck and front-row benches.
             The spawn is on this deck, outside the pitch, looking toward the match. */}
