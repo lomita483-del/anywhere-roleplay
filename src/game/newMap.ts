@@ -17,6 +17,8 @@ const roadEdges: NewMapRoadEdge[] = [
  {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[178,0]]},
  {id:"corporate-street-n",from:"corporate-west",to:"corporate-east",type:"street",width:5,points:[[-154,-137],[-125,-137],[-96,-137]]},
  {id:"corporate-street-s",from:"corporate-west-s",to:"corporate-east-s",type:"street",width:5,points:[[-154,-111],[-125,-111],[-96,-111]]},
+ {id:"west-grid-connector-a",from:"corporate-west",to:"university-west",type:"street",width:5,points:[[-132,-137],[-132,-111],[-132,-83],[-132,-57],[-132,-28],[-132,0],[-132,42],[-132,70],[-132,98]]},
+ {id:"west-grid-connector-b",from:"corporate-east",to:"university-east",type:"street",width:5,points:[[-106,-137],[-106,-111],[-106,-83],[-106,-57],[-106,-28],[-106,0],[-106,42],[-106,70],[-106,98]]},
  {id:"industrial-street-n",from:"industrial-west",to:"industrial-east",type:"street",width:5,points:[[-154,-83],[-125,-83],[-96,-83]]},
  {id:"industrial-street-s",from:"industrial-west-s",to:"industrial-east-s",type:"street",width:5,points:[[-154,-57],[-125,-57],[-96,-57]]},
  {id:"university-street-n",from:"university-west",to:"university-east",type:"street",width:5,points:[[-154,42],[-125,42],[-96,42]]},
@@ -46,6 +48,7 @@ export const NEW_MAP_ROAD_GRAPH = {
 };
 export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
+export const NEW_MAP_ROAD_ENDPOINTS = roadEdges.flatMap(e=>{const first=e.points[0]!,last=e.points[e.points.length-1]!;if(Math.hypot(first[0]-last[0],first[1]-last[1])<0.1)return [];return [first,last].filter(p=>!NEW_MAP_JUNCTIONS.some(j=>Math.hypot(j[0]-p[0],j[1]-p[1])<1)).map(p=>({x:p[0],z:p[1],width:e.width}));});
 export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.type==="street");
 
 export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
@@ -71,8 +74,8 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"police",label:"POLICE STATION",kind:"police",district:"industrial",x:-119,z:-44,w:12,d:10,h:8,color:"#8ba2b4",doorSide:"north"},
  {id:"market",label:"CENTRAL MARKET",kind:"market",district:"market",x:-34,z:-104,w:20,d:14,h:6,color:"#c7864b",doorSide:"south"},
  {id:"depot",label:"BUS & GOODS DEPOT",kind:"depot",district:"market",x:-63,z:-104,w:14,d:12,h:5,color:"#b9a17c",doorSide:"south"},
- {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:16,d:12,h:10,color:"#b8a28d",doorSide:"south"},
- {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:16,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
+ {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:14,d:12,h:10,color:"#b8a28d",doorSide:"south"},
+ {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:14,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
  {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-125,z:126,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-92,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"north"},
