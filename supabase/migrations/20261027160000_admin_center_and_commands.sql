@@ -42,7 +42,7 @@ create policy "Admins can read admin commands"
 drop policy if exists "Admins can issue admin commands" on public.admin_commands;
 create policy "Admins can issue admin commands"
   on public.admin_commands for insert to authenticated
-  with check (created_by = (select auth.uid()) and exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.is_admin));
+  with check (created_by = (select auth.uid()) and exists (select 1 from public.admin_users a where a.user_id = (select auth.uid())));
 
 drop policy if exists "Players can read commands addressed to them" on public.admin_commands;
 create policy "Players can read commands addressed to them"
