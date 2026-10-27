@@ -748,7 +748,10 @@ function RadioApp() {
     const channel = supabase.channel("lagos-life-chat", { config: { broadcast: { self: false } } })
       .on("broadcast", { event: "chat_message" }, ({ payload }) => {
         const p = payload as { name?: string; message?: string };
-        if (p.message) setMsgs((m) => [...m.slice(-40), "💬 " + (p.name || "Hustler") + ": " + p.message]);
+        if (p.message) {
+          const clean = p.message.replace(/\b(fuck|shit|bitch|asshole|bastard)\b/gi, "•••").slice(0, 180);
+          setMsgs((m) => [...m.slice(-40), "💬 " + (p.name || "Hustler") + ": " + clean]);
+        }
       });
     chatChannel.current = channel;
     void channel.subscribe();
@@ -759,15 +762,20 @@ function RadioApp() {
     };
   }, []);
   useEffect(() => { feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight }); }, [msgs]);
-  const sendChat = (e: React.FormEvent) => {
-    e.preventDefault();
-    const message = draft.trim().slice(0, 180);
+  const lastSentAt = useRef(0);
+  const [chatNotice, setChatNotice] = useState("");
+  const publishMessage = (raw: string) => {
+    if (Date.now() - lastSentAt.current < 1200) { setChatNotice("Please wait a moment before sending another message."); return; }
+    const message = raw.trim().replace(/\b(fuck|shit|bitch|asshole|bastard)\b/gi, "•••").slice(0, 180);
     if (!message) return;
+    lastSentAt.current = Date.now();
     const name = useGame.getState().name || "Hustler";
     setMsgs((m) => [...m.slice(-40), "💬 You: " + message]);
     setDraft("");
+    setChatNotice("");
     if (chatChannel.current) void chatChannel.current.send({ type: "broadcast", event: "chat_message", payload: { name, message, at: Date.now() } });
   };
+  const sendChat = (e: React.FormEvent) => { e.preventDefault(); publishMessage(draft); };
   return (
     <div className="flex h-full flex-col p-3">
       <div className="text-xs uppercase tracking-widest text-slate-300">City radio · live player chat</div>
@@ -776,13 +784,10 @@ function RadioApp() {
       </div>
       <div className="mt-2 grid grid-cols-3 gap-1.5">
         {["How far?", "Oga sharp!", "No wahala", "Ẹ káàárọ̀!", "Kedu?", "Sannu!"].map((phrase) => (
-          <button key={phrase} type="button" onClick={() => {
-            const name = useGame.getState().name || "Hustler";
-            setMsgs((m) => [...m.slice(-40), "💬 You: " + phrase]);
-            if (chatChannel.current) void chatChannel.current.send({ type: "broadcast", event: "chat_message", payload: { name, message: phrase, at: Date.now() } });
-          }} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-2 text-[9px] font-semibold text-hud-bright active:bg-[#eab308]/15">{phrase}</button>
+          <button key={phrase} type="button" onClick={() => publishMessage(phrase)} className="min-h-10 rounded-lg border border-white/10 bg-white/5 px-1.5 py-2 text-xs font-semibold text-slate-100 active:bg-[#eab308]/15">{phrase}</button>
         ))}
       </div>
+      {chatNotice && <div role="status" className="mt-2 text-xs text-amber-200">{chatNotice}</div>}
       <form onSubmit={sendChat} className="mt-2 flex gap-2 border-t border-hud-line pt-2">
         <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={180} placeholder="Message players online…" className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-xs text-white placeholder:text-hud-muted" />
         <button type="submit" className="rounded-lg bg-[#eab308]/20 px-3 text-xs font-bold text-[#f4d16a]">Send</button>
