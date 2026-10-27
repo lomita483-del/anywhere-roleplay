@@ -5,6 +5,7 @@
 export const NEW_MAP_SCALE = 0.48;
 export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; }
+export const NEW_MAP_LOCAL_ROAD_START_INDEX = 8;
 export const NEW_MAP_ROADS: [number, number][][] = [
   // West-side distributor follows the outside edge of the lake, university and industrial plots,
   // then skirts the south edge of downtown before joining the market.
@@ -18,11 +19,19 @@ export const NEW_MAP_ROADS: [number, number][][] = [
   // Market-to-boulevard connector, aligned with the market's south-east entrance.
   [[-38, -76], [-42, -66], [-47, -52]],
   // Residential access street stays along the west edge of the housing grid.
-  [[67, -27], [72, -40], [74, -52], [72, -64], [60, -72], [49, -75]],
+  [[67, -27], [72, -30], [73, -40], [74, -52], [73, -56.4], [72, -64], [60, -72], [49, -75]],
   // Bank access spur runs beside the stadium plaza and terminates outside the bank frontage.
   [[72, 3], [65, 12], [54, 19], [44, 23], [38, 24]],
   // Hospital access spur stops beside the building instead of running through its footprint.
   [[84, 8], [91, 12], [94, 18], [92, 24]],
+  // Residential grid streets follow the gaps between plots, not through the houses.
+  [[101.8, -69.6], [101.8, -56.4], [101.8, -30], [101.8, -3.6], [101.8, 22.8], [101.8, 36]],
+  [[128.2, -69.6], [128.2, -56.4], [128.2, -30], [128.2, -3.6], [128.2, 22.8], [128.2, 36]],
+  [[154.6, -69.6], [154.6, -56.4], [154.6, -30], [154.6, -3.6], [154.6, 22.8], [154.6, 36]],
+  [[72, -56.4], [88.6, -56.4], [101.8, -56.4], [128.2, -56.4], [154.6, -56.4], [174.4, -56.4]],
+  [[72, -30], [88.6, -30], [101.8, -30], [128.2, -30], [154.6, -30], [174.4, -30]],
+  [[72, -3.6], [88.6, -3.6], [101.8, -3.6], [128.2, -3.6], [154.6, -3.6], [174.4, -3.6]],
+  [[66.5, 22.8], [88.6, 22.8], [101.8, 22.8], [128.2, 22.8], [154.6, 22.8], [174.4, 22.8]],
   // U-shaped boulevard around the central stadium plaza; kept as the final route.
   [[-9, -70], [22, -68], [49, -52], [67, -27], [72, 3], [63, 33], [43, 55], [14, 67], [-17, 67], [-45, 53], [-64, 30], [-72, 1], [-66, -29], [-47, -52], [-21, -67], [-9, -70]],
 ];
@@ -52,7 +61,7 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
 
 export const NEW_MAP_BUILDINGS = [
   ...Array.from({ length: 64 }, (_, i) => ({
-    x: 82 + (i % 8) * 10.4, z: -63 + Math.floor(i / 8) * 10.3,
+    x: 82 + (i % 8) * 13.2, z: -63 + Math.floor(i / 8) * 13.2,
     w: 6.1 + (i % 3) * 0.35, d: 6.1 + (i % 2) * 0.5,
     h: 6.2 + ((i * 7) % 8) * 1.25, color: ["#d9c9a8","#d7d4c8","#c9b39a","#d7b8a5","#b9c9bd","#d8cdbb","#c3b7a6","#e0d1b4"][i % 8]!,
     ...(i % 8 === 0 ? { kind: "apartments" as const, label: "Walk-up Apartments" } : {}),
