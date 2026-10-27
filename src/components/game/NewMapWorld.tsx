@@ -464,8 +464,8 @@ function RoadFurniture() {
       });
       mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
     };
-    write(lampRef,placements.lamps,"lamp");write(crossingRef,placements.crossings,"cross");write(signRef,placements.signs,"sign");
-    write(stopRef,placements.lamps.filter((_,i)=>i%7===0),"stop");
+    write(lampRef.current,placements.lamps,"lamp");write(crossingRef.current,placements.crossings,"cross");write(signRef.current,placements.signs,"sign");
+    write(stopRef.current,placements.lamps.filter((_,i)=>i%7===0),"stop");
   },[placements]);
   return <>
     <instancedMesh ref={lampRef} args={[undefined,undefined,placements.lamps.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,6]} /><meshStandardMaterial color="#353e40" roughness={0.6} /></instancedMesh>
@@ -632,7 +632,7 @@ function MarketStreetLife() {
   const poleSpots=useMemo(()=>Array.from({length:18},(_,i)=>({x:-150+(i%9)*34,z:-20+Math.floor(i/9)*44})),[]);
   useEffect(()=>{
     const dummy=new THREE.Object3D();
-    const write=(ref:React.RefObject<THREE.InstancedMesh|null>,items:{x:number;z:number;w?:number;h?:number;d?:number;color?:string}[],defaults:[number,number,number])=>{
+    const write=(ref:{current:THREE.InstancedMesh|null},items:{x:number;z:number;w?:number;h?:number;d?:number;color?:string}[],defaults:[number,number,number])=>{
       const mesh=ref.current;if(!mesh)return;
       items.forEach((p,i)=>{dummy.position.set(p.x,p.h??0.8,p.z);dummy.scale.set(p.w??defaults[0],p.h??defaults[1],p.d??defaults[2]);dummy.rotation.set(0,0,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(p.color)mesh.setColorAt(i,new THREE.Color(p.color));});
       mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();
