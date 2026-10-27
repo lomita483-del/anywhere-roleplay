@@ -88,13 +88,13 @@ function InstancedCrowd() {
     if (!body || !head || !left || !right) return;
     const dummy = new THREE.Object3D();
     people.forEach((p, i) => {
-      dummy.position.set(p.x, p.y + 0.56, p.z); dummy.rotation.set(0, p.angle, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
+      dummy.position.set(p.x, p.y + 1.05, p.z); dummy.rotation.set(0, p.angle, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
       body.setMatrixAt(i, dummy.matrix);
       body.setColorAt(i, new THREE.Color(p.color));
-      dummy.position.set(p.x, p.y + 1.18, p.z); dummy.updateMatrix(); head.setMatrixAt(i, dummy.matrix);
-      dummy.position.set(p.x - Math.cos(p.angle) * 0.42, p.y + 0.73, p.z + Math.sin(p.angle) * 0.42);
+      dummy.position.set(p.x, p.y + 2.05, p.z); dummy.updateMatrix(); head.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(p.x - Math.cos(p.angle) * 0.42, p.y + 1.28, p.z + Math.sin(p.angle) * 0.42);
       dummy.rotation.set(0, p.angle, -0.65); dummy.updateMatrix(); left.setMatrixAt(i, dummy.matrix);
-      dummy.position.set(p.x + Math.cos(p.angle) * 0.42, p.y + 0.73, p.z - Math.sin(p.angle) * 0.42);
+      dummy.position.set(p.x + Math.cos(p.angle) * 0.42, p.y + 1.28, p.z - Math.sin(p.angle) * 0.42);
       dummy.rotation.set(0, p.angle, 0.65); dummy.updateMatrix(); right.setMatrixAt(i, dummy.matrix);
     });
     body.instanceMatrix.needsUpdate = true; head.instanceMatrix.needsUpdate = true;
@@ -106,11 +106,11 @@ function InstancedCrowd() {
   return (
     <>
       <instancedMesh ref={bodyRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
-        <capsuleGeometry args={[0.58, 0.72, 2, 5]} />
+        <capsuleGeometry args={[0.68, 1.2, 2, 5]} />
         <meshStandardMaterial roughness={0.9} />
       </instancedMesh>
       <instancedMesh ref={headRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
-        <sphereGeometry args={[0.42, 6, 5]} />
+        <sphereGeometry args={[0.4, 6, 5]} />
         <meshStandardMaterial color="#986747" roughness={0.95} />
       </instancedMesh>
       <instancedMesh ref={leftArmRef} args={[undefined, undefined, people.length]} frustumCulled={false}>
