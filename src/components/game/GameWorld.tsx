@@ -414,6 +414,50 @@ export default function GameWorld() {
   };
 
   useEffect(() => {
+    let alive = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let publishTimer = 0;
+    let playerId: string | null = null;
+    const connect = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!alive || !data.session) return;
+        playerId = data.session.user.id;
+        channel = supabase.channel("lagos-life-world", { config: { presence: { key: playerId }, broadcast: { self: false } } });
+        channel
+          .on("broadcast", { event: "player_state" }, ({ payload }) => {
+            const p = payload as { id?: string; name?: string; x?: number; z?: number; yaw?: number; vehicle?: string | null };
+            if (!p.id || p.id === playerId || typeof p.x !== "number" || typeof p.z !== "number") return;
+            setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null } }));
+          })
+          .on("presence", { event: "sync" }, () => {
+            const state = channel?.presenceState() ?? {};
+            const activeIds = new Set(Object.keys(state).filter((id) => id !== playerId));
+            setRemotePlayers((current) => Object.fromEntries(Object.entries(current).filter(([id]) => activeIds.has(id))));
+          })
+          .subscribe(async (status) => {
+            if (status !== "SUBSCRIBED" || !channel || !playerId) return;
+            await channel.track({ online: true, name: useGame.getState().name, joined_at: new Date().toISOString() });
+            if (publishTimer) window.clearInterval(publishTimer);
+            publishTimer = window.setInterval(() => {
+              if (!channel || !playerId) return;
+              const v = g.drivingId ? g.vehicles.get(g.drivingId) : null;
+              void channel.send({ type: "broadcast", event: "player_state", payload: { id: playerId, name: useGame.getState().name || "Hustler", x: g.playerPos.x, z: g.playerPos.z, yaw: g.playerYaw, vehicle: v?.model ?? null } });
+            }, 250);
+          });
+      } catch (error) {
+        console.warn("[Anywhere Roleplay] Multiplayer presence unavailable:", error);
+      }
+    };
+    void connect();
+    return () => {
+      alive = false;
+      if (publishTimer) window.clearInterval(publishTimer);
+      if (channel) void supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
     for (const s of VEHICLE_SPAWNS) {
       if (!g.vehicles.has(s.id)) {
         g.vehicles.set(s.id, {
