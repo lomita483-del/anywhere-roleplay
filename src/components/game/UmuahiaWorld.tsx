@@ -7,11 +7,53 @@ function UmuahiaBuilding({ b }: { b: (typeof BUILDINGS)[number] }) {
   const windowRows = Math.max(1, Math.floor((b.h - 1.5) / 3));
   const windowCols = Math.max(2, Math.floor((b.w - 2) / 3.2));
   const isCivic = b.kind === "civic";
+  const isStadium = /STADIUM/i.test(b.label ?? "");
+  const isChurch = /CATHOLIC CHURCH/i.test(b.label ?? "");
+  const isHospital = /HOSPITAL/i.test(b.label ?? "");
+  const isTerminal = /BUS TERMINAL/i.test(b.label ?? "");
   return <group position={[b.x, 0, b.z]}>
-    <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
+    {!isStadium && <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
       <boxGeometry args={[b.w, b.h, b.d]} />
       <meshStandardMaterial color={b.color} roughness={0.88} />
-    </mesh>
+    </mesh>}
+    {isStadium && <group>
+      <mesh position={[0, 0.2, 0]} scale={[b.w / 2, 0.34, b.d / 2]} castShadow receiveShadow>
+        <sphereGeometry args={[1, 28, 12]} />
+        <meshStandardMaterial color="#b9b6ab" roughness={0.95} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.43, 0]}>
+        <planeGeometry args={[b.w * 0.55, b.d * 0.48]} />
+        <meshStandardMaterial color="#39794b" roughness={1} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.45, 0]} scale={[b.w / 2.2, b.d / 2.2, 1]}>
+        <torusGeometry args={[0.82, 0.055, 6, 40]} />
+        <meshStandardMaterial color="#c96f4c" roughness={0.85} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.47, 0]}>
+        <planeGeometry args={[b.w * 0.5, 0.12]} />
+        <meshBasicMaterial color="#f3f0df" />
+      </mesh>
+      <mesh position={[0, 0.55, 0]}><boxGeometry args={[0.12, 0.04, b.d * 0.42]} /><meshBasicMaterial color="#f3f0df" /></mesh>
+    </group>}
+    {isChurch && <group>
+      {[-b.w * 0.28, b.w * 0.28].map((x) => <group key={x} position={[x, b.h + 2.2, 0]}>
+        <mesh position={[0, 0, 0]} castShadow><boxGeometry args={[2.4, 5.2, 2.4]} /><meshStandardMaterial color="#d8c7a9" roughness={0.9} /></mesh>
+        <mesh position={[0, 3.2, 0]} castShadow><coneGeometry args={[1.8, 2.4, 4]} /><meshStandardMaterial color="#80553b" roughness={0.9} /></mesh>
+        <mesh position={[0, 4.9, 0]}><boxGeometry args={[0.22, 1.6, 0.22]} /><meshStandardMaterial color="#d9bd73" metalness={0.25} /></mesh>
+        <mesh position={[0, 5.1, 0]}><boxGeometry args={[0.9, 0.18, 0.18]} /><meshStandardMaterial color="#d9bd73" metalness={0.25} /></mesh>
+      </group>)}
+    </group>}
+    {isHospital && <group position={[0, b.h * 0.76, b.d / 2 + 0.25]}>
+      <mesh><boxGeometry args={[2.2, 0.62, 0.18]} /><meshStandardMaterial color="#b92e35" emissive="#7b151a" emissiveIntensity={0.18} /></mesh>
+      <mesh><boxGeometry args={[0.62, 2.2, 0.18]} /><meshStandardMaterial color="#b92e35" emissive="#7b151a" emissiveIntensity={0.18} /></mesh>
+    </group>}
+    {isTerminal && <group position={[0, 0, b.d / 2 + 5]}>
+      <mesh position={[0, 4, 0]} castShadow><boxGeometry args={[b.w * 0.9, 0.3, 7]} /><meshStandardMaterial color="#c4b18d" roughness={0.8} /></mesh>
+      {[-b.w * 0.32, 0, b.w * 0.32].map((x) => <group key={x} position={[x, 0, 0]}>
+        <mesh position={[0, 2, 0]}><cylinderGeometry args={[0.13, 0.16, 4, 6]} /><meshStandardMaterial color="#7a7d78" /></mesh>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 2.3]}><planeGeometry args={[5, 0.12]} /><meshBasicMaterial color="#f0d27b" /></mesh>
+      </group>)}
+    </group>}
     <mesh position={[0, b.h + 0.12, 0]} castShadow>
       <boxGeometry args={[b.w + 0.5, 0.24, b.d + 0.5]} />
       <meshStandardMaterial color={b.h < 7 ? "#8b5540" : "#777a75"} roughness={0.9} />
