@@ -5,6 +5,7 @@ import { SAVE_KEY, useGame } from "@/game/store";
 import { g } from "@/game/state";
 import Scene from "./Scene";
 import Hud from "./Hud";
+import FirstDayTutorial from "./FirstDayTutorial";
 
 function CloudSaveSync() {
   useEffect(() => {
@@ -169,6 +170,7 @@ export default function GameCanvas() {
         <Scene />
       </Canvas>
       <Hud />
+      <FirstDayTutorial />
     </div>
   );
 }
