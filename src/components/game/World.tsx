@@ -320,7 +320,7 @@ function ConstructionSite() {
         <mesh position={[-0.75, 0.28, 0.65]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.3, 0.3, 0.2, 10]} /><meshStandardMaterial color="#22252a" /></mesh>
         <mesh position={[0.75, 0.28, 0.65]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.3, 0.3, 0.2, 10]} /><meshStandardMaterial color="#22252a" /></mesh>
       </group>
-      {[[75, 72], [76.5, 72], [98, 73], [99.5, 73]].map(([x, z], i) => <mesh key={"cone" + i} position={[x, 0.45, z]} castShadow><cylinderGeometry args={[0.06, 0.32, 0.9, 7]} /><meshStandardMaterial color="#f07824" roughness={0.7} /></mesh>)}
+      {[{ x: 75, z: 72 }, { x: 76.5, z: 72 }, { x: 98, z: 73 }, { x: 99.5, z: 73 }].map((cone, i) => <mesh key={"cone" + i} position={[cone.x, 0.45, cone.z]} castShadow><cylinderGeometry args={[0.06, 0.32, 0.9, 7]} /><meshStandardMaterial color="#f07824" roughness={0.7} /></mesh>)}
       <Html position={[86, 10, 88]} center distanceFactor={28}><div className="whitespace-nowrap rounded-lg border border-[#eab308]/35 bg-[#17130b]/90 px-3 py-1.5 text-[10px] font-bold tracking-wider text-[#f4d16a]">LAGOS NEW CITY · CONSTRUCTION IN PROGRESS</div></Html>
     </group>
   );
