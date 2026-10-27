@@ -54,11 +54,17 @@ export function interact() {
   else if (p.kind === "jobboard") s.openPhone("jobs");
   else if (p.kind === "police") { s.setOutfit({ top: "uniform" }); s.acceptJob("security"); s.radio("🚔 Police duty started. Patrol uniform equipped."); }
   else if (p.kind === "building") {
+    const label = p.buildingLabel ?? "City Building";
+    if (label.toLowerCase().includes("police")) {
+      s.setOutfit({ top: "uniform" });
+      s.acceptJob("security");
+      s.radio("🚔 Police duty started. Patrol uniform equipped.");
+    }
     g.interiorReturn.copy(g.playerPos);
     g.playerPos.set(104, 0, 104);
-    s.setInterior(true, p.buildingLabel ?? "City Building");
+    s.setInterior(true, label);
     s.setWaypoint(null);
-    s.radio("🏢 Welcome inside " + (p.buildingLabel ?? "the building") + ". Explore the interior and use Exit to return outside.");
+    s.radio("🏢 Welcome inside " + label + ". Explore the interior and use Exit to return outside.");
   }
 }
 
