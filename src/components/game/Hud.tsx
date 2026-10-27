@@ -5,6 +5,7 @@ import { useGame, naira } from "@/game/store";
 import { exitApartment, interact } from "@/game/actions";
 import Phone from "./Phone";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF } from "@/game/city";
+import { NEW_MAP_POIS, NEW_MAP_ROADS } from "@/game/newMap";
 
 function fmtTime(h: number) {
   const hh = Math.floor(h) % 24;
@@ -77,8 +78,27 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
     ctx.clearRect(0, 0, S, S);
     ctx.save();
     ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI * 2); ctx.clip();
-    ctx.fillStyle = city === "newmap" ? "#668553" : "#13242a"; ctx.fillRect(0, 0, S, S);
-    if (city !== "newmap") {
+    ctx.fillStyle = city === "newmap" ? "#89935e" : "#13242a"; ctx.fillRect(0, 0, S, S);
+    if (city === "newmap") {
+      // Current NEW MAP terrain, water, building clusters and the same curved roads as the 3D world.
+      ctx.fillStyle = "#327d98";
+      ctx.beginPath(); ctx.ellipse(sx(-112), sy(118), 18, 14, -0.25, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle="#d7c391";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(sx(-112),sy(118),21,17,-0.25,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="#2b7e9d";ctx.fillRect(sx(116)-20,sy(120)-15,40,30);
+      ctx.strokeStyle="#d0cfc4";ctx.lineWidth=11;ctx.lineCap="round";ctx.lineJoin="round";
+      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
+      ctx.strokeStyle="#3d454b";ctx.lineWidth=7;
+      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
+      ctx.strokeStyle="#f4f0df";ctx.lineWidth=1.1;ctx.setLineDash([3,3]);
+      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
+      ctx.setLineDash([]);
+      ctx.strokeStyle="#172431";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(sx(0),sy(0),15,10,0,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="#3b9b52";ctx.beginPath();ctx.ellipse(sx(0),sy(0),8,5.5,0,0,Math.PI*2);ctx.fill();
+      const blocks:[number,number,number,number,string][]=[[-145,-82,34,25,"#7d9ca9"],[-143,-46,26,22,"#8e887a"],[-38,-76,34,19,"#c28b4f"],[-110,32,30,24,"#a88f78"],[98,-40,56,58,"#c7bca5"],[78,10,30,24,"#b3a99a"],[116,120,42,28,"#8b9b9b"],[6,-142,50,48,"#a6b2b0"]];
+      for(const [x,z,w,d,c] of blocks){ctx.fillStyle=c;ctx.fillRect(sx(x-w/2),sy(z-d/2),w*scale,d*scale);}
+      ctx.fillStyle="#b8a58a";for(let row=0;row<8;row++)for(let col=0;col<8;col++){const x=82+col*10.4,z=-63+row*10.3;ctx.fillRect(sx(x)-2,sy(z)-2,4,4);}
+      for(const p of NEW_MAP_POIS){const x=sx(p.x),y=sy(p.z);if(Math.hypot(x-center,y-center)>radius-3)continue;ctx.fillStyle=p.kind==="airport"?"#8cc8ff":p.kind==="port"?"#f0b56a":p.kind==="stadium"?"#f7d35c":p.kind==="university"?"#c5a7ff":p.kind==="lake"?"#5fe0d1":p.kind==="bank"?"#69e3a7":p.kind==="police"?"#79aaff":"#ffdc8a";ctx.beginPath();ctx.arc(x,y,p.kind==="stadium"?3.5:2.5,0,Math.PI*2);ctx.fill();}
+    } else {
       ctx.strokeStyle = "#d1b95c"; ctx.lineWidth = 5;
       for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
       for (const z of ROADS_Z) { const py = sy(z); ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(S, py); ctx.stroke(); }
@@ -90,7 +110,7 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
     if (waypoint) { const tx = sx(waypoint.x), ty = sy(waypoint.z); ctx.strokeStyle = "#39ef9b"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(center, center); ctx.lineTo(tx, ty); ctx.stroke(); ctx.fillStyle = "#39ef9b"; ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI * 2); ctx.fill(); }
     ctx.save(); ctx.translate(center, center); ctx.rotate(g.playerYaw); ctx.fillStyle = "#72d3ff"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-5, 5); ctx.lineTo(0, 2); ctx.lineTo(5, 5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
     ctx.restore();
-  }, [waypoint, tick]);
+  }, [waypoint, tick, city]);
   return <button type="button" onClick={onOpen} aria-label="Open full city map" className="pointer-events-auto absolute right-3 top-[7.8rem] rounded-full border border-amber-200/35 bg-[#07131b]/90 p-1 shadow-lg active:scale-95">
     <canvas ref={canvasRef} width={128} height={128} className="h-[104px] w-[104px] rounded-full sm:h-[118px] sm:w-[118px]" />
     <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">{city === "newmap" ? "NEW MAP" : city === "umuahia" ? "UMUAHIA · MAP" : "LAGOS · MAP"}</span>
@@ -197,7 +217,7 @@ export default function Hud() {
       <div className="pointer-events-auto absolute right-3 top-[4.1rem] flex items-center gap-1.5 rounded-2xl border border-white/10 bg-[#07100f]/75 p-1.5 shadow-lg backdrop-blur-md">
         <button aria-label="Zoom out" title="Zoom out" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.min(95, g.camDistance + 5); }}><ZoomOut className="h-4 w-4" /></button>
         <button aria-label="Zoom in" title="Zoom in" className="flex h-8 w-8 items-center justify-center rounded-xl text-white/85 active:bg-white/10" onClick={() => { g.camDistance = Math.max(4, g.camDistance - 5); }}><ZoomIn className="h-4 w-4" /></button>
-        <button aria-label="Toggle satellite view" title={satelliteMode ? "Return to street view" : "Satellite view"} className={`flex h-8 items-center gap-1 rounded-xl px-2 text-[9px] font-bold ${satelliteMode ? "bg-[#eab308]/25 text-[#ffe38a]" : "text-white/85"}`} onClick={() => {
+        <button aria-label="Toggle satellite view" title={satelliteMode ? "Return to street view" : "Satellite view"} className={`flex h-8 min-w-[58px] items-center justify-center gap-1 whitespace-nowrap rounded-xl px-2 text-[9px] font-bold ${satelliteMode ? "bg-[#eab308]/25 text-[#ffe38a]" : "text-white/85"}`} onClick={() => {
           if (!g.camSatellite) {
             g.camBeforeSatellite = { pitch: g.camPitch, distance: g.camDistance };
             g.camSatellite = true; setSatelliteMode(true); g.camPitch = 1.38; g.camDistance = 72;
