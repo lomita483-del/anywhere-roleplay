@@ -61,7 +61,7 @@ function CharacterBody() {
   const bottoms: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
   const top = tops[outfit.top] ?? tops["streetwear"]!;
   const bottom = bottoms[outfit.bottom] ?? bottoms["jeans"]!;
-  const hair = outfit.hair === "locs" ? "#211a29" : outfit.hair === "braids" ? "#241b17" : "#171513";
+  const hair = outfit.hairColor || (outfit.hair === "locs" ? "#211a29" : outfit.hair === "braids" ? "#241b17" : "#4b1877");
   const shoe = outfit.top === "formal" ? "#25252b" : "#d9dcdf";
 
   useFrame((state) => {
@@ -79,6 +79,7 @@ function CharacterBody() {
       <mesh position={[0, 1.36, 0]} castShadow><cylinderGeometry args={[0.085, 0.1, 0.18, 9]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
       <mesh position={[0, 1.04, 0]} castShadow receiveShadow><capsuleGeometry args={[0.26, 0.43, 5, 10]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
       <mesh position={[0, 1.27, 0.015]}><torusGeometry args={[0.105, 0.022, 5, 12]} /><meshStandardMaterial color={outfit.top === "formal" ? "#e6e6e3" : top} roughness={0.8} /></mesh>
+      {outfit.accessory === "chain" && <mesh position={[0, 1.245, 0.18]}><torusGeometry args={[0.13, 0.012, 6, 18]} /><meshStandardMaterial color="#eab308" metalness={0.82} roughness={0.24} /></mesh>}
       <mesh position={[0.13, 1.12, 0.245]}><boxGeometry args={[0.075, 0.1, 0.016]} /><meshStandardMaterial color={outfit.top === "formal" ? "#d8dce2" : "#c5c8c8"} roughness={0.9} /></mesh>
       {outfit.top === "formal" && <group>
         <mesh position={[0, 1.05, 0.258]}><boxGeometry args={[0.025, 0.33, 0.015]} /><meshStandardMaterial color="#e6e6e3" roughness={0.8} /></mesh>
@@ -113,6 +114,11 @@ function CharacterBody() {
           <mesh position={[0,0,0.014]} scale={[0.015,0.018,0.008]}><sphereGeometry args={[1,8,6]} /><meshStandardMaterial color="#211a16" roughness={0.55} /></mesh>
           <mesh position={[0,0.04,0]}><boxGeometry args={[0.07,0.016,0.02]} /><meshStandardMaterial color={hair} roughness={0.9} /></mesh>
         </group>)}
+        {outfit.accessory === "shades" && <group>
+          <mesh position={[-0.08,0.005,0.195]}><boxGeometry args={[0.085,0.05,0.025]} /><meshStandardMaterial color="#111820" metalness={0.35} roughness={0.22} /></mesh>
+          <mesh position={[0.08,0.005,0.195]}><boxGeometry args={[0.085,0.05,0.025]} /><meshStandardMaterial color="#111820" metalness={0.35} roughness={0.22} /></mesh>
+          <mesh position={[0,0.005,0.195]}><boxGeometry args={[0.04,0.012,0.02]} /><meshStandardMaterial color="#d5b75a" metalness={0.65} roughness={0.25} /></mesh>
+        </group>}
         <mesh position={[0,-0.155,0.176]}><boxGeometry args={[0.06,0.01,0.01]} /><meshStandardMaterial color="#603a2c" roughness={0.9} /></mesh>
         <mesh position={[0,0.14,-0.005]} scale={[0.21,0.14,0.2]}><sphereGeometry args={[1,12,8]} /><meshStandardMaterial color={hair} roughness={0.92} /></mesh>
         {outfit.hair === "locs" && Array.from({length:13},(_,i)=>{
