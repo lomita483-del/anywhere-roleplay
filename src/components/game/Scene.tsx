@@ -13,7 +13,7 @@ export default function Scene() {
       <DayNight />
       {city === "umuahia" ? <UmuahiaWorld /> : <World />}
       <Suspense fallback={null}>
-        <GameWorld />
+        <GameWorld key={city} />
       </Suspense>
       <Environment resolution={64}>
         <Lightformer intensity={1.6} position={[0, 8, 0]} scale={[12, 12, 1]} />
