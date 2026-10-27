@@ -7,7 +7,7 @@ import { g } from "@/game/state";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, ROADS_X, ROADS_Z, isBlocked, clampWorld, districtAt } from "@/game/city";
+import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, STALLS, ROADS_X, ROADS_Z, isBlocked, clampWorld, districtAt } from "@/game/city";
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
 const MODEL_FLIP = Math.PI;
@@ -1058,6 +1058,9 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   }
 
   if (s2.interior) { st.setPrompt(null); return; }
+
+  const nearbyStall = STALLS.find((stall) => Math.hypot(x - stall.x, z - stall.z) < 3.0);
+  if (nearbyStall) { st.setPrompt({ kind: "vendor", label: "Browse street vendor" }); return; }
 
   let nearest: (typeof BUILDINGS)[number] | null = null;
   let nearestDistance = 3.0;
