@@ -65,10 +65,10 @@ function AdminCenter() {
 
   async function verifyAdmin(next: Session) {
     setError("");
-    const result = await (supabase as any).from("profiles").select("is_admin").eq("id", next.user.id).maybeSingle();
+    const result = await (supabase as any).from("admin_users").select("user_id").eq("user_id", next.user.id).maybeSingle();
     if (result.error) { setIsAdmin(false); setError("Could not verify administrator access. Apply the admin database migration, then sign in again."); return; }
-    setIsAdmin(result.data?.is_admin === true);
-    if (result.data?.is_admin === true) await loadPlayers();
+    setIsAdmin(Boolean(result.data?.user_id));
+    if (result.data?.user_id) await loadPlayers();
     else setMessage("Your account is signed in, but it has not been granted administrator privileges yet.");
   }
 
