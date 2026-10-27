@@ -355,7 +355,7 @@ function MapApp() {
   const clearWaypoint = useGame((s) => s.clearWaypoint);
   const unlockedDistricts = useGame((s) => s.unlockedDistricts);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
+  const [selectedPoi, setSelectedPoi] = useState<{ x: number; z: number; label: string; kind?: string } | null>(null);
   const [, setPositionTick] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -532,6 +532,14 @@ function MapApp() {
         ctx.beginPath(); ctx.arc(px, pz, 4.2, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 1; ctx.stroke();
       }
+      // Labeled building pins use the same coordinates as the 3D building footprints.
+      for (const b of BUILDINGS) {
+        if (!b.label) continue;
+        const [px, pz] = to(b.x, b.z, S);
+        ctx.fillStyle = b.kind === "bank" ? "#d5b86a" : b.kind === "market" ? "#e29a55" : b.kind === "police" ? "#7fb7ff" : "#f2d27a";
+        ctx.beginPath(); ctx.arc(px, pz, 2.6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(10,20,25,.85)"; ctx.lineWidth = 0.8; ctx.stroke();
+      }
       if (job) {
         const t = job.targets[job.stage];
         if (t) { const [px, pz] = to(t[0], t[1], S); ctx.fillStyle = "#ff5c5c"; ctx.beginPath(); ctx.arc(px, pz, 5, 0, Math.PI * 2); ctx.fill(); }
@@ -569,7 +577,11 @@ function MapApp() {
     const rect = canvas.getBoundingClientRect();
     const cx = ((e.clientX - rect.left) / rect.width) * canvas.width;
     const cy = ((e.clientY - rect.top) / rect.height) * canvas.height;
-    const nearest = POIS.map((p) => ({ p, xy: to(p.x, p.z, canvas.width) })).map(({p,xy}) => ({p,d:Math.hypot(xy[0]-cx,xy[1]-cy)})).sort((a,b)=>a.d-b.d)[0];
+    const pins = [
+      ...POIS.map((p) => ({ x:p.x, z:p.z, label:p.label, kind:p.kind })),
+      ...BUILDINGS.filter((b) => !!b.label).map((b) => ({ x:b.x, z:b.z, label:b.label ?? "City building", kind:b.kind ?? "landmark" })),
+    ];
+    const nearest = pins.map((p) => ({ p, xy: to(p.x, p.z, canvas.width) })).map(({p,xy}) => ({p,d:Math.hypot(xy[0]-cx,xy[1]-cy)})).sort((a,b)=>a.d-b.d)[0];
     if (nearest && nearest.d < 13) {
       setSelectedPoi(nearest.p);
       return;
