@@ -335,6 +335,131 @@ function CityTrees() {
   </>;
 }
 
+
+/** Dense Lagos low-rise district rendered with shared instanced geometry for mobile performance. */
+function LagosResidentialDistrict() {
+  const body = useRef<THREE.InstancedMesh>(null);
+  const plots = useRef<THREE.InstancedMesh>(null);
+  const roofs = useRef<THREE.InstancedMesh>(null);
+  const windows = useRef<THREE.InstancedMesh>(null);
+  const balconies = useRef<THREE.InstancedMesh>(null);
+  const tanks = useRef<THREE.InstancedMesh>(null);
+  const dishes = useRef<THREE.InstancedMesh>(null);
+  const walls = useRef<THREE.InstancedMesh>(null);
+  const gates = useRef<THREE.InstancedMesh>(null);
+  const laundry = useRef<THREE.InstancedMesh>(null);
+  const homes = useMemo(() => Array.from({ length: 64 }, (_, i) => ({
+    x: 82 + (i % 8) * 10.4,
+    z: -63 + Math.floor(i / 8) * 10.3,
+    w: 6.1 + (i % 3) * 0.35,
+    d: 6.1 + (i % 2) * 0.5,
+    h: 6.2 + ((i * 7) % 8) * 1.25,
+    color: ["#d9c9a8", "#d7d4c8", "#c9b39a", "#d7b8a5", "#b9c9bd", "#d8cdbb", "#c3b7a6", "#e0d1b4"][i % 8]!,
+  })), []);
+  const windowData = useMemo(() => homes.flatMap((b, i) => {
+    const floors = Math.max(2, Math.floor(b.h / 2.5));
+    return Array.from({ length: floors * 3 }, (_, j) => ({
+      x: b.x - b.w * 0.32 + (j % 3) * b.w * 0.32,
+      y: 1.7 + Math.floor(j / 3) * 2.05,
+      z: b.z + b.d / 2 + 0.035,
+      w: 0.7, h: 0.9,
+      color: (i + j) % 7 === 0 ? "#c9a15e" : "#6696a5",
+    }));
+  }), [homes]);
+  const balconyData = useMemo(() => homes.flatMap((b, i) => Array.from({ length: Math.max(1, Math.floor(b.h / 5)) }, (_, j) => ({
+    x: b.x, y: 2.7 + j * 5, z: b.z + b.d / 2 + 0.34, w: b.w * 0.9, d: 0.7,
+    color: i % 3 === 0 ? "#d8d3c5" : "#b7b7ad",
+  }))), [homes]);
+  useEffect(() => {
+    const dummy = new THREE.Object3D();
+    const write = (ref: React.RefObject<THREE.InstancedMesh | null>, count: number, transform: (i: number) => { x:number;y:number;z:number;sx:number;sy:number;sz:number;ry?:number;color?:string }) => {
+      const mesh = ref.current;
+      if (!mesh) return;
+      for (let i = 0; i < count; i++) {
+        const d = transform(i);
+        dummy.position.set(d.x, d.y, d.z);
+        dummy.scale.set(d.sx, d.sy, d.sz);
+        dummy.rotation.set(0, d.ry ?? 0, 0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        if (d.color) mesh.setColorAt(i, new THREE.Color(d.color));
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.computeBoundingSphere();
+    };
+    write(plots, homes.length, i => { const b=homes[i]!; return {x:b.x,y:0.08,z:b.z,sx:9.7,sy:0.16,sz:9.5,color:i%2?"#a6ad81":"#b7b28d"}; });
+    write(body, homes.length, i => { const b=homes[i]!; return {x:b.x,y:b.h/2+0.2,z:b.z,sx:b.w,sy:b.h,sz:b.d,color:b.color}; });
+    write(roofs, homes.length, i => { const b=homes[i]!; return {x:b.x,y:b.h+0.32,z:b.z,sx:b.w+0.25,sy:0.32,sz:b.d+0.25,color:i%4===0?"#b7b7ad":"#d4d1c6"}; });
+    write(windows, windowData.length, i => { const w=windowData[i]!; return {x:w.x,y:w.y,z:w.z,sx:w.w,sy:w.h,sz:0.06,color:w.color}; });
+    write(balconies, balconyData.length, i => { const b=balconyData[i]!; return {x:b.x,y:b.y,z:b.z,sx:b.w,sy:0.14,sz:b.d,color:b.color}; });
+    write(tanks, homes.length, i => { const b=homes[i]!; return {x:b.x+(i%2?1.3:-1.3),y:b.h+1.05,z:b.z-0.9,sx:0.72,sy:1.15,sz:0.72,color:"#64777b"}; });
+    write(dishes, homes.length, i => { const b=homes[i]!; return {x:b.x-1.5,y:b.h+0.75,z:b.z+1.2,sx:0.45,sy:0.22,sz:0.45,ry:i*0.4,color:"#e0e0d7"}; });
+    write(walls, homes.length*3, i => { const b=homes[Math.floor(i/3)]!; const part=i%3; return {x:b.x+(part===0?0:part===1?-4.45:4.45),y:0.48,z:b.z+(part===0?4.4:0),sx:part===0?8.9:0.18,sy:0.82,sz:0.18,color:"#c5c0b0"}; });
+    write(gates, homes.length, i => { const b=homes[i]!; return {x:b.x+2.4,y:0.58,z:b.z+4.43,sx:1.15,sy:1.05,sz:0.18,color:"#434b4b"}; });
+    write(laundry, Math.floor(homes.length/3), i => { const b=homes[(i*3)%homes.length]!; return {x:b.x-0.7,y:3.3+(i%2)*2.5,z:b.z+b.d/2+0.55,sx:0.8,sy:0.42,sz:0.08,color:["#d9d2bf","#bb7564","#8ea8ba","#e3c56f"][i%4]!}; });
+  }, [homes, windowData, balconyData]);
+  return <>
+    <instancedMesh ref={plots} args={[undefined, undefined, homes.length]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#a6ad81" roughness={1} /></instancedMesh>
+    <instancedMesh ref={body} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d5c7ae" roughness={0.9} /></instancedMesh>
+    <instancedMesh ref={roofs} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c8c7bc" roughness={0.82} /></instancedMesh>
+    <instancedMesh ref={windows} args={[undefined, undefined, windowData.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#6696a5" metalness={0.2} roughness={0.32} /></instancedMesh>
+    <instancedMesh ref={balconies} args={[undefined, undefined, balconyData.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c4c4b8" roughness={0.75} /></instancedMesh>
+    <instancedMesh ref={tanks} args={[undefined, undefined, homes.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,8]} /><meshStandardMaterial color="#65777a" roughness={0.72} /></instancedMesh>
+    <instancedMesh ref={dishes} args={[undefined, undefined, homes.length]}><coneGeometry args={[0.5,0.35,8]} /><meshStandardMaterial color="#e0e0d7" roughness={0.55} /></instancedMesh>
+    <instancedMesh ref={walls} args={[undefined, undefined, homes.length*3]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c5c0b0" roughness={0.95} /></instancedMesh>
+    <instancedMesh ref={gates} args={[undefined, undefined, homes.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#434b4b" metalness={0.35} roughness={0.55} /></instancedMesh>
+    <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d9d2bf" roughness={0.8} /></instancedMesh>
+    <Html position={[115, 22, -76]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
+  </>;
+}
+
+function RoadFurniture() {
+  const lampRef = useRef<THREE.InstancedMesh>(null);
+  const crossingRef = useRef<THREE.InstancedMesh>(null);
+  const signRef = useRef<THREE.InstancedMesh>(null);
+  const stopRef = useRef<THREE.InstancedMesh>(null);
+  const placements = useMemo(() => {
+    const lamps: {x:number;z:number;yaw:number}[] = [];
+    const crossings: {x:number;z:number;yaw:number}[] = [];
+    const signs: {x:number;z:number;yaw:number}[] = [];
+    NEW_MAP_ROADS.forEach((path, r) => {
+      const curve = new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",0.22);
+      const length=curve.getLength();
+      for(let d=12;d<length;d+=r===6?24:32){
+        const t=curve.getUtoTmapping(0,d),p=curve.getPointAt(t),tan=curve.getTangentAt(t);
+        const yaw=Math.atan2(-tan.z,tan.x);
+        lamps.push({x:p.x+tan.z*5.8,z:p.z-tan.x*5.8,yaw});
+        if(d%3<1) signs.push({x:p.x-tan.z*5.2,z:p.z+tan.x*5.2,yaw});
+      }
+      const p=curve.getPointAt(0.5),tan=curve.getTangentAt(0.5);
+      crossings.push({x:p.x,z:p.z,yaw:Math.atan2(-tan.z,tan.x)});
+    });
+    return {lamps,crossings,signs};
+  }, []);
+  useEffect(()=>{
+    const dummy=new THREE.Object3D();
+    const write=(mesh:THREE.InstancedMesh|null,items:{x:number;z:number;yaw:number}[],kind:"lamp"|"cross"|"sign"|"stop")=>{
+      if(!mesh)return;
+      items.forEach((p,i)=>{
+        dummy.position.set(p.x,kind==="lamp"?3.3:kind==="cross"?0.072:kind==="sign"?1.8:1.1,p.z);
+        dummy.rotation.set(0,p.yaw,0);
+        dummy.scale.set(kind==="lamp"?0.16:kind==="cross"?1.4:kind==="sign"?0.9:3.5,kind==="lamp"?6.6:kind==="cross"?0.018:kind==="sign"?1.6:2.2,kind==="lamp"?0.16:kind==="cross"?0.24:kind==="sign"?0.12:1.5);
+        dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
+    };
+    write(lampRef,placements.lamps,"lamp");write(crossingRef,placements.crossings,"cross");write(signRef,placements.signs,"sign");
+    write(stopRef,placements.lamps.filter((_,i)=>i%7===0),"stop");
+  },[placements]);
+  return <>
+    <instancedMesh ref={lampRef} args={[undefined,undefined,placements.lamps.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,6]} /><meshStandardMaterial color="#353e40" roughness={0.6} /></instancedMesh>
+    <instancedMesh ref={crossingRef} args={[undefined,undefined,placements.crossings.length]}><boxGeometry args={[1,1,1]} /><meshBasicMaterial color="#f4f0df" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} /></instancedMesh>
+    <instancedMesh ref={signRef} args={[undefined,undefined,placements.signs.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d9bd69" roughness={0.7} /></instancedMesh>
+    <instancedMesh ref={stopRef} args={[undefined,undefined,Math.max(1,placements.lamps.filter((_,i)=>i%7===0).length)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d7c9a8" roughness={0.85} /></instancedMesh>
+  </>;
+}
+
 // Curved arterial routes replace the old oversized rectangular road grid.
 // The S-bends and U-shaped stadium loop are designed to read clearly from the isometric camera.
 const CITY_ROAD_PATHS = NEW_MAP_ROADS;
@@ -458,6 +583,7 @@ function CityEcosystem() {
   return <>
     {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
     <CurvedRoadNetwork />
+    <RoadFurniture />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
