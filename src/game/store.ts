@@ -425,7 +425,7 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
 
-  acceptJob: (type) => { const job = makeJob(type); const target = job.targets[0]; set({ activeJob: job, phoneOpen: false, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · pickup", kind: "job" } : null }); },
+  acceptJob: (type) => { const job = makeJob(type); const target = job.targets[0]; set({ activeJob: job, phoneOpen: false, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · pickup", kind: "job" } : null }); get().save(); },
   advanceJob: () => {
     const job = get().activeJob;
     if (!job) return;
@@ -439,13 +439,15 @@ export const useGame = create<GameStore>((set, get) => ({
       get().earn(job.payout, "bank");
       if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
       set({ activeJob: null, jobStats: stats, waypoint: null });
+      get().save();
       get().radio(`✅ Job complete — ${N(job.payout)} paid into your bank account.`);
     } else {
       const target = job.targets[next];
       set({ activeJob: { ...job, stage: next }, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · " + (next + 1), kind: "job" } : null });
+      get().save();
     }
   },
-  cancelJob: () => set({ activeJob: null, waypoint: null }),
+  cancelJob: () => { set({ activeJob: null, waypoint: null }); get().save(); },
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
   rentMarketItem: (key) => {
@@ -489,7 +491,7 @@ export const useGame = create<GameStore>((set, get) => ({
     get().radio(item.message); get().save(); return true;
   },
   setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
-  setWaypoint: (waypoint) => set({ waypoint }),
+  setWaypoint: (waypoint) => { set({ waypoint }); get().save(); },
   requestRide: (service) => {
     const s = get();
     if (!s.waypoint || s.driving || s.rideRequest) return false;
@@ -506,7 +508,7 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
   setRideRequest: (rideRequest) => set({ rideRequest }),
-  clearWaypoint: () => set({ waypoint: null }),
+  clearWaypoint: () => { set({ waypoint: null }); get().save(); },
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
   closePhone: () => set({ phoneOpen: false }),
   setPrompt: (p) => { if (JSON.stringify(p) !== JSON.stringify(get().prompt)) set({ prompt: p }); },
