@@ -452,14 +452,21 @@ function RoadFurniture() {
     NEW_MAP_ROADS.forEach((path, r) => {
       const curve = new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",0.22);
       const length=curve.getLength();
-      for(let d=12;d<length;d+=r===6?24:32){
+      for(let d=12;d<length;d+=r===NEW_MAP_ROADS.length-1?24:32){
         const t=curve.getUtoTmapping(0,d),p=curve.getPointAt(t),tan=curve.getTangentAt(t);
         const yaw=Math.atan2(-tan.z,tan.x);
         lamps.push({x:p.x+tan.z*5.8,z:p.z-tan.x*5.8,yaw});
         if(d%3<1) signs.push({x:p.x-tan.z*5.2,z:p.z+tan.x*5.2,yaw});
       }
-      const p=curve.getPointAt(0.5),tan=curve.getTangentAt(0.5);
-      for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:p.x+tan.x*stripe*1.05,z:p.z+tan.z*stripe*1.05,yaw:Math.atan2(-tan.z,tan.x)+Math.PI/2});
+    });
+    // Zebra crossings belong at real junctions, not at arbitrary road midpoints.
+    const junctionCrossings:{x:number;z:number;yaw:number}[]=[
+      {x:-145,z:-64,yaw:0},{x:-145,z:-82,yaw:0},{x:-143,z:-46,yaw:0},
+      {x:-110,z:43,yaw:0},{x:-112,z:105,yaw:0},{x:-38,z:-76,yaw:Math.PI/2},
+      {x:-47,z:-52,yaw:Math.PI/4},{x:-72,z:1,yaw:0},{x:72,z:3,yaw:0},
+      {x:38,z:24,yaw:Math.PI/2},{x:78,z:24,yaw:Math.PI/2},{x:76,z:116,yaw:0}
+    ];
+    junctionCrossings.forEach(({x,z,yaw})=>{for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:x+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:z+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});});
     });
     return {lamps,crossings,signs};
   }, []);
@@ -514,19 +521,19 @@ function createRoadGeometry(path: [number, number][], width: number, y: number) 
 
 function CurvedRoadNetwork() {
   const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
-    const width = index === 6 ? 8.8 : index < 2 ? 8.2 : 6.4;
+    const width = index === NEW_MAP_ROADS.length-1 ? 8.8 : index < 3 ? 8.2 : 6.4;
     return { index, ...createRoadGeometry(path, width, 0.05), sidewalk: createRoadGeometry(path, width + 2.8, 0.03) };
   }), []);
   const dashData = useMemo(() => {
     const out: { x: number; z: number; yaw: number; width: number }[] = [];
     roadData.forEach((road, roadIndex) => {
       const length = road.curve.getLength();
-      const spacing = roadIndex === 6 ? 9.2 : 10.5;
+      const spacing = roadIndex === NEW_MAP_ROADS.length-1 ? 9.2 : 10.5;
       for (let d = 4; d < length - 4; d += spacing) {
         const t = road.curve.getUtoTmapping(0, d);
         const p = road.curve.getPointAt(t);
         const tangent = road.curve.getTangentAt(t);
-        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === 6 ? 3.7 : 3.2 });
+        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : 3.2 });
       }
     });
     return out;
@@ -535,7 +542,7 @@ function CurvedRoadNetwork() {
   const edgeRef = useRef<THREE.InstancedMesh>(null);
   const edgeData = useMemo(() => {
     const out:{x:number;z:number;yaw:number}[]=[];
-    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===6?8.8:road.index<2?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
+    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
     return out;
   },[roadData]);
   useEffect(() => {
