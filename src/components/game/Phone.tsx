@@ -317,23 +317,32 @@ function MarketplaceApp() {
 
 function InventoryApp() {
   const inv = useGame((s) => s.inventory);
+  const removeItem = useGame((s) => s.removeItem);
+  const useInventoryItem = useGame((s) => s.useInventoryItem);
   const items = Object.entries(inv);
-  const labels: Record<string, string> = { package: "Parcel", goods: "Crate of goods" };
-  return (
-    <div className="flex flex-col gap-2 p-3 text-sm">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">Inventory</div>
-      {items.length === 0 && <div className="rounded-xl border border-hud-line bg-white/5 p-3 text-xs text-hud-muted">Empty. Take a courier or trader job to fill up.</div>}
-      {items.map(([k, n]) => (
-        <div key={k} className="flex items-center justify-between rounded-2xl border border-hud-line bg-white/5 p-3">
-          <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-hud-accent" />
-            <span className="text-hud-bright">{labels[k] ?? k}</span>
-          </div>
-          <span className="text-sm font-bold text-hud-bright">×{n}</span>
+  const [notice, setNotice] = useState("");
+  const labels: Record<string, string> = {
+    package: "Delivery parcel", goods: "Crate of goods", water: "Bottled water", snack: "Roadside snack",
+    "mama-put": "Mama Put meal", "jollof-rice": "Jollof rice", "pounded-yam": "Pounded yam & soup", suya: "Suya", zobo: "Zobo drink",
+    "streetwear-fit": "Lagos Streetwear Fit", "emerald-luxury-fit": "Emerald Luxury Fit", "engine-tune": "Engine Tune", "premium-rims": "Premium Rims", "mainland-studio": "Mainland Studio deed", "ikoyi-apartment": "Ikoyi Apartment deed",
+  };
+  const consumables = new Set(["water","snack","mama-put","jollof-rice","pounded-yam","suya","zobo"]);
+  return <div className="flex flex-col gap-3 p-3 text-white">
+    <div className="flex items-center justify-between"><h3 className="text-sm font-bold text-white">Inventory bag</h3><span className="text-xs text-slate-300">{items.reduce((n,[,count])=>n+count,0)} items</span></div>
+    {notice && <div role="status" className="rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">{notice}</div>}
+    {items.length===0 && <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.025] p-5 text-center"><Package className="mx-auto h-8 w-8 text-slate-300"/><div className="mt-2 text-sm font-semibold text-white">Your bag is empty</div><div className="mt-1 text-xs text-slate-300">Complete courier jobs, buy goods, or collect food items to fill your inventory.</div></div>}
+    <div className="grid grid-cols-2 gap-2">
+      {items.map(([key,count])=><article key={key} className="flex min-w-0 flex-col rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+        <div className="flex items-start justify-between gap-2"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><Package className="h-5 w-5"/></span><span className="rounded-full bg-black/30 px-2 py-1 text-xs font-bold text-white">×{count}</span></div>
+        <div className="mt-2 min-h-9 text-xs font-bold text-white">{labels[key]??key}</div>
+        <div className="mt-1 text-xs text-slate-300">{consumables.has(key)?"Consumable · restores needs":key==="package"?"Job delivery item":"Stored item"}</div>
+        <div className="mt-3 grid grid-cols-2 gap-1.5">
+          <button disabled={!consumables.has(key)} onClick={()=>setNotice(useInventoryItem(key)?"Used "+(labels[key]??key)+". Needs updated.":"This item cannot be used right now.")} className="min-h-10 rounded-lg bg-emerald-400/15 px-2 text-xs font-bold text-emerald-100 disabled:opacity-35">Use</button>
+          <button onClick={()=>{removeItem(key,1);setNotice("Dropped one "+(labels[key]??key)+".");}} className="min-h-10 rounded-lg border border-rose-300/20 bg-rose-500/10 px-2 text-xs font-bold text-rose-100">Drop</button>
         </div>
-      ))}
+      </article>)}
     </div>
-  );
+  </div>;
 }
 
 function MapApp() {
