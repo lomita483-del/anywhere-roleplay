@@ -67,7 +67,6 @@ function BankApp() {
         <Row label="- ₦5k" dir="withdraw" amount={5000} />
         <Row label="Withdraw all" dir="withdraw" amount="all" />
       </div>
-      </div>
     </div>
   );
 }
@@ -433,6 +432,7 @@ export default function Phone() {
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );
