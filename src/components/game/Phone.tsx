@@ -738,7 +738,7 @@ function DistrictsApp() {
         </div>
         <div className="mt-3 flex items-center justify-between gap-2">
           <span className={active ? "text-[10px] font-bold text-emerald-200" : "text-[10px] font-bold text-amber-200"}>{active ? "UNLOCKED" : d.price === 0 ? "STARTER DISTRICT" : naira(d.price)}</span>
-          {!active && <button onClick={() => setNotice(unlockDistrict(d.name) ? d.name + " is now open. Explore the new district!" : "Not enough cash or bank balance to unlock this district.")} className="rounded-lg bg-lime-300/15 px-3 py-1.5 text-[10px] font-bold text-lime-100">Unlock</button>}
+          {!active && <button onClick={() => setNotice(d.name === "Eko Atlantic" && !unlocked.includes("Lekki / Victoria Island") ? "Unlock Lekki / Victoria Island first to access Eko Atlantic." : unlockDistrict(d.name) ? d.name + " is now open. Explore the new district!" : "Not enough cash or bank balance to unlock this district.")} className="rounded-lg bg-lime-300/15 px-3 py-1.5 text-[10px] font-bold text-lime-100">Unlock</button>}
         </div>
       </div>;
     })}
