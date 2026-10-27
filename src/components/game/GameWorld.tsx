@@ -700,6 +700,7 @@ export default function GameWorld() {
   const waypoint = useGame((s) => s.waypoint);
   const activeJob = useGame((s) => s.activeJob);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }>>({});
+  useEffect(() => { useGame.getState().setOnlinePlayers(remotePlayers); }, [remotePlayers]);
 
   useEffect(() => {
     const canvas = document.querySelector("canvas");
