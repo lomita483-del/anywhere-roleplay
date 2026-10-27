@@ -50,12 +50,32 @@ export function interact() {
       s.radio("🏠 Welcome home. Your apartment storage is safe here.");
     } else s.setModal("home");
   }
+  else if (p.kind === "food") s.openPhone("food");
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
   else if (p.kind === "jobboard") s.openPhone("jobs");
   else if (p.kind === "police") { s.setOutfit({ top: "uniform" }); s.acceptJob("security"); s.radio("🚔 Police duty started. Patrol uniform equipped."); }
   else if (p.kind === "building") {
     const label = p.buildingLabel ?? "City Building";
-    if (label.toLowerCase().includes("police")) {
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes("bank")) {
+      g.interiorReturn.copy(g.playerPos);
+      g.playerPos.set(104, 0, 104);
+      s.setInterior(true, label);
+      s.openPhone("bank");
+      s.radio("🏦 Welcome to the bank. Use the banking app for account services.");
+      return;
+    }
+    if (lowerLabel.includes("airport")) {
+      g.interiorReturn.copy(g.playerPos);
+      g.playerPos.set(104, 0, 104);
+      s.setInterior(true, label);
+      s.openPhone("travel");
+      s.radio("✈️ Welcome to the terminal. Proceed to airline check-in.");
+      return;
+    }
+    if (lowerLabel.includes("mama put") || lowerLabel.includes("buka")) { s.openPhone("food"); return; }
+    if (lowerLabel.includes("market") || lowerLabel.includes("trade depot") || lowerLabel.includes("transport hub")) { s.openPhone("market"); return; }
+    if (lowerLabel.includes("police")) {
       s.setOutfit({ top: "uniform" });
       s.acceptJob("security");
       s.radio("🚔 Police duty started. Patrol uniform equipped.");
