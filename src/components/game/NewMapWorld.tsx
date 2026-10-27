@@ -174,6 +174,7 @@ function BigScreen({ z, rotate = false }: { z: number; rotate?: boolean }) {
 type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string };
 
 function CityBuilding({ b }: { b: CityBlock }) {
+  const isHouse = b.h < 6;
   const windowRows = Math.max(1, Math.floor(b.h / 3.2));
   const windowCols = Math.max(2, Math.floor(b.w / 2.8));
   const windows = useMemo(() => {
@@ -188,28 +189,90 @@ function CityBuilding({ b }: { b: CityBlock }) {
     }
     return out;
   }, [b.h, b.w, windowCols, windowRows]);
-  const isHouse = b.h < 6;
+  const roofColors = ["#934b37", "#4f5c66", "#a75f3d", "#596b56", "#6c5147"];
+  const roofColor = roofColors[Math.abs(Math.round(b.x * 3 + b.z)) % roofColors.length]!;
   return (
     <group position={[b.x, 0, b.z]}>
-      {/* Raised foundation and pavement apron give each building a believable footprint. */}
-      <mesh position={[0, 0.18, 0]} receiveShadow>
-        <boxGeometry args={[b.w + 2.2, 0.36, b.d + 2.2]} />
-        <meshStandardMaterial color="#b8b8ad" roughness={0.96} />
-      </mesh>
-      <mesh position={[0, b.h / 2 + 0.35, 0]} castShadow receiveShadow>
-        <boxGeometry args={[b.w, b.h, b.d]} />
-        <meshStandardMaterial color={b.color} roughness={isHouse ? 0.88 : 0.66} metalness={b.h > 18 ? 0.2 : 0.03} />
-      </mesh>
-      {/* Flat roof parapet for commercial blocks; pitched roof for residential homes. */}
       {isHouse ? (
-        <group position={[0, b.h + 0.32, 0]}>
-          <mesh rotation-x={Math.PI / 4} position={[0, 0.35, 0]} castShadow>
-            <boxGeometry args={[b.w + 0.7, 0.55, b.d + 0.7]} />
-            <meshStandardMaterial color={["#8c5945", "#59666a", "#a26e48", "#6d7774"][Math.abs(Math.round(b.x + b.z)) % 4]!} roughness={0.9} />
+        <>
+          {/* A small landscaped plot makes each home read as a real property, not a loose box. */}
+          <mesh position={[0, 0.08, 0]} receiveShadow>
+            <boxGeometry args={[b.w + 5.2, 0.16, b.d + 5.2]} />
+            <meshStandardMaterial color="#76966a" roughness={1} />
           </mesh>
-        </group>
+          <mesh position={[0, 0.2, 0]} receiveShadow>
+            <boxGeometry args={[b.w + 1.2, 0.24, b.d + 1.2]} />
+            <meshStandardMaterial color="#c5bba6" roughness={0.96} />
+          </mesh>
+          {/* Main house body with a warm, distinct façade. */}
+          <mesh position={[0, b.h / 2 + 0.34, 0]} castShadow receiveShadow>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshStandardMaterial color={b.color} roughness={0.9} />
+          </mesh>
+          {/* Two sloped roof planes form a visible pitched suburban roof and ridge. */}
+          <mesh position={[0, b.h + 0.72, -b.d * 0.235]} rotation-x={-0.53} castShadow receiveShadow>
+            <boxGeometry args={[b.w + 1.6, 0.32, b.d * 0.68]} />
+            <meshStandardMaterial color={roofColor} roughness={0.94} />
+          </mesh>
+          <mesh position={[0, b.h + 0.72, b.d * 0.235]} rotation-x={0.53} castShadow receiveShadow>
+            <boxGeometry args={[b.w + 1.6, 0.32, b.d * 0.68]} />
+            <meshStandardMaterial color={roofColor} roughness={0.94} />
+          </mesh>
+          <mesh position={[0, b.h + 1.18, 0]} castShadow>
+            <boxGeometry args={[b.w + 1.7, 0.18, 0.24]} />
+            <meshStandardMaterial color="#e1d7c3" roughness={0.88} />
+          </mesh>
+          {/* Front porch, entry door, and two framed windows. */}
+          <mesh position={[b.w * 0.12, 0.68, b.d / 2 + 0.58]} castShadow>
+            <boxGeometry args={[b.w * 0.48, 0.18, 1.65]} />
+            <meshStandardMaterial color="#b8a68a" roughness={0.95} />
+          </mesh>
+          {[-b.w * 0.08, b.w * 0.32].map((x, i) => <mesh key={"porch-post-"+i} position={[x, 1.35, b.d / 2 + 1.12]} castShadow>
+            <boxGeometry args={[0.18, 1.5, 0.18]} />
+            <meshStandardMaterial color="#eee6d4" roughness={0.9} />
+          </mesh>)}
+          <mesh position={[b.w * 0.19, 1.35, b.d / 2 + 0.045]} castShadow>
+            <boxGeometry args={[1.05, 2.25, 0.1]} />
+            <meshStandardMaterial color="#5b392d" roughness={0.78} />
+          </mesh>
+          <mesh position={[b.w * 0.19 + 0.28, 1.35, b.d / 2 + 0.105]}>
+            <sphereGeometry args={[0.07, 8, 6]} />
+            <meshStandardMaterial color="#e7c16d" metalness={0.65} roughness={0.28} />
+          </mesh>
+          {[-b.w * 0.27, -b.w * 0.02].map((x, i) => <group key={"front-window-"+i} position={[x, 2.25, b.d / 2 + 0.055]}>
+            <mesh><boxGeometry args={[1.45, 1.18, 0.12]} /><meshStandardMaterial color="#f0e6d2" roughness={0.8} /></mesh>
+            <mesh position={[0, 0, 0.075]}><boxGeometry args={[1.17, 0.9, 0.045]} /><meshStandardMaterial color="#7da9b5" emissive="#27454b" emissiveIntensity={0.15} metalness={0.2} roughness={0.3} /></mesh>
+            <mesh position={[0, 0, 0.11]}><boxGeometry args={[0.07, 0.92, 0.04]} /><meshStandardMaterial color="#eee6d4" /></mesh>
+            <mesh position={[0, 0, 0.11]}><boxGeometry args={[1.2, 0.07, 0.04]} /><meshStandardMaterial color="#eee6d4" /></mesh>
+          </group>)}
+          {/* A short driveway and a small garage wing add a recognizable house silhouette. */}
+          <mesh position={[-b.w * 0.29, 0.19, b.d / 2 + 2.4]} receiveShadow>
+            <boxGeometry args={[b.w * 0.34, 0.12, 3.8]} />
+            <meshStandardMaterial color="#aaa99f" roughness={0.96} />
+          </mesh>
+          <mesh position={[-b.w * 0.29, 1.45, b.d * 0.18]} castShadow>
+            <boxGeometry args={[b.w * 0.36, 2.4, b.d * 0.54]} />
+            <meshStandardMaterial color={b.color} roughness={0.9} />
+          </mesh>
+          <mesh position={[-b.w * 0.29, 1.4, b.d * 0.18 + b.d * 0.27 + 0.06]}>
+            <boxGeometry args={[b.w * 0.28, 1.8, 0.08]} />
+            <meshStandardMaterial color="#7e8583" roughness={0.86} />
+          </mesh>
+          <mesh position={[b.w * 0.34, b.h + 0.95, -b.d * 0.23]} castShadow>
+            <boxGeometry args={[0.8, 2.0, 0.8]} />
+            <meshStandardMaterial color="#b8b3a7" roughness={0.9} />
+          </mesh>
+        </>
       ) : (
         <>
+          <mesh position={[0, 0.18, 0]} receiveShadow>
+            <boxGeometry args={[b.w + 2.2, 0.36, b.d + 2.2]} />
+            <meshStandardMaterial color="#b8b8ad" roughness={0.96} />
+          </mesh>
+          <mesh position={[0, b.h / 2 + 0.35, 0]} castShadow receiveShadow>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshStandardMaterial color={b.color} roughness={0.66} metalness={b.h > 18 ? 0.2 : 0.03} />
+          </mesh>
           <mesh position={[0, b.h + 0.55, 0]} castShadow>
             <boxGeometry args={[b.w + 0.9, 0.42, b.d + 0.9]} />
             <meshStandardMaterial color={b.h > 18 ? "#253847" : "#c5b99e"} roughness={0.7} metalness={0.18} />
@@ -218,21 +281,19 @@ function CityBuilding({ b }: { b: CityBlock }) {
             <boxGeometry args={[b.w * 0.58, 0.24, b.d * 0.54]} />
             <meshStandardMaterial color="#a9b3b4" roughness={0.76} metalness={0.12} />
           </mesh>
+          {windows.map((w, i) => (
+            <mesh key={i} position={[w.x, w.y + 0.35, b.d / 2 + 0.012]}>
+              <boxGeometry args={[Math.min(1.35, b.w / (windowCols + 1)), Math.min(1.7, b.h / (windowRows + 1)), 0.035]} />
+              <meshStandardMaterial color="#6f9aa9" emissive="#1d3942" emissiveIntensity={0.18} metalness={0.35} roughness={0.32} />
+            </mesh>
+          ))}
+          <mesh position={[b.w * 0.22, 1.25, b.d / 2 + 0.04]}>
+            <boxGeometry args={[Math.min(1.7, b.w * 0.16), 2.5, 0.08]} />
+            <meshStandardMaterial color="#263943" metalness={0.22} roughness={0.4} />
+          </mesh>
         </>
       )}
-      {/* Repeated inset windows create visible façades instead of plain solid boxes. */}
-      {windows.map((w, i) => (
-        <mesh key={i} position={[w.x, w.y + 0.35, b.d / 2 + 0.012]}>
-          <boxGeometry args={[Math.min(1.35, b.w / (windowCols + 1)), isHouse ? 0.72 : Math.min(1.7, b.h / (windowRows + 1)), 0.035]} />
-          <meshStandardMaterial color={isHouse ? "#8caeb4" : "#6f9aa9"} emissive={isHouse ? "#172d32" : "#1d3942"} emissiveIntensity={0.18} metalness={0.35} roughness={0.32} />
-        </mesh>
-      ))}
-      {/* A clear entrance on the street-facing side. */}
-      <mesh position={[b.w * 0.22, 1.25, b.d / 2 + 0.04]}>
-        <boxGeometry args={[Math.min(1.7, b.w * 0.16), 2.5, 0.08]} />
-        <meshStandardMaterial color="#263943" metalness={0.22} roughness={0.4} />
-      </mesh>
-      {b.label && <Html position={[0, b.h + 1.8, 0]} center distanceFactor={25} style={{ pointerEvents: "none" }}>
+      {b.label && <Html position={[0, b.h + (isHouse ? 2.0 : 1.8), 0]} center distanceFactor={25} style={{ pointerEvents: "none" }}>
         <div style={{ whiteSpace: "nowrap", padding: "4px 8px", borderRadius: 5, background: "rgba(7,19,28,.9)", border: "1px solid rgba(230,199,127,.82)", color: "#f8e8bd", fontSize: 10, fontWeight: 900, letterSpacing: 1.3 }}>{b.label}</div>
       </Html>}
     </group>
