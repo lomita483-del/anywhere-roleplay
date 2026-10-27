@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_JUNCTIONS } from "@/game/newMap";
+import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_JUNCTIONS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
