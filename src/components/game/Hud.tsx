@@ -86,7 +86,7 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
       ctx.fillStyle = "#327d98";
       ctx.beginPath(); ctx.ellipse(sx(-112), sy(118), 18, 14, -0.25, 0, Math.PI*2); ctx.fill();
       ctx.strokeStyle="#d7c391";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(sx(-112),sy(118),21,17,-0.25,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle="#2b7e9d";ctx.fillRect(sx(116)-20,sy(120)-15,40,30);
+      ctx.fillStyle="#2b7e9d";ctx.fillRect(sx(105)-20,sy(142)-15,40,30);
       NEW_MAP_DISTRICTS.forEach(d=>{ctx.fillStyle=d.color;ctx.globalAlpha=.48;ctx.fillRect(sx(d.x-d.w/2),sy(d.z-d.d/2),d.w*scale,d.d*scale);});ctx.globalAlpha=1;
       NEW_MAP_ROADS.forEach((path,i)=>{const draw=(color:string,width:number)=>{ctx.beginPath();path.forEach(([x,z],j)=>j?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();};const width=NEW_MAP_ROAD_WIDTHS[i]??5;ctx.lineCap="round";ctx.lineJoin="round";draw("#c5c7be",(width+2.4)*scale);draw("#3d454b",width*scale);if(width>=8){ctx.setLineDash([3,3]);draw("#f4f0df",.55);ctx.setLineDash([]);}});
       ctx.strokeStyle="#172431";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(sx(0),sy(0),15,10,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#3b9b52";ctx.beginPath();ctx.ellipse(sx(0),sy(0),8,5.5,0,0,Math.PI*2);ctx.fill();
