@@ -86,7 +86,7 @@ function Lamps() {
   useFrame(() => {
     if (headMat.current) {
       const elev = Math.sin(((g.time - 6) / 24) * Math.PI * 2);
-      headMat.current.emissiveIntensity = elev < 0.1 ? 2.4 : 0;
+      headMat.current.emissiveIntensity = !g.powerOutage && elev < 0.1 ? 2.4 : 0;
     }
   });
 
@@ -115,6 +115,30 @@ function Lamps() {
   );
 }
 
+
+
+function WetRoadPuddles() {
+  const materials = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const patches = [
+    [-64, 0.045, 4, 5.5, 2.4], [-43, 0.046, 12, 4.5, 2.1], [-17, 0.047, -4, 5.2, 1.7],
+    [22, 0.047, 5, 4.8, 2.2], [63, 0.047, -12, 5.5, 2.3], [82, 0.047, 18, 4.4, 2],
+    [-136, 0.047, -79, 5.8, 2.5], [-145, 0.047, 69, 4.6, 2.1], [136, 0.047, 128, 6.5, 3],
+  ] as const;
+  useFrame(() => {
+    materials.current.forEach((material) => {
+      if (!material) return;
+      material.opacity = g.raining ? 0.42 : 0;
+      material.roughness = g.raining ? 0.16 : 0.85;
+      material.metalness = g.raining ? 0.28 : 0;
+    });
+  });
+  return <group>
+    {patches.map(([x, y, z, w, d], i) => <mesh key={i} position={[x, y, z]} rotation-x={-Math.PI / 2} receiveShadow>
+      <planeGeometry args={[w, d]} />
+      <meshStandardMaterial ref={(m) => { materials.current[i] = m; }} color="#294956" transparent opacity={0} roughness={0.16} metalness={0.28} depthWrite={false} />
+    </mesh>)}
+  </group>;
+}
 
 function Trees() {
   const trees = useMemo(treePositions, []);
@@ -480,6 +504,7 @@ export default function World() {
       <ApartmentInterior />
       <Lamps />
       <Trees />
+      <WetRoadPuddles />
       {STALLS.map((s, i) => <Stall key={i} s={s} />)}
       {POIS.filter((p) => p.kind === "atm").map((p) => <Atm key={p.id} x={p.x} z={p.z} />)}
 
