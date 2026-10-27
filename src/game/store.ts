@@ -49,10 +49,13 @@ export interface JobStats {
   patrols: number;
 }
 
+export interface BankTransaction { id: string; at: string; type: string; amount: number; note: string; }
+
 export interface SaveData {
   name: string;
   cash: number;
   bank: number;
+  transactions: BankTransaction[];
   inventory: Record<string, number>;
   owned: string[];
   jobStats: JobStats;
@@ -68,6 +71,7 @@ export interface SaveData {
   characterTraits?: string[];
   rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
+  transactions?: BankTransaction[];
 }
 
 export const SAVE_KEY = "lagos-hustle-save-v1";
@@ -252,6 +256,7 @@ const DEFAULTS = {
   name: "",
   cash: 5000,
   bank: 10000,
+  transactions: [] as BankTransaction[],
   inventory: {} as Record<string, number>,
   owned: [] as string[],
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
@@ -291,7 +296,7 @@ export const useGame = create<GameStore>((set, get) => ({
       g.playerPos.set(saved.x, 0, saved.z);
       g.time = saved.time;
       set({
-        started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank,
+        started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [],
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
@@ -321,7 +326,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     if (!s.started) return;
     const data: SaveData = {
-      name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
+      name: s.name, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
@@ -333,24 +338,31 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     const bal = from === "cash" ? s.cash : s.bank;
     if (bal < amount) return false;
-    set(from === "cash" ? { cash: s.cash - amount } : { bank: s.bank - amount });
+    const transaction: BankTransaction = { id: crypto.randomUUID?.() ?? String(Date.now()), at: new Date().toISOString(), type: "debit", amount, note: from === "cash" ? "Cash purchase" : "Bank payment" };
+    set({ ...(from === "cash" ? { cash: s.cash - amount } : { bank: s.bank - amount }), transactions: [...s.transactions, transaction].slice(-50) });
+    get().save();
     return true;
   },
   earn: (amount, to) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
     const s = get();
-    set(to === "cash" ? { cash: s.cash + amount } : { bank: s.bank + amount });
+    const transaction: BankTransaction = { id: crypto.randomUUID?.() ?? String(Date.now()), at: new Date().toISOString(), type: "credit", amount, note: to === "bank" ? "Job / activity payment" : "Cash earnings" };
+    set({ ...(to === "cash" ? { cash: s.cash + amount } : { bank: s.bank + amount }), transactions: [...s.transactions, transaction].slice(-50) });
+    get().save();
   },
   transfer: (amount, dir) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
     const s = get();
     if (dir === "deposit") {
       if (s.cash < amount) return;
-      set({ cash: s.cash - amount, bank: s.bank + amount });
+      const transaction: BankTransaction = { id: crypto.randomUUID?.() ?? String(Date.now()), at: new Date().toISOString(), type: "deposit", amount, note: "Cash deposited at ATM" };
+      set({ cash: s.cash - amount, bank: s.bank + amount, transactions: [...s.transactions, transaction].slice(-50) });
     } else {
       if (s.bank < amount) return;
-      set({ bank: s.bank - amount, cash: s.cash + amount });
+      const transaction: BankTransaction = { id: crypto.randomUUID?.() ?? String(Date.now()), at: new Date().toISOString(), type: "withdrawal", amount, note: "ATM cash withdrawal" };
+      set({ bank: s.bank - amount, cash: s.cash + amount, transactions: [...s.transactions, transaction].slice(-50) });
     }
+    get().save();
   },
   addItem: (item, count = 1) => {
     if (!Number.isFinite(count) || count <= 0) return;
