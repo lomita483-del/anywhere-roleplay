@@ -137,11 +137,11 @@ export default function NewMapWorld() {
   }, []);
 
   const enterStadium = () => {
-    g.playerPos.set(0, 0, 27);
+    g.playerPos.set(0, 0, 18.2);
     g.playerYaw = Math.PI;
     g.camYaw = 0;
-    g.camPitch = 0.25;
-    g.camDistance = 16;
+    g.camPitch = 0.52;
+    g.camDistance = 10;
     g.drivingId = null;
     g.playerSpeed = 0;
   };
@@ -155,7 +155,7 @@ export default function NewMapWorld() {
       </mesh>
 
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
-      <group>
+      <group scale={[0.72, 0.72, 0.72]}>
         {/* Thick outer shell walls; these sit outside the open pitch rather than over the player */}
         <mesh position={[0, 5.2, 0]} scale={[60, 1, 40]} castShadow receiveShadow>
           <cylinderGeometry args={[1, 0.96, 10.4, 96, 1, true]} />
@@ -238,6 +238,25 @@ export default function NewMapWorld() {
 
         {/* Floodlights and visible lighting fixtures */}
         {[[-53, -35], [53, -35], [-53, 35], [53, 35]].map(([x, z], index) => <Floodlight key={index} x={x} z={z} />)}
+
+        {/* Dedicated ground-level spectator deck and front-row benches.
+            The spawn is on this deck, outside the pitch, looking toward the match. */}
+        <group>
+          <mesh position={[0, 0.12, 25.4]} receiveShadow>
+            <boxGeometry args={[68, 0.24, 5.8]} />
+            <meshStandardMaterial color="#343c43" roughness={0.82} />
+          </mesh>
+          {Array.from({ length: 13 }, (_, i) => {
+            const x = -29 + i * 4.8;
+            return (
+              <group key={i} position={[x, 0.28, 24.3]}>
+                <mesh position={[0, 0.45, 0]} castShadow><boxGeometry args={[2.5, 0.18, 0.72]} /><meshStandardMaterial color={i % 2 ? "#b8b9b3" : "#c7a75b"} roughness={0.65} /></mesh>
+                <mesh position={[0, 0.86, -0.28]} castShadow><boxGeometry args={[2.5, 0.78, 0.16]} /><meshStandardMaterial color={i % 2 ? "#b8b9b3" : "#c7a75b"} roughness={0.65} /></mesh>
+                {[-0.82, 0.82].map((dx) => <mesh key={dx} position={[dx, 0.22, 0]}><boxGeometry args={[0.12, 0.42, 0.12]} /><meshStandardMaterial color="#60686d" metalness={0.3} /></mesh>)}
+              </group>
+            );
+          })}
+        </group>
 
         {/* Exterior entrance gate */}
         <group position={[0, 0, 43]}>
