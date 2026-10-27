@@ -802,6 +802,33 @@ function CityEcosystem() {
   </>;
 }
 
+function StadiumPlaza() {
+  return <>
+    <mesh rotation-x={-Math.PI/2} position={[0,0.015,0]} receiveShadow><ringGeometry args={[13.6,23,72]}/><meshStandardMaterial color="#b9b9ad" roughness={.92} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}/></mesh>
+    <mesh rotation-x={-Math.PI/2} position={[0,0.025,0]}><ringGeometry args={[18.5,19.2,72]}/><meshStandardMaterial color="#d7c18c" roughness={.8}/></mesh>
+    <group position={[0,0,18]}>
+      <mesh position={[0,.18,0]}><cylinderGeometry args={[3.1,3.5,.36,24]}/><meshStandardMaterial color="#d1c6ae" roughness={.7}/></mesh>
+      <mesh position={[0,.42,0]}><cylinderGeometry args={[2.3,2.5,.18,24]}/><meshStandardMaterial color="#398ca6" emissive="#1e6c83" emissiveIntensity={.16} roughness={.28}/></mesh>
+      <mesh position={[0,.72,0]}><cylinderGeometry args={[.5,.7,.55,12]}/><meshStandardMaterial color="#d8bd76" metalness={.35} roughness={.5}/></mesh>
+      <mesh position={[0,1.1,0]}><sphereGeometry args={[.42,10,8]}/><meshStandardMaterial color="#7cc4d4" transparent opacity={.8} roughness={.25}/></mesh>
+    </group>
+    <group position={[-23,0,9]}>
+      <mesh position={[0,1.5,0]} castShadow receiveShadow><boxGeometry args={[10,3,7]}/><meshStandardMaterial color="#d5c8af" roughness={.85}/></mesh>
+      <mesh position={[0,3.25,0]} castShadow><boxGeometry args={[10.8,.5,7.8]}/><meshStandardMaterial color="#a84438" roughness={.8}/></mesh>
+      <mesh position={[0,1.25,3.55]}><boxGeometry args={[4,1.7,.1]}/><meshStandardMaterial color="#6d9eaa" metalness={.15} roughness={.3}/></mesh>
+      <mesh position={[0,2.55,3.62]}><boxGeometry args={[7,.55,.16]}/><meshStandardMaterial color="#243c43"/></mesh>
+    </group>
+    <group position={[23,0,9]}>
+      <mesh position={[0,1.5,0]} castShadow receiveShadow><boxGeometry args={[10,3,7]}/><meshStandardMaterial color="#d5c8af" roughness={.85}/></mesh>
+      <mesh position={[0,3.25,0]} castShadow><boxGeometry args={[10.8,.5,7.8]}/><meshStandardMaterial color="#315f91" roughness={.8}/></mesh>
+      <mesh position={[0,1.25,3.55]}><boxGeometry args={[4,1.7,.1]}/><meshStandardMaterial color="#6d9eaa" metalness={.15} roughness={.3}/></mesh>
+      <mesh position={[0,2.55,3.62]}><boxGeometry args={[7,.55,.16]}/><meshStandardMaterial color="#243c43"/></mesh>
+    </group>
+    {[-4,-1.3,1.3,4].map((x,i)=><mesh key={i} position={[x,.95,14.4]} castShadow><boxGeometry args={[.35,1.9,.35]}/><meshStandardMaterial color={i%2?"#c8a65f":"#263b47"} metalness={.3} roughness={.55}/></mesh>)}
+    <mesh position={[0,2.1,14.4]}><boxGeometry args={[9,.25,.45]}/><meshStandardMaterial color="#e1bd6b" emissive="#b58b3b" emissiveIntensity={.2}/></mesh>
+  </>;
+}
+
 export default function NewMapWorld() {
   const players = useMemo<MatchPlayerData[]>(() => {
     const home: [number, number][] = [
@@ -824,12 +851,13 @@ export default function NewMapWorld() {
         <CityEcosystem />
          <LagosResidentialDistrict />
       </group>
-      {/* Plain world beyond the stadium */}
+      {/* Olive terrain base, stadium plaza and entrance forecourt */}
       <mesh rotation-x={-Math.PI / 2} position={[0, -0.04, 0]} receiveShadow>
         <planeGeometry args={[220, 220, 1, 1]} />
         <meshStandardMaterial color="#89935e" roughness={1} metalness={0} />
       </mesh>
 
+      <StadiumPlaza />
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
       <group scale={[0.22, 0.22, 0.22]}>
         {/* Thick outer shell walls; these sit outside the open pitch rather than over the player */}
