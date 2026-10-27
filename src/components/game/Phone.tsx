@@ -250,14 +250,16 @@ function MapApp() {
       // job target
       if (job) {
         const t = job.targets[job.stage];
-        const [px, pz] = to(t[0], t[1]);
-        ctx.fillStyle = "#ff5c5c";
-        ctx.beginPath();
-        ctx.arc(px, pz, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#ffd0d0";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        if (t) {
+          const [px, pz] = to(t[0], t[1]);
+          ctx.fillStyle = "#ff5c5c";
+          ctx.beginPath();
+          ctx.arc(px, pz, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#ffd0d0";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
       }
       // player
       const [px, pz] = to(g.playerPos.x, g.playerPos.z);
