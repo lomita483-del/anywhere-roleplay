@@ -374,7 +374,7 @@ function LocalityRoadsAndSigns() {
       {Array.from({ length: 19 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[-170 + i * 18, 0.054, z]}><planeGeometry args={[7, 0.12]} /><meshBasicMaterial color="#e4c75e" /></mesh>)}
       {[-1, 1].map((side) => <mesh key={side} rotation-x={-Math.PI / 2} position={[-8, 0.04, z + side * 5.1]}><planeGeometry args={[WORLD - 20, 2.2]} /><meshStandardMaterial color="#b9b6ac" roughness={1} /></mesh>)}
     </group>)}
-    {labels.map((s) => <group key={s.label} position={[s.x, 0, s.z]}>
+    {labels.map((s) => <group key={s.label} position={[s.x, 0, s.z + 5.5]}>
       <mesh position={[0, 3.3, 0]} castShadow><boxGeometry args={[9.8, 2.1, 0.28]} /><meshStandardMaterial color={s.color} metalness={0.2} roughness={0.6} /></mesh>
       <mesh position={[0, 3.3, 0.16]}><planeGeometry args={[9.45, 1.78]} /><meshStandardMaterial map={s.texture} emissive="#ffffff" emissiveMap={s.texture} emissiveIntensity={0.35} /></mesh>
       {[-4.1, 4.1].map((x) => <mesh key={x} position={[x, 1.5, 0]} castShadow><boxGeometry args={[0.2, 3, 0.2]} /><meshStandardMaterial color="#59646b" metalness={0.5} /></mesh>)}
@@ -414,8 +414,23 @@ function AirportDistrict() {
       <mesh position={[47.5, 0.78, -96]} rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.22, 0.3, 2.1, 10]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
       <mesh position={[47, 0.85, -96]} castShadow><boxGeometry args={[2.5, 0.12, 5]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
       <mesh position={[59, 0.85, -96]} castShadow><boxGeometry args={[2.5, 0.12, 5]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
-      <mesh position={[51, 1.5, -96]} castShadow><boxGeometry args={[1.8, 1.6, 1.7]} /><meshStandardMaterial color="#e5e7e9" roughness={0.45} /></mesh>
-      <Html position={[91, 8.5, -96]} center distanceFactor={28}><div className="whitespace-nowrap rounded-lg border border-white/20 bg-[#0c1720]/85 px-3 py-1.5 text-[10px] font-bold tracking-wider text-white">MURTALA MUHAMMED INT'L AIRPORT</div></Html>
+      {/* Parked passenger aircraft with fuselage, swept wings, tail, engines and cabin windows. */}
+      <group position={[34, 0.9, -96]} rotation-y={Math.PI / 2}>
+        <mesh position={[0, 0.18, 0]} castShadow><cylinderGeometry args={[0.48, 0.56, 8.8, 14]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#f0f2f3" metalness={0.18} roughness={0.38} /></mesh>
+        <mesh position={[0, 0.18, 4.45]} rotation-x={-Math.PI / 2} castShadow><coneGeometry args={[0.48, 1.5, 14]} /><meshStandardMaterial color="#f0f2f3" metalness={0.18} roughness={0.38} /></mesh>
+        <mesh position={[0, 0.2, -4.5]} castShadow><boxGeometry args={[2.7, 0.12, 1.35]} /><meshStandardMaterial color="#f0f2f3" metalness={0.15} roughness={0.4} /></mesh>
+        <mesh position={[0, 0.08, 0.3]} rotation-y={0.06} castShadow><boxGeometry args={[11.5, 0.18, 1.75]} /><meshStandardMaterial color="#e7ebee" metalness={0.2} roughness={0.4} /></mesh>
+        {[-3.35, 3.35].map((x) => <group key={x} position={[x, -0.28, 0.25]}>
+          <mesh castShadow><cylinderGeometry args={[0.48, 0.48, 1.25, 12]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#52616c" metalness={0.45} roughness={0.35} /></mesh>
+          <mesh position={[0, 0, 0.05]}><cylinderGeometry args={[0.32, 0.32, 1.28, 12]} rotation={[Math.PI / 2, 0, 0]} /><meshStandardMaterial color="#d8e0e4" metalness={0.35} roughness={0.35} /></mesh>
+        </group>)}
+        {Array.from({ length: 8 }, (_, i) => <mesh key={i} position={[0.505, 0.3, -3.1 + i * 0.82]}><boxGeometry args={[0.035, 0.16, 0.28]} /><meshStandardMaterial color="#31566c" emissive="#17394d" emissiveIntensity={0.18} /></mesh>)}
+        <mesh position={[0, 1.25, -3.8]}><boxGeometry args={[0.08, 2.3, 0.08]} /><meshStandardMaterial color="#d8e0e4" /></mesh>
+      </group>
+      <Html position={[51, 7.2, -89]} center distanceFactor={24}>
+        <div className="whitespace-nowrap rounded-lg border border-sky-200/60 bg-slate-950/95 px-3 py-2 text-[12px] font-black tracking-wide text-white shadow-xl">MURTALA MUHAMMED INTERNATIONAL AIRPORT · DEPARTURES</div>
+      </Html>
+      <Html position={[91, 8.5, -96]} center distanceFactor={28}><div className="whitespace-nowrap rounded-lg border border-white/20 bg-[#0c1720]/85 px-3 py-1.5 text-[10px] font-bold tracking-wider text-white">AIRPORT TERMINAL & TICKETING</div></Html>
     </group>
   );
 }
