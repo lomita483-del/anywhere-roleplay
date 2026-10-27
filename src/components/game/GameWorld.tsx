@@ -943,33 +943,48 @@ export default function GameWorld() {
 
     const pg = playerGroup.current;
     if (pg) {
-      pg.visible = !g.ridingPassenger;
+      pg.visible = !g.ridingPassenger && !st.stadiumMode;
       pg.position.set(g.playerPos.x, 0, g.playerPos.z);
       pg.rotation.y = g.playerYaw;
     }
 
-    // Camera rig — orbit yaw + smooth follow
+    // Stadium spectators use a true first-person camera; the player avatar stays hidden.
+    // Zoom controls adjust field of view so players can take in more of the match on mobile.
     const driving = !!g.drivingId;
-    _target.set(g.playerPos.x, driving ? 1.5 : 1.1, g.playerPos.z);
-    const dist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
-    const pitch = driving ? Math.min(g.camPitch, 0.85) : g.camPitch;
-    _ideal.set(
-      _target.x + Math.sin(g.camYaw) * dist * Math.cos(pitch),
-      _target.y + Math.sin(pitch) * dist,
-      _target.z + Math.cos(g.camYaw) * dist * Math.cos(pitch)
-    );
     const alpha = 1 - Math.exp(-5 * dt);
-    camera.position.lerp(_ideal, alpha);
-    camLook.current.lerp(_target, alpha);
-    camera.lookAt(camLook.current);
-    if (driving) {
-      const v = g.vehicles.get(g.drivingId!);
-      const targetFov = 55 + Math.min(16, (v?.speed ?? 0) * 0.6);
-      camera.fov += (targetFov - camera.fov) * Math.min(1, 4 * dt);
+    if (st.stadiumMode) {
+      const yaw = g.playerYaw + g.camYaw;
+      camera.position.lerp(new THREE.Vector3(g.playerPos.x, 1.62, g.playerPos.z), alpha);
+      camLook.current.lerp(new THREE.Vector3(
+        g.playerPos.x + Math.sin(yaw) * 60 * Math.cos(g.camPitch),
+        1.62 - Math.sin(g.camPitch) * 60,
+        g.playerPos.z + Math.cos(yaw) * 60 * Math.cos(g.camPitch)
+      ), alpha);
+      camera.lookAt(camLook.current);
+      const targetFov = THREE.MathUtils.clamp(42 + g.camDistance * 0.34, 44, 76);
+      camera.fov += (targetFov - camera.fov) * Math.min(1, 5 * dt);
       camera.updateProjectionMatrix();
-    } else if (camera.fov !== 55) {
-      camera.fov += (55 - camera.fov) * Math.min(1, 4 * dt);
-      camera.updateProjectionMatrix();
+    } else {
+      _target.set(g.playerPos.x, driving ? 1.5 : 1.1, g.playerPos.z);
+      const dist = driving ? Math.max(10, g.camDistance * 1.45) : g.camDistance;
+      const pitch = driving ? Math.min(g.camPitch, 0.85) : g.camPitch;
+      _ideal.set(
+        _target.x + Math.sin(g.camYaw) * dist * Math.cos(pitch),
+        _target.y + Math.sin(pitch) * dist,
+        _target.z + Math.cos(g.camYaw) * dist * Math.cos(pitch)
+      );
+      camera.position.lerp(_ideal, alpha);
+      camLook.current.lerp(_target, alpha);
+      camera.lookAt(camLook.current);
+      if (driving) {
+        const v = g.vehicles.get(g.drivingId!);
+        const targetFov = 55 + Math.min(16, (v?.speed ?? 0) * 0.6);
+        camera.fov += (targetFov - camera.fov) * Math.min(1, 4 * dt);
+        camera.updateProjectionMatrix();
+      } else if (camera.fov !== 55) {
+        camera.fov += (55 - camera.fov) * Math.min(1, 4 * dt);
+        camera.updateProjectionMatrix();
+      }
     }
 
     // Low-frequency housekeeping
@@ -1002,7 +1017,7 @@ export default function GameWorld() {
 
   return (
     <>
-      <group ref={playerGroup} position={[-14, 0, -14]}>
+      <group ref={playerGroup} position={[-14, 0, -14]} scale={isNewMap ? 0.85 : 1}>
         <CharacterBody />
       </group>
       {!isNewMap && Object.entries(remotePlayers).map(([id, player], index) => (
