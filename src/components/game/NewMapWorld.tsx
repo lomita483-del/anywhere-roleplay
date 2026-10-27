@@ -761,6 +761,7 @@ function WaterShimmer() {
   return <>
     <mesh rotation-x={-Math.PI/2} position={[-112,.08,118]}><circleGeometry args={[18,40]}/><meshStandardMaterial ref={lake} color="#3a9fbd" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.32} roughness={.3}/></mesh>
     <mesh rotation-x={-Math.PI/2} position={[121,.08,120]}><planeGeometry args={[84,60]}/><meshStandardMaterial ref={port} color="#3998b5" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.22} roughness={.3}/></mesh>
+    <mesh rotation-x={-Math.PI/2} position={[-92,.035,103]}><ringGeometry args={[7.2,9.1,24]}/><meshStandardMaterial color="#d7c391" roughness={1} side={THREE.DoubleSide}/></mesh>
     <mesh rotation-x={-Math.PI/2} position={[-92,.06,103]}><circleGeometry args={[7,24]}/><meshStandardMaterial ref={pond} color="#4aa7b9" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.25} roughness={.3}/></mesh>
   </>;
 }
@@ -929,7 +930,7 @@ function CityEcosystem() {
     <group position={[-112, 0, 118]}>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><circleGeometry args={[27, 40]} /><meshStandardMaterial color="#287f9d" roughness={0.35} /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[27, 32, 40]} /><meshStandardMaterial color="#d7c391" roughness={1} side={THREE.DoubleSide} /></mesh>
-      {[-1, 1].map((side) => <group key={side} position={[side * 12, 0.3, 0]}><mesh><boxGeometry args={[5, 0.6, 3.5]} /><meshStandardMaterial color="#c5a779" /></mesh><mesh position={[0, 1.8, -0.7]}><boxGeometry args={[5, 3, 0.3]} /><meshStandardMaterial color="#876344" /></mesh><mesh position={[0, 3.4, 0]}><boxGeometry args={[6, 0.3, 4.5]} /><meshStandardMaterial color="#cfa85d" /></mesh></group>)}
+      {[-1, 1].map((side) => <group key={side} position={[side * 29, 0.3, 0]}><mesh><boxGeometry args={[5, 0.6, 3.5]} /><meshStandardMaterial color="#c5a779" /></mesh><mesh position={[0, 1.8, -0.7]}><boxGeometry args={[5, 3, 0.3]} /><meshStandardMaterial color="#876344" /></mesh><mesh position={[0, 3.4, 0]}><boxGeometry args={[6, 0.3, 4.5]} /><meshStandardMaterial color="#cfa85d" /></mesh></group>)}
     </group>
     {/* District labels and premium map title. */}
     <Html position={[-25, 8, -166]} center distanceFactor={48} style={{ pointerEvents: "none" }}>
