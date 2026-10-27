@@ -173,6 +173,8 @@ function HomeApp() {
   const bank = useGame((s) => s.bank);
   const needs = useGame((s) => s.needs);
   const stats = useGame((s) => s.jobStats);
+  const xp = useGame((s) => s.xp);
+  const level = useGame((s) => s.level);
   const owned = useGame((s) => s.owned);
   const background = useGame((s) => s.background);
   const setBackground = useGame((s) => s.setBackground);
@@ -226,8 +228,9 @@ function HomeApp() {
         </div>
       </div>
       <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-        <div className="flex items-center justify-between"><span className="text-sm font-bold text-white">Level {Math.max(1,1+Math.floor((stats.deliveries+stats.drives+stats.trades+stats.patrols)/3))}</span><span className="text-xs text-slate-300">{((stats.deliveries+stats.drives+stats.trades+stats.patrols)%3)} / 3 job milestones</span></div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-300" style={{width:(((stats.deliveries+stats.drives+stats.trades+stats.patrols)%3)/3*100)+"%"}} /></div>
+        <div className="flex items-center justify-between"><span className="text-sm font-bold text-white">Level {level}</span><span className="text-xs text-slate-300">{xp%100} / 100 XP</span></div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-300" style={{width:(xp%100)+"%"}} /></div>
+        <div className="mt-1 text-xs text-slate-300">Complete jobs to earn XP. Each new level pays a bank reward.</div>
         <div className="mt-3 space-y-2">
           {([{label:"Health",value:needs.health,color:"#fb7185"},{label:"Hunger",value:needs.hunger,color:"#fbbf24"},{label:"Energy",value:needs.energy,color:"#60a5fa"}] as const).map(n=><div key={n.label}><div className="mb-1 flex justify-between text-xs"><span className="text-slate-100">{n.label}</span><span className="text-slate-200">{Math.round(n.value)}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full" style={{width:Math.max(0,Math.min(100,n.value))+"%",background:n.color}} /></div></div>)}
         </div>
