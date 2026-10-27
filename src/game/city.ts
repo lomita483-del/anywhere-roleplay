@@ -80,6 +80,9 @@ export const BUILDINGS: BuildingDef[] = [
   { x: -147, z: 93, w: 18, d: 12, h: 5, color: "#c49b72", label: "WATERFRONT FISH MARKET" },
   { x: 140, z: 140, w: 32, d: 24, h: 48, color: "#a6c8d5", label: "EKO ATLANTIC FUTURE CITY" },
   { x: 111, z: 141, w: 20, d: 18, h: 32, color: "#d3dce0", label: "EKO FINANCIAL CENTRE" },
+  { x: 68, z: -23, w: 14, d: 11, h: 7, color: "#d8d0b9", kind: "civic", label: "INEC POLLING UNIT" },
+  { x: 67, z: -5, w: 15, d: 13, h: 8, color: "#d7c6a9", kind: "civic", label: "CHURCH OF HOPE" },
+  { x: 67, z: 15, w: 15, d: 13, h: 7, color: "#d2c4a4", kind: "civic", label: "CENTRAL MOSQUE" },
 ];
 
 export interface Poi {
