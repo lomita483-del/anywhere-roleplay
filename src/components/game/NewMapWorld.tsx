@@ -83,6 +83,24 @@ function InstancedCrowd() {
     return crowd;
   }, []);
 
+  const animationTick = useRef(0);
+  useFrame((state, delta) => {
+    animationTick.current += delta;
+    if (animationTick.current < 0.075) return;
+    animationTick.current = 0;
+    const left = leftArmRef.current, right = rightArmRef.current;
+    if (!left || !right) return;
+    const dummy = new THREE.Object3D();
+    people.forEach((p, i) => {
+      const cheer = Math.sin(state.clock.elapsedTime * 4.2 + p.index * 1.61) * 0.82;
+      dummy.position.set(p.x - Math.cos(p.angle) * 0.42, p.y + 1.28, p.z + Math.sin(p.angle) * 0.42);
+      dummy.rotation.set(0, p.angle, -0.65 - cheer); dummy.updateMatrix(); left.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(p.x + Math.cos(p.angle) * 0.42, p.y + 1.28, p.z - Math.sin(p.angle) * 0.42);
+      dummy.rotation.set(0, p.angle, 0.65 + cheer); dummy.updateMatrix(); right.setMatrixAt(i, dummy.matrix);
+    });
+    left.instanceMatrix.needsUpdate = true; right.instanceMatrix.needsUpdate = true;
+  });
+
   useEffect(() => {
     const body = bodyRef.current, head = headRef.current, left = leftArmRef.current, right = rightArmRef.current;
     if (!body || !head || !left || !right) return;
