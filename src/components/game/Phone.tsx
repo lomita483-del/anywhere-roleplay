@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, X,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, Settings as SettingsIcon, X,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -26,6 +26,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   districts: { icon: MapIcon, label: "Districts", tint: "#a3e635" },
   fuel: { icon: Fuel, label: "Fuel", tint: "#fb923c" },
   radar: { icon: RadarIcon, label: "Radar", tint: "#62d7f2" },
+  settings: { icon: SettingsIcon, label: "Settings", tint: "#cbd5e1" },
 };
 
 function atAtm() {
@@ -205,6 +206,12 @@ function HomeApp() {
   };
   return (
     <div className="flex flex-col gap-3 p-3 text-sm">
+      <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+        <div className="mb-2 text-sm font-bold text-white">All apps</div>
+        <div className="grid grid-cols-4 gap-2">
+          {(["radio","market","wardrobe","rides","food","travel","districts","fuel","settings"] as App[]).map(a=>{const I=APP_ICONS[a].icon;return <button key={a} onClick={()=>useGame.getState().openPhone(a)} className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2 text-center active:scale-95"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5"><I className="h-5 w-5" style={{color:APP_ICONS[a].tint}}/></span><span className="text-xs font-semibold text-slate-100">{APP_ICONS[a].label}</span></button>;})}
+        </div>
+      </section>
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-[#eab308]/20 bg-gradient-to-br from-[#332911] to-[#111b20] p-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-hud-accent to-[#e28a3c] text-2xl font-bold text-black">{(name || "H").charAt(0).toUpperCase()}</div>
         <div className="text-lg font-bold text-hud-bright">{name || "Hustler"}</div>
@@ -943,12 +950,42 @@ function RideApp() {
   </div>;
 }
 
+
+function SettingsApp() {
+  const graphicsQuality = useGame((s) => s.graphicsQuality);
+  const setGraphicsQuality = useGame((s) => s.setGraphicsQuality);
+  const [volume, setVolume] = useState(() => {
+    if (typeof window === "undefined") return 65;
+    const value = Number(localStorage.getItem("lagos-volume") ?? 65);
+    return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 65;
+  });
+  const [muted, setMuted] = useState(() => typeof window !== "undefined" && localStorage.getItem("lagos-muted") === "true");
+  const updateVolume = (value: number) => { setVolume(value); localStorage.setItem("lagos-volume", String(value)); };
+  const updateMuted = (value: boolean) => { setMuted(value); localStorage.setItem("lagos-muted", String(value)); };
+  return <div className="flex flex-col gap-3 p-3 text-white">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+      <h3 className="text-sm font-bold text-white">Graphics quality</h3>
+      <p className="mt-1 text-xs leading-relaxed text-slate-300">Choose the balance between visual detail and smooth performance on your device.</p>
+      <div className="mt-3 grid grid-cols-3 gap-2">{(["low","medium","high"] as const).map(q=><button key={q} onClick={()=>setGraphicsQuality(q)} className={"min-h-11 rounded-xl border px-2 py-2 text-xs font-bold capitalize "+(graphicsQuality===q?"border-emerald-300/60 bg-emerald-300/15 text-emerald-100":"border-white/10 bg-black/20 text-slate-200")}>{q}</button>)}</div>
+      <div className="mt-2 text-xs text-slate-300">{graphicsQuality==="low"?"Fewer pedestrians and vehicles for lower-end phones.":graphicsQuality==="medium"?"Balanced traffic and pedestrian density.":"Maximum available traffic and pedestrian density."}</div>
+    </section>
+    <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+      <h3 className="text-sm font-bold text-white">Sound preferences</h3>
+      <div className="mt-3 flex items-center justify-between gap-3"><div><div className="text-sm font-semibold text-slate-100">Mute game audio</div><div className="text-xs text-slate-300">Saved on this device</div></div><button onClick={()=>updateMuted(!muted)} aria-pressed={muted} className={"min-h-11 rounded-xl border px-4 text-xs font-bold "+(muted?"border-rose-300/40 bg-rose-500/15 text-rose-100":"border-emerald-300/40 bg-emerald-500/15 text-emerald-100")}>{muted?"Muted":"Sound on"}</button></div>
+      <label className="mt-4 block text-xs font-semibold text-slate-100">Master volume · {volume}%<input className="mt-2 w-full accent-emerald-400" type="range" min="0" max="100" value={volume} onChange={e=>updateVolume(Number(e.target.value))}/></label>
+      <p className="mt-2 text-xs leading-relaxed text-slate-400">Audio preferences are saved locally. Full layered Lagos ambience and music playback still require audio assets to be integrated.</p>
+    </section>
+    <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><h3 className="text-sm font-bold text-white">Controls</h3><div className="mt-2 space-y-1 text-xs text-slate-200"><div>Mobile: virtual joystick · tap Interact</div><div>Desktop: WASD / arrow keys · E interact</div><div>Esc: close phone or overlay</div></div></section>
+  </div>;
+}
+
 export default function Phone() {
   const open = useGame((s) => s.phoneOpen);
   const [app, setApp] = useState<App>("home");
   const openPhone = useGame((s) => s.openPhone);
   const closePhone = useGame((s) => s.closePhone);
-  useEffect(() => { if (open) setApp(useGame.getState().phoneApp); }, [open]);
+  const storedApp = useGame((s) => s.phoneApp);
+  useEffect(() => { if (open) setApp(storedApp); }, [open, storedApp]);
   if (!open) return null;
   const Screen =
     app === "bank" ? <BankApp /> :
@@ -965,6 +1002,7 @@ export default function Phone() {
     app === "districts" ? <DistrictsApp /> :
     app === "fuel" ? <FuelApp /> :
     app === "radar" ? <RadarApp /> :
+    app === "settings" ? <SettingsApp /> :
     <HomeApp />;
   const bottomTabs: App[] = ["home", "bank", "jobs", "garage", "inventory", "map", "radar"];
   return (
