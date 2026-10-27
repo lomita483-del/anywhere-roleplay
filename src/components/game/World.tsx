@@ -25,6 +25,20 @@ const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
 
 function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
   const facade = useMemo(() => facadeTexture("#ffffff", false), []);
+  const windowMaterials = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const lightTimer = useRef(0);
+  useFrame((_, delta) => {
+    lightTimer.current += delta;
+    if (lightTimer.current < 0.45) return;
+    lightTimer.current = 0;
+    const dusk = Math.sin(((g.time - 6) / 24) * Math.PI * 2) < 0.08;
+    windowMaterials.current.forEach((material, index) => {
+      if (!material) return;
+      const lit = dusk && !g.powerOutage && index % 4 !== 0;
+      material.emissive.set(lit ? "#ffcc73" : "#182630");
+      material.emissiveIntensity = lit ? 0.72 : 0.025;
+    });
+  });
   useMemo(() => facade.repeat.set(Math.max(1, Math.round(b.w / 4)), Math.max(1, Math.round(b.h / 4))), [facade, b.w, b.h]);
 
   const side = b.kind ? SIGN_SIDES[b.kind] : null;
@@ -79,8 +93,8 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
           const x = -b.w / 2 + 1.5 + n * ((b.w - 3) / Math.max(1, count - 1));
           return (
             <group key={floor + ":" + n}>
-              <mesh position={[x, y, b.d / 2 + 0.035]} castShadow><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial color="#243846" metalness={0.35} roughness={0.28} emissive="#89b5c4" emissiveIntensity={0.06} /></mesh>
-              <mesh position={[x, y, -b.d / 2 - 0.035]} rotation-y={Math.PI}><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial color="#243846" metalness={0.35} roughness={0.28} /></mesh>
+              <mesh position={[x, y, b.d / 2 + 0.035]} castShadow><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial ref={(material) => { windowMaterials.current[floor * count * 2 + n * 2] = material; }} color="#243846" metalness={0.35} roughness={0.28} emissive="#182630" emissiveIntensity={0.025} /></mesh>
+              <mesh position={[x, y, -b.d / 2 - 0.035]} rotation-y={Math.PI}><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial ref={(material) => { windowMaterials.current[floor * count * 2 + n * 2 + 1] = material; }} color="#243846" metalness={0.35} roughness={0.28} emissive="#182630" emissiveIntensity={0.025} /></mesh>
             </group>
           );
         });
