@@ -47,6 +47,20 @@ function CloudSaveSync() {
             current_job: current.activeJob?.type ?? null,
             active_vehicle: g.drivingId,
             outfit: current.outfit,
+            needs: current.needs,
+            background: { neighbourhood: "Yaba / Surulere", family: "Mainland family", education: "Secondary school" },
+            character_traits: [],
+            skills: {
+              driving: 1 + current.jobStats.drives,
+              trading: 1 + current.jobStats.trades,
+              repairs: 1,
+              hustling: 1 + current.jobStats.deliveries,
+              negotiation: 1 + current.jobStats.patrols,
+            },
+            reputation: {
+              score: current.jobStats.deliveries + current.jobStats.drives + current.jobStats.trades + current.jobStats.patrols,
+              tier: "Newcomer",
+            },
             updated_at: new Date().toISOString(),
           }).eq("id", userId);
           if (profileUpdate.error) console.warn("[Anywhere Roleplay] Profile sync skipped:", profileUpdate.error.message);
