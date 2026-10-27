@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_JUNCTIONS } from "@/game/newMap";
+import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -662,7 +662,7 @@ function CityTraffic() {
 
 function TerrainDetails() {
   const patchRef=useRef<THREE.InstancedMesh>(null); const hillRef=useRef<THREE.InstancedMesh>(null);
-  const patches=useMemo(()=>[{x:-151,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}],[]);
+  const patches=useMemo(()=>NEW_MAP_GROUND_PATCHES,[]);
   const hills=useMemo(()=>NEW_MAP_HILLS,[]);
   useEffect(()=>{const dummy=new THREE.Object3D(),patch=patchRef.current,hill=hillRef.current;
     if(patch)patches.forEach((p,i)=>{dummy.position.set(p.x,-.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%3)*.08;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);patch.setColorAt(i,new THREE.Color(i%2?"#92975f":"#718657"));});
@@ -680,7 +680,7 @@ function MarketStreetLife() {
   const billboards=useRef<THREE.InstancedMesh>(null);
   const poles=useRef<THREE.InstancedMesh>(null);
   const stalls=useMemo(()=>NEW_MAP_MARKET_STALLS,[]);
-  const vendorSpots=useMemo(()=>Array.from({length:14},(_,i)=>({x:-42+(i%7)*13,z:28+Math.floor(i/7)*7})),[]);
+  const vendorSpots=useMemo(()=>[[-83,-132],[-75,-132],[-67,-132],[-83,-140],[-75,-140],[-67,-140]].map(([x,z])=>({x,z})),[]);
   const poleSpots=useMemo(()=>Array.from({length:18},(_,i)=>({x:-150+(i%9)*34,z:-20+Math.floor(i/9)*44})),[]);
   useEffect(()=>{
     const dummy=new THREE.Object3D();
@@ -861,14 +861,6 @@ function CityEcosystem() {
       <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><planeGeometry args={[22, 13]} /><meshStandardMaterial color="#2d7a43" roughness={1} /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><planeGeometry args={[0.12, 12]} /><meshBasicMaterial color="#f3f0dc" /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[3.1, 3.2, 24]} /><meshBasicMaterial color="#f3f0dc" side={THREE.DoubleSide} /></mesh>
-    </group>
-    {/* Industrial stacks and restrained exhaust plumes. */}
-    <group position={[-143, 0, -46]}>
-      {[-10, 0, 10].map((x, i) => <group key={i} position={[x, 0, 0]}>
-        <mesh position={[0, 5, 0]}><cylinderGeometry args={[1.3, 1.8, 10, 8]} /><meshStandardMaterial color="#7c8587" roughness={0.8} /></mesh>
-        <mesh position={[0, 10.2, 0]}><cylinderGeometry args={[1.45, 1.35, 0.7, 8]} /><meshStandardMaterial color="#bd6651" roughness={0.8} /></mesh>
-        <mesh position={[0.8, 12 + i, 0]}><sphereGeometry args={[1.4, 7, 6]} /><meshStandardMaterial color="#b9b9b1" transparent opacity={0.34} roughness={1} /></mesh>
-      </group>)}
     </group>
     {/* Port and waterfront with container stacks, crane frames and ships. */}
     <group position={[105, 0, 142]}>
