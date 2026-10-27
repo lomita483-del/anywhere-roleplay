@@ -7,7 +7,7 @@ import { useGame, naira } from "@/game/store";
 import { exitApartment, interact } from "@/game/actions";
 import Phone from "./Phone";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF } from "@/game/city";
-import { NEW_MAP_POIS, NEW_MAP_ROADS } from "@/game/newMap";
+import { NEW_MAP_POIS, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_DISTRICTS, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES } from "@/game/newMap";
 
 function fmtTime(h: number) {
   const hh = Math.floor(h) % 24;
@@ -87,18 +87,12 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
       ctx.beginPath(); ctx.ellipse(sx(-112), sy(118), 18, 14, -0.25, 0, Math.PI*2); ctx.fill();
       ctx.strokeStyle="#d7c391";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(sx(-112),sy(118),21,17,-0.25,0,Math.PI*2);ctx.stroke();
       ctx.fillStyle="#2b7e9d";ctx.fillRect(sx(116)-20,sy(120)-15,40,30);
-      ctx.strokeStyle="#d0cfc4";ctx.lineWidth=11;ctx.lineCap="round";ctx.lineJoin="round";
-      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
-      ctx.strokeStyle="#3d454b";ctx.lineWidth=7;
-      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
-      ctx.strokeStyle="#f4f0df";ctx.lineWidth=1.1;ctx.setLineDash([3,3]);
-      for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>i?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.stroke();}
-      ctx.setLineDash([]);
-      ctx.strokeStyle="#172431";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(sx(0),sy(0),15,10,0,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle="#3b9b52";ctx.beginPath();ctx.ellipse(sx(0),sy(0),8,5.5,0,0,Math.PI*2);ctx.fill();
-      const blocks:[number,number,number,number,string][]=[[-145,-82,34,25,"#7d9ca9"],[-143,-46,26,22,"#8e887a"],[-38,-76,34,19,"#c28b4f"],[-110,32,30,24,"#a88f78"],[98,-40,56,58,"#c7bca5"],[78,10,30,24,"#b3a99a"],[116,120,42,28,"#8b9b9b"],[6,-142,50,48,"#a6b2b0"]];
-      for(const [x,z,w,d,c] of blocks){ctx.fillStyle=c;ctx.fillRect(sx(x-w/2),sy(z-d/2),w*scale,d*scale);}
-      ctx.fillStyle="#b8a58a";for(let row=0;row<8;row++)for(let col=0;col<8;col++){const x=82+col*10.4,z=-63+row*10.3;ctx.fillRect(sx(x)-2,sy(z)-2,4,4);}
+      NEW_MAP_DISTRICTS.forEach(d=>{ctx.fillStyle=d.color;ctx.globalAlpha=.48;ctx.fillRect(sx(d.x-d.w/2),sy(d.z-d.d/2),d.w*scale,d.d*scale);});ctx.globalAlpha=1;
+      NEW_MAP_ROADS.forEach((path,i)=>{const draw=(color:string,width:number)=>{ctx.beginPath();path.forEach(([x,z],j)=>j?ctx.lineTo(sx(x),sy(z)):ctx.moveTo(sx(x),sy(z)));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();};const width=NEW_MAP_ROAD_WIDTHS[i]??5;ctx.lineCap="round";ctx.lineJoin="round";draw("#c5c7be",(width+2.4)*scale);draw("#3d454b",width*scale);if(width>=8){ctx.setLineDash([3,3]);draw("#f4f0df",.55);ctx.setLineDash([]);}});
+      ctx.strokeStyle="#172431";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(sx(0),sy(0),15,10,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#3b9b52";ctx.beginPath();ctx.ellipse(sx(0),sy(0),8,5.5,0,0,Math.PI*2);ctx.fill();
+      for(const b of NEW_MAP_BUILDINGS){ctx.fillStyle=b.district==="residential"?"#d8c9ae":b.kind==="tower"?"#7d9ca9":b.kind==="market"?"#c28b4f":"#b8b6a7";ctx.fillRect(sx(b.x-b.w/2),sy(b.z-b.d/2),b.w*scale,b.d*scale);}
+      for(const s of NEW_MAP_MARKET_STALLS){ctx.fillStyle=s.color;ctx.fillRect(sx(s.x-s.w/2),sy(s.z-s.d/2),s.w*scale,s.d*scale);}
+      for(const t of NEW_MAP_TREES){ctx.fillStyle="#376b43";ctx.beginPath();ctx.arc(sx(t.x),sy(t.z),1.7,0,Math.PI*2);ctx.fill();}
       for(const p of NEW_MAP_POIS){const x=sx(p.x),y=sy(p.z);if(Math.hypot(x-center,y-center)>radius-3)continue;ctx.fillStyle=p.kind==="airport"?"#8cc8ff":p.kind==="port"?"#f0b56a":p.kind==="stadium"?"#f7d35c":p.kind==="university"?"#c5a7ff":p.kind==="lake"?"#5fe0d1":(p.kind==="bank"||p.kind==="atm")?"#69e3a7":p.kind==="police"?"#79aaff":"#ffdc8a";ctx.beginPath();ctx.arc(x,y,p.kind==="stadium"?3.5:2.5,0,Math.PI*2);ctx.fill();}
     } else {
       ctx.strokeStyle = "#d1b95c"; ctx.lineWidth = 5;
