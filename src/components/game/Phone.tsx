@@ -555,6 +555,15 @@ function RadioApp() {
       <div ref={feedRef} className="mt-2 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {msgs.map((m, i) => <div key={i} className="rounded-xl bg-white/5 px-2.5 py-1.5 text-xs text-hud-bright">{m}</div>)}
       </div>
+      <div className="mt-2 grid grid-cols-3 gap-1.5">
+        {["How far?", "Oga sharp!", "No wahala", "Ẹ káàárọ̀!", "Kedu?", "Sannu!"].map((phrase) => (
+          <button key={phrase} type="button" onClick={() => {
+            const name = useGame.getState().name || "Hustler";
+            setMsgs((m) => [...m.slice(-40), "💬 You: " + phrase]);
+            if (chatChannel.current) void chatChannel.current.send({ type: "broadcast", event: "chat_message", payload: { name, message: phrase, at: Date.now() } });
+          }} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-2 text-[9px] font-semibold text-hud-bright active:bg-[#eab308]/15">{phrase}</button>
+        ))}
+      </div>
       <form onSubmit={sendChat} className="mt-2 flex gap-2 border-t border-hud-line pt-2">
         <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={180} placeholder="Message players online…" className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-xs text-white placeholder:text-hud-muted" />
         <button type="submit" className="rounded-lg bg-[#eab308]/20 px-3 text-xs font-bold text-[#f4d16a]">Send</button>
