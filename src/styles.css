@@ -142,3 +142,10 @@
     color: var(--color-foreground);
   }
 }
+
+/* High-contrast, premium in-game smartphone screen */
+.phone-shell { color: #f8fafc; }
+.phone-shell .text-hud-bright { color: #f8fafc !important; }
+.phone-shell .text-hud-muted { color: #a8b5c5 !important; }
+.phone-shell input, .phone-shell select { color: #f8fafc; }
+.phone-shell button { -webkit-tap-highlight-color: transparent; }
