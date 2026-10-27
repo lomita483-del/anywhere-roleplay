@@ -548,10 +548,10 @@ function CurvedRoadNetwork() {
   return (
     <>
       {roadData.map((road) => <mesh key={"sidewalk-"+road.index} geometry={road.sidewalk.geometry} receiveShadow>
-        <meshStandardMaterial color="#aeb1ab" roughness={0.98} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial color="#aeb1ab" roughness={0.98} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={road.index + 1} polygonOffsetUnits={1} />
       </mesh>)}
       {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
-        <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+        <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-road.index - 1} polygonOffsetUnits={-1} />
       </mesh>)}
       <instancedMesh ref={marksRef} args={[undefined, undefined, dashData.length]} frustumCulled={false}>
         <boxGeometry args={[1, 0.035, 0.16]} />
