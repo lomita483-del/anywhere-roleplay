@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { SAVE_KEY, useGame } from "@/game/store";
+import { SAVE_KEY, tryJobProgress, useGame } from "@/game/store";
 
 describe("Anywhere Roleplay game store", () => {
   beforeEach(() => {
@@ -46,6 +46,23 @@ describe("Anywhere Roleplay game store", () => {
     game.transfer(Number.POSITIVE_INFINITY, "withdraw");
     expect(useGame.getState().cash).toBe(5000);
     expect(useGame.getState().bank).toBe(10000);
+  });
+
+  it("advances a courier job only once while remaining at the pickup", () => {
+    useGame.getState().start(true);
+    useGame.getState().acceptJob("courier");
+    const job = useGame.getState().activeJob!;
+    const [x, z] = job.targets[0];
+
+    tryJobProgress(x, z);
+    expect(useGame.getState().activeJob?.stage).toBe(1);
+    expect(useGame.getState().inventory.package).toBe(1);
+
+    // Repeated ticks at the old pickup must not advance the delivery stage.
+    tryJobProgress(x, z);
+    tryJobProgress(x, z);
+    expect(useGame.getState().activeJob?.stage).toBe(1);
+    expect(useGame.getState().inventory.package).toBe(1);
   });
 
   it("saves and restores active job and spawned vehicle state", () => {
