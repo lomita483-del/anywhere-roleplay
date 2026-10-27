@@ -467,7 +467,6 @@ function RoadFurniture() {
       {x:38,z:24,yaw:Math.PI/2},{x:78,z:24,yaw:Math.PI/2},{x:76,z:116,yaw:0}
     ];
     junctionCrossings.forEach(({x,z,yaw})=>{for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:x+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:z+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});});
-    });
     return {lamps,crossings,signs};
   }, []);
   useEffect(()=>{
