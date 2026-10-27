@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
+import { useGLTF, useAnimations, Html } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
 import { g } from "@/game/state";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi } from "@/game/store";
 import { interact } from "@/game/actions";
+import { supabase } from "@/integrations/supabase/client";
 import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, isBlocked, clampWorld } from "@/game/city";
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
@@ -337,6 +338,30 @@ function JobMarker() {
   );
 }
 
+function RemotePlayer({ name, x, z, yaw, vehicle }: { name: string; x: number; z: number; yaw: number; vehicle: string | null }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (!ref.current) return;
+    ref.current.position.set(x, 0, z);
+    ref.current.rotation.y = yaw;
+  });
+  return (
+    <group ref={ref}>
+      {vehicle ? (
+        <mesh position={[0, 0.85, 0]} castShadow><boxGeometry args={[1.6, 1.1, 3.2]} /><meshStandardMaterial color="#eab308" roughness={0.45} metalness={0.2} /></mesh>
+      ) : (
+        <>
+          <mesh position={[0, 0.95, 0]} castShadow><capsuleGeometry args={[0.32, 0.9, 4, 8]} /><meshStandardMaterial color="#2d8b67" roughness={0.8} /></mesh>
+          <mesh position={[0, 1.8, 0]} castShadow><sphereGeometry args={[0.24, 12, 12]} /><meshStandardMaterial color="#9b694b" roughness={0.8} /></mesh>
+        </>
+      )}
+      <Html position={[0, 2.25, 0]} center distanceFactor={18} occlude={false}>
+        <div className="whitespace-nowrap rounded-md border border-[#eab308]/35 bg-[#07100f]/85 px-2 py-1 text-[10px] font-semibold text-white shadow-lg">{name}{vehicle ? " · " + vehicle.toUpperCase() : ""}</div>
+      </Html>
+    </group>
+  );
+}
+
 function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
   const route = useRef<THREE.Line>(null);
   const glow = useRef<THREE.Line>(null);
@@ -382,6 +407,7 @@ export default function GameWorld() {
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
+  const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; z: number; yaw: number; vehicle: string | null }>>({});
 
   const register = (id: string, grp: THREE.Group | null) => {
     vehRefs.current.set(id, grp);
