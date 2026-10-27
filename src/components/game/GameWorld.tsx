@@ -226,6 +226,7 @@ function ParkedVehicle({ id, model, register }: { id: string; model: string; reg
       }}
     >
       <VehicleBody model={model} />
+      {model === "police" && g.sirenOn && <group position={[0, 1.8, 0]}><mesh position={[-0.28, 0, 0]}><boxGeometry args={[0.28, 0.16, 0.35]} /><meshStandardMaterial color="#ff2638" emissive="#ff2638" emissiveIntensity={2.2} /></mesh><mesh position={[0.28, 0, 0]}><boxGeometry args={[0.28, 0.16, 0.35]} /><meshStandardMaterial color="#268bff" emissive="#268bff" emissiveIntensity={2.2} /></mesh></group>}
     </group>
   );
 }
