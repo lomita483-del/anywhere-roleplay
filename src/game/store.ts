@@ -55,6 +55,7 @@ export interface BankTransaction { id: string; at: string; type: string; amount:
 
 export interface SaveData {
   name: string;
+  xp?: number;
   cash: number;
   bank: number;
   inventory: Record<string, number>;
@@ -172,6 +173,9 @@ export function makeJob(type: JobType): ActiveJob {
 
 interface GameStore {
   started: boolean;
+  xp: number;
+  level: number;
+  addXp: (amount: number) => void;
   graphicsQuality: "low" | "medium" | "high";
   setGraphicsQuality: (quality: "low" | "medium" | "high") => void;
   name: string;
@@ -260,6 +264,8 @@ function loadSave(): SaveData | null {
 
 const DEFAULTS = {
   started: false,
+  xp: 0,
+  level: 1,
   graphicsQuality: (typeof window !== "undefined" && ["low","medium","high"].includes(localStorage.getItem("lagos-graphics-quality") ?? "") ? localStorage.getItem("lagos-graphics-quality") : "medium") as "low" | "medium" | "high",
   name: "",
   cash: 5000,
@@ -293,6 +299,19 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
+  addXp: (amount) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const current = get();
+    const xp = current.xp + Math.floor(amount);
+    const level = Math.floor(xp / 100) + 1;
+    set({ xp, level });
+    if (level > current.level) {
+      const reward = 2500 * (level - current.level);
+      get().earn(reward, "bank");
+      get().radio("🎉 LEVEL UP! You reached Level " + level + " and earned " + N(reward) + " as a progression reward.");
+    }
+    get().save();
+  },
   hasSave: false,
   lastRadio: 0,
   spawnedVehicles: [],
@@ -305,7 +324,7 @@ export const useGame = create<GameStore>((set, get) => ({
       g.playerPos.set(saved.x, 0, saved.z);
       g.time = saved.time;
       set({
-        started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [],
+        started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
@@ -336,7 +355,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     if (!s.started) return;
     const data: SaveData = {
-      name: s.name, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
+      name: s.name, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
@@ -440,6 +459,7 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "trader") stats.trades++;
       if (job.type === "security") stats.patrols++;
       get().earn(job.payout, "bank");
+      get().addXp(45);
       if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
       set({ activeJob: null, jobStats: stats, waypoint: null });
       get().save();
