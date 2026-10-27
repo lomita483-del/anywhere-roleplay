@@ -73,7 +73,7 @@ export interface SaveData {
   background?: CharacterBackground;
   characterTraits?: string[];
   rentals?: Record<string, number>;
-  spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
+  spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number; fuel?: number; condition?: number }[];
   transactions?: BankTransaction[];
 }
 
@@ -222,9 +222,9 @@ interface GameStore {
   driving: boolean;
   hasSave: boolean;
   lastRadio: number;
-  spawnedVehicles: { id: string; model: string; x: number; z: number; rotY: number }[];
+  spawnedVehicles: { id: string; model: string; x: number; z: number; rotY: number; fuel?: number; condition?: number }[];
 
-  addSpawned: (v: { id: string; model: string; x: number; z: number; rotY: number }) => void;
+  addSpawned: (v: { id: string; model: string; x: number; z: number; rotY: number; fuel?: number; condition?: number }) => void;
 
   start: (fresh: boolean) => void;
   setName: (n: string) => void;
@@ -357,7 +357,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, fuel: runtime?.fuel ?? vehicle.fuel ?? 100, condition: vehicle.condition ?? 100 }; }),
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
