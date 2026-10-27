@@ -226,6 +226,7 @@ interface GameStore {
   transfer: (amount: number, dir: "deposit" | "withdraw") => void;
   addItem: (item: string, count?: number) => void;
   removeItem: (item: string, count?: number) => void;
+  useInventoryItem: (item: string) => boolean;
   buyVehicle: (key: string) => boolean;
   purchaseMarketItem: (key: string) => boolean;
   acceptJob: (type: JobType) => void;
@@ -380,6 +381,28 @@ export const useGame = create<GameStore>((set, get) => ({
     const left = (inv[item] || 0) - count;
     if (left > 0) inv[item] = left; else delete inv[item];
     set({ inventory: inv });
+    get().save();
+  },
+  useInventoryItem: (item) => {
+    const state = get();
+    if ((state.inventory[item] ?? 0) < 1) return false;
+    const effects: Record<string, { hunger: number; energy: number; stress: number; message: string }> = {
+      water: { hunger: 0, energy: 6, stress: -4, message: "Cold water refreshed you." },
+      snack: { hunger: 12, energy: 4, stress: -2, message: "You ate a quick snack." },
+      "mama-put": { hunger: 42, energy: 12, stress: -8, message: "You enjoyed a plate from Mama Put." },
+      "jollof-rice": { hunger: 36, energy: 10, stress: -6, message: "Jollof rice restored your hunger." },
+      "pounded-yam": { hunger: 48, energy: 12, stress: -7, message: "Pounded yam and soup filled you up." },
+      suya: { hunger: 22, energy: 8, stress: -4, message: "Suya restored some energy." },
+      zobo: { hunger: 2, energy: 8, stress: -5, message: "Cold zobo refreshed you." },
+    };
+    const effect = effects[item];
+    if (!effect) return false;
+    const needs = state.needs;
+    get().removeItem(item, 1);
+    set({ needs: { hunger: Math.min(100, needs.hunger + effect.hunger), energy: Math.min(100, needs.energy + effect.energy), health: needs.health, stress: Math.max(0, needs.stress + effect.stress), hygiene: needs.hygiene } });
+    get().radio("🥤 " + effect.message);
+    get().save();
+    return true;
   },
   buyVehicle: (key) => {
     const v = VEHICLE_CATALOG[key];
