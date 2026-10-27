@@ -108,12 +108,6 @@ export default function LivingCity() {
     {crowd.map(([x, z], i) => <StreetPerson key={i} x={x} z={z} phase={i * 1.19} shirt={["#263f60", "#d8a63d", "#b6473e", "#3b7754", "#ded4c6", "#8c4567"][i % 6] ?? "#263f60"} scale={i % 5 === 0 ? 0.82 : 0.94} />)}
     <Flyover />
     {/* Civic/education district and property sales office. */}
-    <Landmark x={-94} z={-36} w={19} d={13} h={8} name="PRIMARY SCHOOL" color="#e6d3a5" accent="#2b6a4b" />
-    <Landmark x={-92} z={-12} w={22} d={14} h={10} name="SECONDARY SCHOOL" color="#d6c7b0" accent="#285b86" />
-    <Landmark x={92} z={-42} w={20} d={16} h={13} name="LAGOS UNIVERSITY" color="#d9d2bd" accent="#8a6b2f" />
-    <Landmark x={92} z={-16} w={17} d={13} h={9} name="COURT OF JUSTICE" color="#d8d2c8" accent="#3d4d61" />
-    <Landmark x={92} z={10} w={20} d={15} h={12} name="GOVERNMENT HOUSE" color="#d8c8a6" accent="#234d3b" />
-    <Landmark x={-92} z={12} w={17} d={13} h={8} name="REAL ESTATE & PROPERTY" color="#d5c2a5" accent="#8a642b" />
     {/* A small village edge with compound walls and pitched roofs. */}
     {[
       { x: 91, z: 58, c: "#c4a17a" }, { x: 103, z: 58, c: "#d0b18a" },
