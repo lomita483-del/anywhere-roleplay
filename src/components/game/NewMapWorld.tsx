@@ -266,19 +266,19 @@ export default function NewMapWorld() {
 
       {/* Premium forecourt outside the compact stadium */}
       <group>
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 28]} receiveShadow>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
           <circleGeometry args={[43, 96]} />
           <meshStandardMaterial color="#a9b0b0" roughness={0.92} />
         </mesh>
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 28]} receiveShadow>
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 0]} receiveShadow>
           <ringGeometry args={[31, 33, 96]} />
           <meshStandardMaterial color="#d1b16c" metalness={0.15} roughness={0.55} side={THREE.DoubleSide} />
         </mesh>
         {[
-          { x: -35, z: 18, title: "MATCH DAY GRILL", color: "#9e3e35" },
-          { x: 35, z: 18, title: "FAN SHOP", color: "#0c615b" },
-          { x: -35, z: 37, title: "CHILL & DRINKS", color: "#263d58" },
-          { x: 35, z: 37, title: "SPORTS STORE", color: "#72532d" },
+          { x: -34, z: -22, title: "MATCH DAY GRILL", color: "#9e3e35" },
+          { x: 34, z: -22, title: "FAN SHOP", color: "#0c615b" },
+          { x: -34, z: 22, title: "CHILL & DRINKS", color: "#263d58" },
+          { x: 34, z: 22, title: "SPORTS STORE", color: "#72532d" },
         ].map((shop) => (
           <group key={shop.title} position={[shop.x, 0, shop.z]}>
             <mesh position={[0, 2.1, 0]} castShadow receiveShadow>
@@ -306,7 +306,7 @@ export default function NewMapWorld() {
         {Array.from({ length: 12 }, (_, i) => {
           const a = (i / 12) * Math.PI * 2;
           const x = Math.cos(a) * 39;
-          const z = 28 + Math.sin(a) * 39;
+          const z = Math.sin(a) * 39;
           return (
             <group key={i} position={[x, 0, z]}>
               <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
@@ -318,7 +318,7 @@ export default function NewMapWorld() {
             </group>
           );
         })}
-        <Html position={[0, 5, 10]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        <Html position={[0, 5, -8]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
           <div style={{ whiteSpace: "nowrap", textAlign: "center", color: "#f3d99a", textShadow: "0 2px 8px #000", fontWeight: 900, letterSpacing: 3, fontSize: 12 }}>ALWAYS ROLEPLAY · MATCH DAY PLAZA</div>
         </Html>
       </group>
