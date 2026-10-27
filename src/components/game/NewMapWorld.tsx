@@ -246,7 +246,7 @@ function RoadMarkings() {
     marks.forEach((m, i) => {
       dummy.position.set(m.x, 0.048, m.z);
       dummy.rotation.set(-Math.PI / 2, 0, 0);
-      dummy.scale.set(m.horizontal ? 1 : 0.025, m.horizontal ? 0.025 : 1, 1);
+      dummy.scale.set(m.horizontal ? 1 : 0.025, m.horizontal ? 1 : 42, 1);
       dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
     });
     mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere();
@@ -514,20 +514,20 @@ export default function NewMapWorld() {
       {/* Premium forecourt outside the compact stadium */}
       <group>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
-          <circleGeometry args={[17.5, 56]} />
+          <circleGeometry args={[22, 56]} />
           <meshStandardMaterial color="#a9b0b0" roughness={0.92} />
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 0]} receiveShadow>
-          <ringGeometry args={[12.4, 14.2, 56]} />
+          <ringGeometry args={[16.5, 18.5, 56]} />
           <meshStandardMaterial color="#d1b16c" metalness={0.15} roughness={0.55} side={THREE.DoubleSide} />
         </mesh>
         {[
-          { x: -13.5, z: -7.5, title: "MATCH DAY GRILL", color: "#9e3e35" },
-          { x: 13.5, z: -7.5, title: "FAN SHOP", color: "#0c615b" },
-          { x: -13.5, z: 7.5, title: "CHILL & DRINKS", color: "#263d58" },
-          { x: 13.5, z: 7.5, title: "SPORTS STORE", color: "#72532d" },
+          { x: -18, z: -10, title: "MATCH DAY GRILL", color: "#9e3e35" },
+          { x: 18, z: -10, title: "FAN SHOP", color: "#0c615b" },
+          { x: -18, z: 10, title: "CHILL & DRINKS", color: "#263d58" },
+          { x: 18, z: 10, title: "SPORTS STORE", color: "#72532d" },
         ].map((shop) => (
-          <group key={shop.title} position={[shop.x, 0, shop.z]} scale={[0.68, 0.68, 0.68]}>
+          <group key={shop.title} position={[shop.x, 0, shop.z]} scale={[0.55, 0.55, 0.55]}>
             <mesh position={[0, 2.1, 0]} castShadow receiveShadow>
               <boxGeometry args={[10, 4.2, 7]} />
               <meshStandardMaterial color="#e6e1d6" roughness={0.84} />
@@ -552,8 +552,8 @@ export default function NewMapWorld() {
         ))}
         {Array.from({ length: 8 }, (_, i) => {
           const a = (i / 8) * Math.PI * 2;
-          const x = Math.cos(a) * 15.4;
-          const z = Math.sin(a) * 15.4;
+          const x = Math.cos(a) * 20.2;
+          const z = Math.sin(a) * 20.2;
           return (
             <group key={i} position={[x, 0, z]}>
               <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
