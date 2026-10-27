@@ -159,6 +159,7 @@ export default function Hud() {
     const t = setInterval(() => {
       const elev = Math.sin(((g.time - 6) / 24) * Math.PI * 2);
       setNight(elev < 0.05);
+      setWeather(g.raining ? "RAIN" : "CLEAR");
       if (waypoint) {
         const dx = waypoint.x - g.playerPos.x;
         const dz = waypoint.z - g.playerPos.z;
