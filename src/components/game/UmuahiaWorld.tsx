@@ -163,8 +163,8 @@ export default function UmuahiaWorld() {
     {BUILDINGS.map((b, i) => <UmuahiaBuilding key={(b.label ?? "building") + i} b={b} />)}
     {/* Market canopy row and covered loading bays. */}
     {Array.from({ length: 7 }, (_, i) => <group key={"stall" + i} position={[-61 + i * 6, 0, -26]}>
-      <mesh position={[0, 1.2, 0]} castShadow><boxGeometry args={[4.8, 2.4, 3.5]} /><meshStandardMaterial color={["#bd493c", "#2e8054", "#d5a333", "#356fa5"][i % 4]} roughness={0.92} /></mesh>
-      <mesh position={[0, 2.55, 0]} castShadow><boxGeometry args={[5.3, 0.25, 4]} /><meshStandardMaterial color={["#d8a14b", "#8c3e31", "#33744d"][i % 3]} roughness={0.8} /></mesh>
+      <mesh position={[0, 1.2, 0]} castShadow><boxGeometry args={[4.8, 2.4, 3.5]} /><meshStandardMaterial color={["#bd493c", "#2e8054", "#d5a333", "#356fa5"][i % 4]!} roughness={0.92} /></mesh>
+      <mesh position={[0, 2.55, 0]} castShadow><boxGeometry args={[5.3, 0.25, 4]} /><meshStandardMaterial color={["#d8a14b", "#8c3e31", "#33744d"][i % 3]!} roughness={0.8} /></mesh>
     </group>)}
     {/* Trees, streetlights and compound walls are placed in verges, not lanes. */}
     {Array.from({ length: 48 }, (_, i) => {
