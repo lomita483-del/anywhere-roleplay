@@ -25,7 +25,7 @@ export interface ActiveJob {
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
-export interface PlayerOutfit { skinTone: string; hair: string; top: string; bottom: string; accessory: string; }
+export interface PlayerOutfit { skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
 export interface JobStats {
   deliveries: number;
