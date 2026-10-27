@@ -46,6 +46,7 @@ function CloudSaveSync() {
             rotation: g.playerYaw,
             current_job: current.activeJob?.type ?? null,
             active_vehicle: g.drivingId,
+            outfit: current.outfit,
             updated_at: new Date().toISOString(),
           }, { onConflict: "id" });
           if (profileUpdate.error) console.warn("[Anywhere Roleplay] Profile sync skipped:", profileUpdate.error.message);
