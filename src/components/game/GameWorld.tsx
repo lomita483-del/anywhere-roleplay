@@ -216,13 +216,16 @@ function Pedestrians() {
   const refs = useRef<(THREE.Group | null)[]>([]);
   const peds = useMemo(
     () =>
-      PED_WALKS.map((w, i) => ({
-        pts: w.pts,
-        wi: 1 % w.pts.length,
-        x: w.pts[0][0],
-        z: w.pts[0][1],
-        speed: 1.1 + (i % 3) * 0.3,
-      })),
+      PED_WALKS.map((w, i) => {
+        const start = w.pts[0] ?? ([0, 0] as [number, number]);
+        return {
+          pts: w.pts,
+          wi: 1 % w.pts.length,
+          x: start[0],
+          z: start[1],
+          speed: 1.1 + (i % 3) * 0.3,
+        };
+      }),
     []
   );
   useFrame((_, rawDelta) => {
@@ -254,7 +257,7 @@ function Pedestrians() {
           ref={(o) => {
             refs.current[i] = o;
           }}
-          position={[w.pts[0][0], 0, w.pts[0][1]]}
+          position={[w.pts[0]?.[0] ?? 0, 0, w.pts[0]?.[1] ?? 0]}
         >
           <PedBody />
         </group>
