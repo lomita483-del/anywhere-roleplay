@@ -64,6 +64,7 @@ export default function Hud() {
   const needs = useGame((s) => s.needs);
   const clock = useGame((s) => s.clock);
   const speed = useGame((s) => s.speedKph);
+  const fuelLevel = useGame((s) => s.fuelLevel);
   const driving = useGame((s) => s.driving);
   const prompt = useGame((s) => s.prompt);
   const phoneOpen = useGame((s) => s.phoneOpen);
@@ -174,6 +175,8 @@ export default function Hud() {
         <div className="hud-panel absolute bottom-6 right-40 px-4 py-3 text-center md:right-48">
           <div className="text-3xl font-bold leading-none text-hud-bright">{Math.round(speed)}</div>
           <div className="text-[10px] uppercase tracking-widest text-hud-muted">km/h</div>
+          <div className="mt-2 flex items-center justify-between gap-3 text-[9px] font-bold text-hud-muted"><span>FUEL</span><span className={fuelLevel < 15 ? "text-red-300" : "text-amber-200"}>{Math.round(fuelLevel)}%</span></div>
+          <div className="mt-1 h-1.5 w-20 overflow-hidden rounded-full bg-black/40"><div className={fuelLevel < 15 ? "h-full rounded-full bg-red-400" : "h-full rounded-full bg-amber-400"} style={{ width: fuelLevel + "%" }} /></div>
         </div>
       )}
 
