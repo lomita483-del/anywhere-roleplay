@@ -10,7 +10,7 @@ export interface Box {
 
 export interface BuildingDef extends Box {
   color: string;
-  kind?: "bank" | "police" | "dealership" | "apartments" | "market";
+  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot";
   label?: string;
 }
 
@@ -197,8 +197,9 @@ export function treePositions(): [number, number][] {
   for (let i = 0; i < 36; i++) {
     const side = i % 4;
     const t = (Math.floor(i / 4) + 0.5) * (236 / 9);
-    const off = side === 0 ? [-118 + ((i * 37) % 9), t] : side === 1 ? [118 - ((i * 53) % 9), t] : side === 2 ? [t, -118 + ((i * 29) % 9)] : [t, 118 - ((i * 41) % 9)];
-    trees.push([Math.max(-115, Math.min(115, off[0])), Math.max(-115, Math.min(115, off[1]))]);
+    const ox = side === 0 ? -118 + ((i * 37) % 9) : side === 1 ? 118 - ((i * 53) % 9) : t;
+    const oz = side === 2 ? -118 + ((i * 29) % 9) : side === 3 ? 118 - ((i * 41) % 9) : t;
+    trees.push([Math.max(-115, Math.min(115, ox)), Math.max(-115, Math.min(115, oz))]);
   }
   // Block corners
   for (const bx of [-73, 73]) for (const bz of [-73, 73]) {
