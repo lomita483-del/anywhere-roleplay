@@ -25,27 +25,41 @@ function Index() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (!active) return;
-      if (error) setAuthError(error.message);
-      setSession(data.session);
-      setChecking(false);
-    }).catch((error: unknown) => {
-      if (active) {
+    let unsubscribe: (() => void) | undefined;
+
+    try {
+      // Auth is optional for guest play. A missing/misconfigured Supabase
+      // environment must never prevent the landing screen from rendering.
+      const auth = supabase.auth;
+      void auth.getSession().then(({ data, error }) => {
+        if (!active) return;
+        if (error) setAuthError(error.message);
+        setSession(data.session);
+        setChecking(false);
+      }).catch((error: unknown) => {
+        if (!active) return;
         setAuthError(error instanceof Error ? error.message : "Could not connect to account services.");
         setChecking(false);
-      }
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      });
+
+      const { data: listener } = auth.onAuthStateChange((_event, nextSession) => {
+        if (active) {
+          setSession(nextSession);
+          setMessage("");
+          setAuthError("");
+        }
+      });
+      unsubscribe = () => listener.subscription.unsubscribe();
+    } catch (error) {
       if (active) {
-        setSession(nextSession);
-        setMessage("");
-        setAuthError("");
+        setAuthError(error instanceof Error ? error.message : "Account services are unavailable. You can still play as a guest.");
+        setChecking(false);
       }
-    });
+    }
+
     return () => {
       active = false;
-      listener.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 
