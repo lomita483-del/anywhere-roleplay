@@ -25,6 +25,7 @@ export interface ActiveJob {
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
+export interface RideRequest { id: string; service: "ride" | "bike" | "private"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
 export interface PlayerOutfit { skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
 export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
@@ -155,6 +156,9 @@ interface GameStore {
   interiorLabel: string;
   setInterior: (inside: boolean, label?: string) => void;
   waypoint: GpsWaypoint | null;
+  rideRequest: RideRequest | null;
+  requestRide: (service: RideRequest["service"]) => boolean;
+  setRideRequest: (rideRequest: RideRequest | null) => void;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
   phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides";
@@ -221,6 +225,7 @@ const DEFAULTS = {
   interior: false,
   interiorLabel: "Ikoyi Apartment",
   waypoint: null as GpsWaypoint | null,
+  rideRequest: null as RideRequest | null,
   phoneApp: "home" as const,
   prompt: null as GameStore["prompt"],
   modal: null as GameStore["modal"],
@@ -386,6 +391,20 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
   setWaypoint: (waypoint) => set({ waypoint }),
+  requestRide: (service) => {
+    const s = get();
+    if (!s.waypoint || s.driving || s.rideRequest) return false;
+    const fare = service === "bike" ? 700 : service === "private" ? 4200 : 1600;
+    if (!s.spend(fare, "cash") && !s.spend(fare, "bank")) return false;
+    const offset = service === "bike" ? 10 : 16;
+    const x = clampWorld(g.playerPos.x + offset, g.playerPos.z - offset, 2)[0];
+    const z = clampWorld(g.playerPos.x + offset, g.playerPos.z - offset, 2)[1];
+    set({ rideRequest: { id: `ride-${Date.now()}`, service, status: "approaching", destination: { ...s.waypoint }, fare, x, z, yaw: Math.atan2(-offset, offset) } });
+    get().radio(service === "bike" ? "🏍️ Okada rider accepted the trip and is coming to your location." : service === "private" ? "🚘 Private driver confirmed and is on the way." : "🚕 Ride accepted. Your driver is on the way.");
+    get().save();
+    return true;
+  },
+  setRideRequest: (rideRequest) => set({ rideRequest }),
   clearWaypoint: () => set({ waypoint: null }),
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
   closePhone: () => set({ phoneOpen: false }),
