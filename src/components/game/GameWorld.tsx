@@ -4,7 +4,7 @@ import { useGLTF, useAnimations, Html } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
 import { g } from "@/game/state";
-import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi } from "@/game/store";
+import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, isBlocked, clampWorld } from "@/game/city";
@@ -377,6 +377,26 @@ function RemotePlayer({ name, x, z, yaw, vehicle }: { name: string; x: number; z
   );
 }
 
+function JobPickupVisual({ job }: { job: ActiveJob | null }) {
+  if (!job || job.stage !== 0) return null;
+  const target = job.targets[0];
+  if (!target) return null;
+  if (job.type === "driver") return (
+    <group position={[target[0], 0, target[1]]}>
+      <mesh position={[0, 0.9, 0]} castShadow><capsuleGeometry args={[0.28, 0.9, 4, 8]} /><meshStandardMaterial color="#f0b85c" roughness={0.8} /></mesh>
+      <mesh position={[0, 1.72, 0]} castShadow><sphereGeometry args={[0.23, 12, 12]} /><meshStandardMaterial color="#8a5a3c" roughness={0.8} /></mesh>
+      <Html position={[0, 2.2, 0]} center distanceFactor={15}><div className="whitespace-nowrap rounded-md border border-[#eab308]/40 bg-black/80 px-2 py-1 text-[10px] font-semibold text-[#ffe8a3]">Passenger · Pick up</div></Html>
+    </group>
+  );
+  if (job.type === "courier") return (
+    <group position={[target[0], 0, target[1]]}>
+      <mesh position={[0, 0.65, 0]} castShadow><boxGeometry args={[0.9, 0.9, 0.9]} /><meshStandardMaterial color="#c48b45" roughness={0.75} /></mesh>
+      <mesh position={[0, 1.35, 0]}><sphereGeometry args={[0.65, 12, 12]} /><meshBasicMaterial color="#eab308" transparent opacity={0.13} /></mesh>
+      <Html position={[0, 1.7, 0]} center distanceFactor={15}><div className="whitespace-nowrap rounded-md border border-[#eab308]/40 bg-black/80 px-2 py-1 text-[10px] font-semibold text-[#ffe8a3]">Delivery package</div></Html>
+    </group>
+  );
+  return null;
+}
 function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
   const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#eab308", transparent: true, opacity: 0.2 })), []);
   const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#ffe38a", transparent: true, opacity: 0.95 })), []);
@@ -423,6 +443,7 @@ export default function GameWorld() {
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
+  const activeJob = useGame((s) => s.activeJob);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; z: number; yaw: number; vehicle: string | null }>>({});
 
   const register = (id: string, grp: THREE.Group | null) => {
@@ -643,6 +664,7 @@ export default function GameWorld() {
       <Traffic />
       <Pedestrians />
       <JobMarker />
+      <JobPickupVisual job={activeJob} />
       <GpsRoute waypoint={waypoint} />
     </>
   );
