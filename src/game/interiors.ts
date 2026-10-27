@@ -1,5 +1,3 @@
-import type { LucideIcon } from "lucide-react";
-
 export type InteriorAction =
   | `openPhone:${string}` | "sleep" | "eat" | "heal" | `startShift:${string}`
   | `openModal:${string}` | "exit" | `study:${string}` | `haggle:${string}` | `buyCar:${string}`;
