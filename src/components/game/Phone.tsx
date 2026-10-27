@@ -524,7 +524,7 @@ export default function Phone() {
   return (
     <div className="pointer-events-auto absolute inset-0 z-20 bg-black/35 backdrop-blur-[2px]" onPointerDown={(e) => e.stopPropagation()} onClick={closePhone}>
       <div
-      className="absolute bottom-5 right-4 flex h-[68vh] max-h-[620px] w-[min(88vw,360px)] flex-col overflow-hidden rounded-[2rem] border-4 border-hud-line bg-[#10151d]/95 shadow-2xl shadow-black/60 backdrop-blur-xl md:h-[72vh]"
+      className="phone-shell absolute bottom-5 right-4 flex h-[68vh] max-h-[620px] w-[min(88vw,360px)] flex-col overflow-hidden rounded-[2rem] border-4 border-[#d8e0e8] bg-[#0b111b]/[0.98] text-white shadow-2xl shadow-black/70 backdrop-blur-xl md:h-[72vh]"
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
