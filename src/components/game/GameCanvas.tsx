@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SAVE_KEY, useGame } from "@/game/store";
 import { g } from "@/game/state";
+import { VEHICLE_CATALOG } from "@/game/store";
 import Scene from "./Scene";
 import Hud from "./Hud";
 import FirstDayTutorial from "./FirstDayTutorial";
@@ -162,10 +163,79 @@ function CloudSaveSync() {
   return null;
 }
 
+
+function AdminCommandSync() {
+  useEffect(() => {
+    let stopped = false;
+    let busy = false;
+    const poll = async () => {
+      if (stopped || busy) return;
+      busy = true;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const user = sessionData.session?.user;
+        if (!user) return;
+        const result = await (supabase as any).from("admin_commands").select("id,command,payload")
+          .eq("target_user_id", user.id).is("acknowledged_at", null).order("created_at", { ascending: true }).limit(12);
+        if (result.error || !result.data?.length) return;
+        for (const command of result.data as { id: string; command: string; payload: Record<string, unknown> | null }[]) {
+          const payload = command.payload ?? {};
+          switch (command.command) {
+            case "teleport":
+              if (Number.isFinite(Number(payload.x)) && Number.isFinite(Number(payload.z))) {
+                g.playerPos.set(Number(payload.x), 0, Number(payload.z));
+                g.adminFlyHeight = 0;
+              }
+              break;
+            case "freeze": g.adminFrozen = true; break;
+            case "unfreeze": g.adminFrozen = false; break;
+            case "invisible": g.adminInvisible = true; break;
+            case "visible": g.adminInvisible = false; break;
+            case "levitate": g.adminLevitating = true; g.adminFlying = false; g.adminFlyHeight = 3.5; break;
+            case "land": g.adminLevitating = false; g.adminFlying = false; g.adminFlyHeight = 0; break;
+            case "fly":
+              g.adminFlying = true; g.adminLevitating = false;
+              g.adminFlyHeight = Math.max(8, g.adminFlyHeight);
+              g.adminFlySpeed = Math.max(8, Math.min(100, Number(payload.speed) || 28));
+              break;
+            case "stop_fly": g.adminFlying = false; g.adminFlyHeight = 0; break;
+            case "spawn_vehicle": {
+              const model = String(payload.model ?? "sedan");
+              if (VEHICLE_CATALOG[model]) {
+                const id = "admin-" + (crypto.randomUUID?.() ?? String(Date.now()));
+                useGame.getState().addSpawned({ id, model, x: g.playerPos.x + 2.5, z: g.playerPos.z + 2.5, rotY: g.playerYaw, fuel: 100 });
+                g.vehicles.set(id, { id, model, px: g.playerPos.x + 2.5, pz: g.playerPos.z + 2.5, vx: 0, vz: 0, yaw: g.playerYaw, speed: 0, color: "#d9ad42", fuel: 100 });
+                useGame.getState().save();
+              }
+              break;
+            }
+            case "spawn_npc": {
+              const id = "npc-" + (crypto.randomUUID?.() ?? String(Date.now()));
+              g.adminSpawnedNpcs = [...g.adminSpawnedNpcs, { id, x: g.playerPos.x + (Math.random() * 4 - 2), z: g.playerPos.z + (Math.random() * 4 - 2), name: String(payload.name ?? "Admin NPC").slice(0, 32) }];
+              break;
+            }
+            case "remove_npc":
+              g.adminSpawnedNpcs = payload.id ? g.adminSpawnedNpcs.filter(n => n.id !== String(payload.id)) : [];
+              break;
+          }
+          await (supabase as any).from("admin_commands").update({ acknowledged_at: new Date().toISOString() })
+            .eq("id", command.id).eq("target_user_id", user.id);
+        }
+      } catch (error) {
+        console.warn("[Anywhere Roleplay] Admin command poll skipped:", error);
+      } finally { busy = false; }
+    };
+    const timer = window.setInterval(() => { void poll(); }, 2200);
+    void poll();
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, []);
+  return null;
+}
+
 export default function GameCanvas() {
   return (
     <div className="fixed inset-0 touch-none select-none overflow-hidden">
-      <CloudSaveSync />
+      <CloudSaveSync />\n      <AdminCommandSync />
       <Canvas dpr={[1, 1.25]} camera={{ fov: 55, near: 0.5, far: 420, position: [-14, 6, 2] }} gl={{ antialias: true, powerPreference: "high-performance" }}>
         <Scene />
       </Canvas>
