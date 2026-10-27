@@ -817,6 +817,7 @@ function CityBirdsAndFlags() {
 }
 
 function CityEcosystem() {
+  const airportTerminal=NEW_MAP_BUILDINGS.find(b=>b.id==="airport-terminal")!;
   const industrialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="industrial")!;
   const civicDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="civic")!;
   const lakeDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="lake-park")!;
