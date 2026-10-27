@@ -80,9 +80,18 @@ export default function Hud() {
     const t = setInterval(() => {
       const elev = Math.sin(((g.time - 6) / 24) * Math.PI * 2);
       setNight(elev < 0.05);
-    }, 2000);
+      if (waypoint) {
+        const dx = waypoint.x - g.playerPos.x;
+        const dz = waypoint.z - g.playerPos.z;
+        setGpsDistance(Math.round(Math.hypot(dx, dz)));
+        setGpsBearing(Math.atan2(dx, dz));
+      } else {
+        setGpsDistance(0);
+        setGpsBearing(0);
+      }
+    }, 350);
     return () => clearInterval(t);
-  }, []);
+  }, [waypoint]);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
