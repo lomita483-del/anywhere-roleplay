@@ -12,7 +12,7 @@ export interface Box {
 
 export interface BuildingDef extends Box {
   color: string;
-  kind?: "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "airport" | "civic" | "fuel";
+  kind?: string;
   label?: string;
 }
 
