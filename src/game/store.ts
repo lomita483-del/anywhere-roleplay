@@ -63,6 +63,7 @@ export interface SaveData {
   x: number;
   z: number;
   activeJob?: ActiveJob | null;
+  waypoint?: GpsWaypoint | null;
   outfit?: PlayerOutfit;
   needs?: PlayerNeeds;
   unlockedDistricts?: string[];
@@ -305,6 +306,7 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
+        waypoint: saved.waypoint ?? null,
         outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
         needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
         background: { ...DEFAULTS.background, ...(saved.background ?? {}) },
@@ -333,7 +335,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
+      activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
