@@ -768,13 +768,15 @@ function WaterShimmer() {
 function AnimatedAircraft() {
   const first=useRef<THREE.Group>(null);
   const second=useRef<THREE.Group>(null);
+  const quality=useGame(s=>s.graphicsQuality);
+  const activePlanes=quality==="low"?0:quality==="medium"?1:2;
   useFrame((state)=>{
     const t=state.clock.elapsedTime;
     if(first.current){first.current.position.set(-12+Math.cos(t*.12)*55,18,-142+Math.sin(t*.12)*24);first.current.rotation.y=-t*.12;}
     if(second.current){second.current.position.set(12+Math.cos(t*.1+Math.PI)*55,15,-142+Math.sin(t*.1+Math.PI)*24);second.current.rotation.y=-t*.1;}
   });
   const plane=<><mesh><boxGeometry args={[7,.65,1.05]}/><meshStandardMaterial color="#e8e9e3" roughness={.6}/></mesh><mesh><boxGeometry args={[2.1,.12,8]}/><meshStandardMaterial color="#d3d8d5" roughness={.55}/></mesh><mesh position={[-3.1,.5,0]}><boxGeometry args={[1.2,.9,.18]}/><meshStandardMaterial color="#7ca8b6"/></mesh></>;
-  return <><group ref={first}>{plane}</group><group ref={second}>{plane}</group></>;
+  return <>{activePlanes>0&&<group ref={first}>{plane}</group>}{activePlanes>1&&<group ref={second}>{plane}</group>}</>;
 }
 
 function AnimatedWatercraft() {
@@ -830,6 +832,8 @@ function CityBirdsAndFlags() {
 
 function CityEcosystem() {
   const craneRefs=useRef<(THREE.Group|null)[]>([]);
+  const quality=useGame(s=>s.graphicsQuality);
+  const parkedAircraftCount=quality==="low"?3:quality==="medium"?5:8;
   useFrame((state)=>{craneRefs.current.forEach((crane,i)=>{if(crane)crane.rotation.y=Math.sin(state.clock.elapsedTime*.32+i*1.4)*.08;});});
   const buildings = useMemo<CityBlock[]>(() => {
     const out: CityBlock[] = [];
@@ -884,7 +888,7 @@ function CityEcosystem() {
       <mesh position={[0, 3.3, 48]}><boxGeometry args={[34, 0.5, 9]} /><meshStandardMaterial color="#7ea9b6" metalness={0.25} roughness={0.3} /></mesh>
       <mesh position={[27, 5, 48]}><cylinderGeometry args={[1.2, 1.5, 10, 8]} /><meshStandardMaterial color="#d0d4d2" /></mesh>
       <mesh position={[27, 10, 48]}><boxGeometry args={[4, 2.4, 4]} /><meshStandardMaterial color="#7194a2" metalness={0.2} /></mesh>
-      {([[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4], [-28, -8], [15, -38], [30, -18]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
+      {([[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4], [-28, -8], [15, -38], [30, -18]] as [number, number][]).slice(0, parkedAircraftCount).map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
         <mesh><boxGeometry args={[9, 1.1, 1.8]} /><meshStandardMaterial color={i%2?"#e9e8df":"#d4d9d8"} /></mesh>
         <mesh position={[0, 0.15, 0]}><boxGeometry args={[2.5, 0.16, 12]} /><meshStandardMaterial color="#d6dbd9" /></mesh>
         <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
