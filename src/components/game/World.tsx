@@ -16,6 +16,7 @@ const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
   apartments: { dx: 0, dz: -1, ry: 0 },
   depot: { dx: 0, dz: -1, ry: 0 },
   clothing: { dx: 0, dz: -1, ry: 0 },
+  airport: { dx: 0, dz: -1, ry: 0 },
 };
 
 function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
@@ -50,6 +51,25 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
           <planeGeometry args={[2.2, 2.8]} />
           <meshStandardMaterial color="#3a2f26" roughness={0.8} />
         </mesh>
+      )}
+      {b.h >= 8 && Array.from({ length: Math.max(1, Math.floor((b.h - 2.5) / 3.2)) }, (_, floor) => {
+        const y = 2.2 + floor * 3.2;
+        const count = Math.max(2, Math.floor((b.w - 2) / 3.1));
+        return Array.from({ length: count }, (_, n) => {
+          const x = -b.w / 2 + 1.5 + n * ((b.w - 3) / Math.max(1, count - 1));
+          return (
+            <group key={floor + ":" + n}>
+              <mesh position={[x, y, b.d / 2 + 0.035]} castShadow><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial color="#243846" metalness={0.35} roughness={0.28} emissive="#89b5c4" emissiveIntensity={0.06} /></mesh>
+              <mesh position={[x, y, -b.d / 2 - 0.035]} rotation-y={Math.PI}><boxGeometry args={[1.05, 1.25, 0.08]} /><meshStandardMaterial color="#243846" metalness={0.35} roughness={0.28} /></mesh>
+            </group>
+          );
+        });
+      })}
+      {b.h >= 14 && (
+        <group position={[b.w * 0.24, b.h + 0.55, -b.d * 0.2]}>
+          <mesh position={[0, 0.9, 0]} castShadow><cylinderGeometry args={[0.85, 0.85, 1.8, 12]} /><meshStandardMaterial color="#aeb9b8" metalness={0.25} roughness={0.55} /></mesh>
+          <mesh position={[0, 1.82, 0]}><cylinderGeometry args={[0.9, 0.9, 0.12, 12]} /><meshStandardMaterial color="#677879" metalness={0.35} roughness={0.5} /></mesh>
+        </group>
       )}
     </group>
   );
@@ -216,6 +236,81 @@ function LagosStreetProps() {
   );
 }
 
+function RoadMarkings() {
+  const dashes = useMemo(() => {
+    const items: { x: number; z: number; horizontal: boolean }[] = [];
+    for (const x of ROADS_X) for (let z = -112; z <= 112; z += 15) items.push({ x, z, horizontal: false });
+    for (const z of ROADS_Z) for (let x = -112; x <= 112; x += 15) items.push({ x, z, horizontal: true });
+    return items;
+  }, []);
+  return (
+    <group>
+      {dashes.map((d, i) => <mesh key={"dash" + i} rotation-x={-Math.PI / 2} position={[d.x, 0.052, d.z]}><planeGeometry args={d.horizontal ? [7, 0.12] : [0.12, 7]} /><meshBasicMaterial color="#e7c85d" /></mesh>)}
+      {ROADS_X.flatMap((x) => ROADS_Z.map((z) => (
+        <group key={x + ":" + z}>
+          {Array.from({ length: 6 }, (_, n) => <mesh key={n} rotation-x={-Math.PI / 2} position={[x - 5 + n * 2, 0.055, z - 5.8]}><planeGeometry args={[1.15, 1.8]} /><meshBasicMaterial color="#e6e4dc" /></mesh>)}
+          {Array.from({ length: 6 }, (_, n) => <mesh key={"b" + n} rotation-x={-Math.PI / 2} position={[x - 5 + n * 2, 0.055, z + 5.8]}><planeGeometry args={[1.15, 1.8]} /><meshBasicMaterial color="#e6e4dc" /></mesh>)}
+        </group>
+      )))}
+    </group>
+  );
+}
+
+function AirportDistrict() {
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position={[51, 0.035, -96]} receiveShadow><planeGeometry args={[54, 10]} /><meshStandardMaterial color="#353b43" roughness={0.92} /></mesh>
+      {[-100, -96, -92].map((z) => <mesh key={z} rotation-x={-Math.PI / 2} position={[51, 0.052, z]}><planeGeometry args={[50, 0.16]} /><meshBasicMaterial color="#f4f0dc" /></mesh>)}
+      <mesh position={[53, 0.72, -96]} rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.52, 0.62, 13, 12]} /><meshStandardMaterial color="#e5e7e9" metalness={0.25} roughness={0.4} /></mesh>
+      <mesh position={[53, 0.82, -96]} rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.2, 0.25, 14, 10]} /><meshStandardMaterial color="#2e6b91" metalness={0.3} roughness={0.35} /></mesh>
+      <mesh position={[53, 0.62, -96]} castShadow><boxGeometry args={[3.5, 0.16, 14]} /><meshStandardMaterial color="#e5e7e9" metalness={0.25} roughness={0.4} /></mesh>
+      <mesh position={[58.5, 0.75, -96]} rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.22, 0.3, 2.1, 10]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
+      <mesh position={[47.5, 0.78, -96]} rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.22, 0.3, 2.1, 10]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
+      <mesh position={[47, 0.85, -96]} castShadow><boxGeometry args={[2.5, 0.12, 5]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
+      <mesh position={[59, 0.85, -96]} castShadow><boxGeometry args={[2.5, 0.12, 5]} /><meshStandardMaterial color="#e5e7e9" /></mesh>
+      <mesh position={[51, 1.5, -96]} castShadow><boxGeometry args={[1.8, 1.6, 1.7]} /><meshStandardMaterial color="#e5e7e9" roughness={0.45} /></mesh>
+      <Html position={[91, 8.5, -96]} center distanceFactor={28}><div className="whitespace-nowrap rounded-lg border border-white/20 bg-[#0c1720]/85 px-3 py-1.5 text-[10px] font-bold tracking-wider text-white">MURTALA MUHAMMED INT'L AIRPORT</div></Html>
+    </group>
+  );
+}
+
+function ConstructionSite() {
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position={[86, 0.018, 78]} receiveShadow><planeGeometry args={[28, 24]} /><meshStandardMaterial color="#8c826b" roughness={1} /></mesh>
+      {Array.from({ length: 5 }, (_, i) => <mesh key={"foundation" + i} position={[78 + i * 4, 0.18, 77]}><boxGeometry args={[3.5, 0.35, 18]} /><meshStandardMaterial color="#a9a69b" roughness={0.95} /></mesh>)}
+      {/* Tower crane */}
+      <group position={[91, 0, 78]}>
+        <mesh position={[0, 7, 0]} castShadow><boxGeometry args={[0.55, 14, 0.55]} /><meshStandardMaterial color="#eab308" metalness={0.3} roughness={0.6} /></mesh>
+        <mesh position={[4, 13.7, 0]} castShadow><boxGeometry args={[15, 0.35, 0.38]} /><meshStandardMaterial color="#eab308" metalness={0.3} roughness={0.6} /></mesh>
+        <mesh position={[-3.8, 13.2, 0]} castShadow><boxGeometry args={[5.5, 0.25, 0.3]} /><meshStandardMaterial color="#f1c64d" /></mesh>
+        <mesh position={[9.5, 6.9, 0]}><cylinderGeometry args={[0.035, 0.035, 13.4, 6]} /><meshStandardMaterial color="#424b50" /></mesh>
+        <mesh position={[9.5, 0.25, 0]}><boxGeometry args={[0.45, 0.45, 0.45]} /><meshStandardMaterial color="#4e565a" /></mesh>
+      </group>
+      {/* Steel-frame building under construction */}
+      {[-5, -1, 3, 7].map((x) => <mesh key={"column" + x} position={[x + 80, 3.2, 74]} castShadow><boxGeometry args={[0.22, 6.4, 0.22]} /><meshStandardMaterial color="#69747b" metalness={0.65} roughness={0.4} /></mesh>)}
+      {[1.5, 4.5, 6.4].map((y) => <mesh key={"beam" + y} position={[84, y, 74]} castShadow><boxGeometry args={[16, 0.2, 0.2]} /><meshStandardMaterial color="#69747b" metalness={0.65} roughness={0.4} /></mesh>)}
+      {/* Excavator / site machinery */}
+      <group position={[79, 0, 84]}>
+        <mesh position={[0, 0.72, 0]} castShadow><boxGeometry args={[2.8, 0.9, 1.5]} /><meshStandardMaterial color="#e5a51b" roughness={0.7} /></mesh>
+        <mesh position={[0.35, 1.55, -0.15]} rotation-z={-0.28} castShadow><boxGeometry args={[0.85, 1.15, 0.85]} /><meshStandardMaterial color="#eab308" /></mesh>
+        <mesh position={[1.2, 2.05, 0]} rotation-z={-0.55} castShadow><boxGeometry args={[0.3, 2.1, 0.35]} /><meshStandardMaterial color="#d79b18" /></mesh>
+        <mesh position={[2, 2.65, 0]} rotation-z={0.45} castShadow><boxGeometry args={[0.28, 1.6, 0.3]} /><meshStandardMaterial color="#d79b18" /></mesh>
+        {[-0.85, 0.85].map((x) => <mesh key={x} position={[x, 0.28, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.34, 0.34, 0.25, 12]} /><meshStandardMaterial color="#24272a" roughness={0.9} /></mesh>)}
+      </group>
+      {/* Concrete mixer and safety cones */}
+      <group position={[96, 0, 85]}>
+        <mesh position={[0, 0.75, 0]} castShadow><boxGeometry args={[2.3, 1, 1.2]} /><meshStandardMaterial color="#e5a51b" /></mesh>
+        <mesh position={[0.1, 1.4, -0.15]} rotation-z={0.25} castShadow><cylinderGeometry args={[0.42, 0.65, 1.15, 10]} /><meshStandardMaterial color="#c7cbd0" roughness={0.55} /></mesh>
+        <mesh position={[-0.75, 0.28, 0.65]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.3, 0.3, 0.2, 10]} /><meshStandardMaterial color="#22252a" /></mesh>
+        <mesh position={[0.75, 0.28, 0.65]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.3, 0.3, 0.2, 10]} /><meshStandardMaterial color="#22252a" /></mesh>
+      </group>
+      {[[75, 72], [76.5, 72], [98, 73], [99.5, 73]].map(([x, z], i) => <mesh key={"cone" + i} position={[x, 0.45, z]} castShadow><cylinderGeometry args={[0.06, 0.32, 0.9, 7]} /><meshStandardMaterial color="#f07824" roughness={0.7} /></mesh>)}
+      <Html position={[86, 10, 88]} center distanceFactor={28}><div className="whitespace-nowrap rounded-lg border border-[#eab308]/35 bg-[#17130b]/90 px-3 py-1.5 text-[10px] font-bold tracking-wider text-[#f4d16a]">LAGOS NEW CITY · CONSTRUCTION IN PROGRESS</div></Html>
+    </group>
+  );
+}
+
 function ApartmentInterior() {
   return (
     <group position={[104, 0, 104]}>
@@ -272,6 +367,7 @@ export default function World() {
         </mesh>
       ))}
 
+      <RoadMarkings />
       {/* Dealership display lot */}
       <mesh rotation-x={-Math.PI / 2} position={[40, 0.03, -64]} receiveShadow>
         <planeGeometry args={[30, 10]} />
@@ -286,6 +382,8 @@ export default function World() {
 
       {BUILDINGS.map((b, i) => <Building key={i} b={b} />)}
       <LagosStreetProps />
+      <AirportDistrict />
+      <ConstructionSite />
       <ApartmentInterior />
       <Lamps />
       <Trees />
