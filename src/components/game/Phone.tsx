@@ -159,7 +159,7 @@ function HomeApp() {
   return (
     <div className="flex flex-col items-center gap-2 p-4 text-sm">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-hud-accent to-[#e28a3c] text-2xl font-bold text-black">
-        {(name || "H")[0].toUpperCase()}
+        {(name || "H").charAt(0).toUpperCase()}
       </div>
       <div className="text-lg font-bold text-hud-bright">{name || "Hustler"}</div>
       <div className="grid w-full grid-cols-2 gap-2 pt-1">
