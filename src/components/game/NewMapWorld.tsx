@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Html } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_JUNCTIONS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -513,7 +513,7 @@ function CurvedRoadNetwork() {
     const out: { x: number; z: number; yaw: number; width: number }[] = [];
     roadData.forEach((road, roadIndex) => {
       const length = road.curve.getLength();
-      const isLocal = roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX && roadIndex < NEW_MAP_ROADS.length-1;
+      const isLocal = (NEW_MAP_ROAD_WIDTHS[roadIndex] ?? 5) === 5;
       const spacing = isLocal ? 16 : 10.5;
       for (let d = 4; d < length - 4; d += spacing) {
         const t = road.curve.getUtoTmapping(0, d);
@@ -555,6 +555,10 @@ function CurvedRoadNetwork() {
       {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
         <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-road.index - 1} polygonOffsetUnits={-1} />
       </mesh>)}
+      {NEW_MAP_JUNCTIONS.map(([x,z],i)=><group key={"junction-"+i}>
+        <mesh rotation-x={-Math.PI/2} position={[x,.035,z]}><circleGeometry args={[5.2,20]}/><meshStandardMaterial color="#aeb1ab" roughness={.98}/></mesh>
+        <mesh rotation-x={-Math.PI/2} position={[x,.052,z]}><circleGeometry args={[4.05,20]}/><meshStandardMaterial color="#3d454b" roughness={.96}/></mesh>
+      </group>)}
       <instancedMesh ref={marksRef} args={[undefined, undefined, dashData.length]} frustumCulled={false}>
         <boxGeometry args={[1, 0.035, 0.16]} />
         <meshBasicMaterial color="#f4f0df" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
@@ -659,7 +663,7 @@ function CityTraffic() {
 function TerrainDetails() {
   const patchRef=useRef<THREE.InstancedMesh>(null); const hillRef=useRef<THREE.InstancedMesh>(null);
   const patches=useMemo(()=>[{x:-151,z:143,w:12,d:9},{x:-130,z:153,w:13,d:8},{x:-91,z:139,w:12,d:10},{x:-151,z:99,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-145,z:160,w:9,d:8}],[]);
-  const hills=useMemo(()=>[{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}],[]);
+  const hills=useMemo(()=>NEW_MAP_HILLS,[]);
   useEffect(()=>{const dummy=new THREE.Object3D(),patch=patchRef.current,hill=hillRef.current;
     if(patch)patches.forEach((p,i)=>{dummy.position.set(p.x,-.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%3)*.08;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);patch.setColorAt(i,new THREE.Color(i%2?"#92975f":"#718657"));});
     if(hill)hills.forEach((p,i)=>{dummy.position.set(p.x,p.h*.35,p.z);dummy.scale.set(p.w,p.h,p.d);dummy.rotation.y=i*.35;dummy.updateMatrix();hill.setMatrixAt(i,dummy.matrix);hill.setColorAt(i,new THREE.Color(i%2?"#969960":"#7d8e58"));});
@@ -700,7 +704,7 @@ function MarketStreetLife() {
     <instancedMesh ref={billboards} args={[undefined,undefined,4]} castShadow><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#ffffff" roughness={.8}/></instancedMesh>
     <instancedMesh ref={poles} args={[undefined,undefined,poleSpots.length]}><cylinderGeometry args={[.5,.5,1,6]}/><meshStandardMaterial color="#ffffff" roughness={.7}/></instancedMesh>
     {poleSpots.slice(0,8).map((p,i)=><mesh key={"wire-"+i} position={[p.x+16,6,p.z+10]} rotation-y={.4}><boxGeometry args={[36,.06,.06]}/><meshBasicMaterial color="#282d30"/></mesh>)}
-    <Html position={[-39,4,-61]} center distanceFactor={32} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#532c18e8",border:"1px solid #e0b85d",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.2}}>CENTRAL MARKET & DEPOT</div></Html>
+    <Html position={[-34,4,-104]} center distanceFactor={32} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#532c18e8",border:"1px solid #e0b85d",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.2}}>CENTRAL MARKET & DEPOT</div></Html>
   </>;
 }
 
@@ -818,7 +822,7 @@ function CityEcosystem() {
   const quality=useGame(s=>s.graphicsQuality);
   const parkedAircraftCount=quality==="low"?3:quality==="medium"?5:8;
   useFrame((state)=>{craneRefs.current.forEach((crane,i)=>{if(crane)crane.rotation.y=Math.sin(state.clock.elapsedTime*.32+i*1.4)*.08;});});
-  const buildings = useMemo<CityBlock[]>(() => NEW_MAP_BUILDINGS.map((b) => ({ x:b.x,z:b.z,w:b.w,d:b.d,h:b.h,color:b.color,label:b.label })), []);
+  const buildings = useMemo<CityBlock[]>(() => NEW_MAP_BUILDINGS.filter(b => b.district !== "residential").map((b) => ({ x:b.x,z:b.z,w:b.w,d:b.d,h:b.h,color:b.color,label:b.label })), []);
   return <>
     {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
     <CurvedRoadNetwork />
@@ -833,10 +837,10 @@ function CityEcosystem() {
     <RoadFurniture />
     <DrainCovers />
     <Html position={[-143,12,-46]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>INDUSTRIAL DISTRICT</div></Html>
-    <Html position={[78,12,10]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
+    <Html position={[112,12,78]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
     <Html position={[-112,8,84]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
-    <group position={[6, 0, -142]}>
+    <group position={[34, 0, -140]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]} rotation-y={x < 0 ? -0.16 : 0.16}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[9, 82]} /><meshStandardMaterial color="#4a5054" roughness={1} /></mesh>
         {Array.from({ length: 8 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.015, -34 + i * 9]}><planeGeometry args={[0.22, 4]} /><meshBasicMaterial color="#f5f1df" /></mesh>)}
@@ -853,7 +857,7 @@ function CityEcosystem() {
       <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>LAGOS INTERNATIONAL AIRPORT</div></Html>
     </group>
     {/* University sports court and landscaped quad. */}
-    <group position={[-110, 0, 32]}>
+    <group position={[-132, 0, 72]}>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><planeGeometry args={[22, 13]} /><meshStandardMaterial color="#2d7a43" roughness={1} /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><planeGeometry args={[0.12, 12]} /><meshBasicMaterial color="#f3f0dc" /></mesh>
       <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[3.1, 3.2, 24]} /><meshBasicMaterial color="#f3f0dc" side={THREE.DoubleSide} /></mesh>
@@ -867,7 +871,7 @@ function CityEcosystem() {
       </group>)}
     </group>
     {/* Port and waterfront with container stacks, crane frames and ships. */}
-    <group position={[116, 0, 120]}>
+    <group position={[105, 0, 142]}>
       <mesh rotation-x={-Math.PI / 2} position={[5, 0, 0]}><planeGeometry args={[88, 64]} /><meshStandardMaterial color="#267b9c" roughness={0.34} metalness={0.1} /></mesh>
       <mesh position={[-22, 0.28, -1]}><boxGeometry args={[47, 0.55, 17]} /><meshStandardMaterial color="#777e7e" roughness={0.9} /></mesh>
       {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]!} roughness={0.8} /></mesh>)}
