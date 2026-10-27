@@ -51,6 +51,7 @@ export function interact() {
     } else s.setModal("home");
   }
   else if (p.kind === "food") s.openPhone("food");
+  else if (p.kind === "vendor") s.openPhone("market");
   else if (p.kind === "fuel") s.openPhone("fuel");
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
   else if (p.kind === "jobboard") s.openPhone("jobs");
