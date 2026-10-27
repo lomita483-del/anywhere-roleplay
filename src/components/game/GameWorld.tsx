@@ -53,61 +53,78 @@ function useKeys() {
 
 function CharacterBody() {
   const outfit = useGame((s) => s.outfit);
-  const { scene, animations } = useGLTF("/models/character.glb");
-  const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-  const { actions } = useAnimations(animations, clone);
-  const current = useRef("");
+  const leftArm = useRef<THREE.Group>(null);
+  const rightArm = useRef<THREE.Group>(null);
+  const leftLeg = useRef<THREE.Group>(null);
+  const rightLeg = useRef<THREE.Group>(null);
+  const skin = outfit.skinTone || "#986344";
+  const tops: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
+  const bottoms: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
+  const top = tops[outfit.top] ?? tops.streetwear!;
+  const bottom = bottoms[outfit.bottom] ?? bottoms.jeans!;
+  const hair = outfit.hair === "locs" ? "#211a29" : outfit.hair === "braids" ? "#241b17" : "#171513";
+  const shoe = outfit.top === "formal" ? "#25252b" : "#d9dcdf";
 
-  useEffect(() => {
-    const topColors: Record<string, string> = { streetwear: "#2d8b67", formal: "#24334c", agbada: "#d4a72c", uniform: "#263d66" };
-    const bottomColors: Record<string, string> = { jeans: "#334c75", formal: "#202733", traditional: "#b28b3f", cargo: "#5c6245" };
-    clone.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : mesh.material.clone();
-      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const name = (mesh.name + " " + materials.map((m) => m.name).join(" ")).toLowerCase();
-      for (const material of materials) {
-        const standard = material as THREE.MeshStandardMaterial;
-        if (!standard.color) continue;
-        if (/skin|face|head|body/.test(name)) {
-          standard.color.set(outfit.skinTone);
-          standard.roughness = Math.max(0.72, standard.roughness);
-          standard.metalness = 0;
-        } else if (/shirt|top|jacket|torso|coat|dress/.test(name)) {
-          standard.color.set(topColors[outfit.top] ?? topColors["streetwear"]!);
-          standard.roughness = Math.max(0.58, standard.roughness);
-        } else if (/pants|trouser|bottom|leg/.test(name)) {
-          standard.color.set(bottomColors[outfit.bottom] ?? bottomColors["jeans"]!);
-          standard.roughness = Math.max(0.68, standard.roughness);
-        } else if (/hair/.test(name)) {
-          standard.color.set(outfit.hair === "locs" ? "#171411" : outfit.hair === "braids" ? "#231a17" : "#2b211c");
-          standard.roughness = 0.82;
-        } else if (/hat|cap|accessory/.test(name) && outfit.accessory === "cap") {
-          standard.color.set("#d4a72c");
-          standard.metalness = 0.12;
-          standard.roughness = 0.48;
-        }
-      }
-    });
-  }, [clone, outfit]);
-
-  useFrame(() => {
-    const speed = g.playerSpeed;
-    let clip = "idle";
-    if (speed > 4.5) clip = "sprint";
-    else if (speed > 0.2) clip = "walk";
-    if (current.current !== clip) {
-      if (current.current) actions[current.current]?.fadeOut(0.18);
-      actions[clip]?.reset().fadeIn(0.18).play();
-      current.current = clip;
-    }
-    clone.visible = !g.drivingId;
+  useFrame((state) => {
+    const moving = Math.min(Math.abs(g.playerSpeed) / 6, 1);
+    const swing = Math.sin(state.clock.elapsedTime * 9) * moving * 0.42;
+    if (leftArm.current) leftArm.current.rotation.x = swing;
+    if (rightArm.current) rightArm.current.rotation.x = -swing;
+    if (leftLeg.current) leftLeg.current.rotation.x = -swing;
+    if (rightLeg.current) rightLeg.current.rotation.x = swing;
   });
 
-  return <primitive object={clone} scale={CHAR_SCALE} />;
+  return (
+    <group>
+      {/* Neck and layered torso */}
+      <mesh position={[0, 1.36, 0]} castShadow><cylinderGeometry args={[0.085, 0.1, 0.18, 9]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
+      <mesh position={[0, 1.04, 0]} castShadow receiveShadow><capsuleGeometry args={[0.26, 0.43, 5, 10]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
+      <mesh position={[0, 1.27, 0.015]}><torusGeometry args={[0.105, 0.022, 5, 12]} /><meshStandardMaterial color={outfit.top === "formal" ? "#e6e6e3" : top} roughness={0.8} /></mesh>
+      <mesh position={[0.13, 1.12, 0.245]}><boxGeometry args={[0.075, 0.1, 0.016]} /><meshStandardMaterial color={outfit.top === "formal" ? "#d8dce2" : "#c5c8c8"} roughness={0.9} /></mesh>
+      {outfit.top === "formal" && <mesh position={[0, 1.05, 0.258]}><boxGeometry args={[0.025, 0.33, 0.015]} /><meshStandardMaterial color="#e6e6e3" roughness={0.8} /></mesh>}
+      {outfit.top === "agbada" && <group>
+        <mesh position={[-0.2, 1.04, 0.02]} rotation-z={-0.08}><boxGeometry args={[0.12, 0.56, 0.31]} /><meshStandardMaterial color={top} roughness={0.92} /></mesh>
+        <mesh position={[0.2, 1.04, 0.02]} rotation-z={0.08}><boxGeometry args={[0.12, 0.56, 0.31]} /><meshStandardMaterial color={top} roughness={0.92} /></mesh>
+        <mesh position={[0, 1.25, 0.25]}><boxGeometry args={[0.18, 0.035, 0.018]} /><meshStandardMaterial color="#f2d77b" metalness={0.15} roughness={0.5} /></mesh>
+      </group>}
+      {/* Shaped head, ears, face and hair */}
+      <group position={[0, 1.66, 0.015]}>
+        <mesh position={[0, -0.045, 0]} scale={[0.205, 0.25, 0.19]} castShadow><sphereGeometry args={[1, 12, 10]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
+        <mesh position={[0, -0.155, 0.035]} scale={[0.145, 0.1, 0.145]}><sphereGeometry args={[1, 10, 8]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
+        {[-1, 1].map(side => <mesh key={"ear"+side} position={[side*0.205,-0.055,0]} scale={[0.04,0.065,0.035]}><sphereGeometry args={[1,8,7]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>)}
+        <mesh position={[0,-0.06,0.184]}><boxGeometry args={[0.043,0.105,0.05]} /><meshStandardMaterial color="#885538" roughness={0.92} /></mesh>
+        {[-1,1].map(side => <group key={"eye"+side} position={[side*0.08,0.005,0.17]}>
+          <mesh scale={[0.052,0.024,0.016]}><sphereGeometry args={[1,10,6]} /><meshStandardMaterial color="#f2e8d8" roughness={0.75} /></mesh>
+          <mesh position={[0,0,0.014]} scale={[0.015,0.018,0.008]}><sphereGeometry args={[1,8,6]} /><meshStandardMaterial color="#211a16" roughness={0.55} /></mesh>
+          <mesh position={[0,0.04,0]}><boxGeometry args={[0.07,0.016,0.02]} /><meshStandardMaterial color={hair} roughness={0.9} /></mesh>
+        </group>)}
+        <mesh position={[0,-0.155,0.176]}><boxGeometry args={[0.06,0.01,0.01]} /><meshStandardMaterial color="#603a2c" roughness={0.9} /></mesh>
+        <mesh position={[0,0.14,-0.005]} scale={[0.21,0.14,0.2]}><sphereGeometry args={[1,12,8]} /><meshStandardMaterial color={hair} roughness={0.92} /></mesh>
+        {outfit.hair === "locs" && Array.from({length:13},(_,i)=>{
+          const a=i/13*Math.PI*2;
+          return <mesh key={"loc"+i} position={[Math.cos(a)*0.17,0.16+(i%3)*0.02,Math.sin(a)*0.15]} rotation-z={Math.cos(a)*0.25} rotation-x={Math.sin(a)*0.22} castShadow><cylinderGeometry args={[0.027,0.038,0.17+(i%2)*0.04,6]} /><meshStandardMaterial color={hair} roughness={0.95} /></mesh>;
+        })}
+        {outfit.hair === "braids" && Array.from({length:7},(_,i)=><mesh key={"braid"+i} position={[(i-3)*0.045,0.1,-0.04]} rotation-z={(i-3)*0.06} castShadow><cylinderGeometry args={[0.02,0.026,0.2,6]} /><meshStandardMaterial color={hair} roughness={0.94} /></mesh>)}
+        {outfit.accessory === "cap" && <group position={[0,0.19,0.015]}><mesh scale={[0.215,0.07,0.2]}><sphereGeometry args={[1,12,8]} /><meshStandardMaterial color="#d4a72c" roughness={0.6} /></mesh><mesh position={[0,-0.03,0.15]}><boxGeometry args={[0.25,0.025,0.16]} /><meshStandardMaterial color="#b48b24" roughness={0.6} /></mesh></group>}
+      </group>
+      {/* Sleeves, forearms and individual hands */}
+      {[-1,1].map(side=><group key={"arm"+side} ref={side<0?leftArm:rightArm} position={[side*0.29,1.22,0]}>
+        <mesh position={[side*0.07,-0.13,0]} rotation-z={side*-0.12} castShadow><capsuleGeometry args={[0.082,0.22,4,8]} /><meshStandardMaterial color={top} roughness={0.88} /></mesh>
+        <mesh position={[side*0.1,-0.34,0.01]} rotation-z={side*-0.08} castShadow><capsuleGeometry args={[0.063,0.22,4,8]} /><meshStandardMaterial color={outfit.top==="agbada"?top:skin} roughness={0.9} /></mesh>
+        <mesh position={[side*0.11,-0.5,0.03]} castShadow><capsuleGeometry args={[0.06,0.09,4,7]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>
+        {[-1,0,1].map(f=><mesh key={f} position={[side*(0.11+f*0.024),-0.57,0.045]}><capsuleGeometry args={[0.011,0.06,3,5]} /><meshStandardMaterial color={skin} roughness={0.9} /></mesh>)}
+      </group>)}
+      {/* Waist, articulated trouser legs and sneakers */}
+      <mesh position={[0,0.78,0]} castShadow><boxGeometry args={[0.34,0.18,0.28]} /><meshStandardMaterial color={bottom} roughness={0.9} /></mesh>
+      {[-1,1].map(side=><group key={"leg"+side} ref={side<0?leftLeg:rightLeg} position={[side*0.105,0.7,0]}>
+        <mesh position={[0,-0.17,0]} castShadow><capsuleGeometry args={[0.09,0.27,4,8]} /><meshStandardMaterial color={bottom} roughness={0.9} /></mesh>
+        <mesh position={[0,-0.45,0.015]} castShadow><capsuleGeometry args={[0.07,0.27,4,8]} /><meshStandardMaterial color={bottom} roughness={0.9} /></mesh>
+        <mesh position={[0,-0.64,0.08]} castShadow><boxGeometry args={[0.15,0.1,0.27]} /><meshStandardMaterial color={shoe} roughness={0.76} /></mesh>
+        <mesh position={[0,-0.695,0.105]}><boxGeometry args={[0.16,0.025,0.29]} /><meshStandardMaterial color="#aeb4b9" roughness={0.75} /></mesh>
+        {[-1,1].map(l=><mesh key={l} position={[l*0.028,-0.63,0.19]}><boxGeometry args={[0.009,0.008,0.05]} /><meshStandardMaterial color="#f5f2ec" roughness={0.8} /></mesh>)}
+      </group>)}
+    </group>
+  );
 }
 
 function PedBody({ variant = 0 }: { variant?: number }) {
