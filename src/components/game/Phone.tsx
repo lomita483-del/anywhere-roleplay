@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -24,6 +24,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   food: { icon: Utensils, label: "Buka & Food", tint: "#f59e0b" },
   travel: { icon: PlaneTakeoff, label: "Airline", tint: "#8bbde8" },
   districts: { icon: MapIcon, label: "Districts", tint: "#a3e635" },
+  fuel: { icon: Fuel, label: "Fuel", tint: "#fb923c" },
 };
 
 function atAtm() {
@@ -576,6 +577,38 @@ function RadioApp() {
 
 
 
+
+function FuelApp() {
+  const fuel = useGame((s) => s.fuelLevel);
+  const driving = useGame((s) => s.driving);
+  const refuel = useGame((s) => s.refuelVehicle);
+  const [notice, setNotice] = useState("");
+  const atStation = POIS.some((p) => p.kind === "fuel" && Math.hypot(p.x - g.playerPos.x, p.z - g.playerPos.z) < 12);
+  const buy = (amount: number, price: number) => {
+    const ok = refuel(amount, price);
+    setNotice(ok ? "Fuel added to your vehicle." : !driving ? "Enter the vehicle you want to refuel, then stop at a fuel station." : !atStation ? "Drive to an Oando, Ikeja Express or Lekki fuel station first." : fuel >= 100 ? "Your tank is already full." : "Not enough funds to buy fuel.");
+  };
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-orange-300/20 bg-gradient-to-br from-[#4a2b13] to-[#111923] p-4">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-orange-200"><Fuel className="h-4 w-4" /> Lagos fuel services</div>
+      <div className="mt-1 text-lg font-bold text-white">Fuel station</div>
+      <div className="mt-3 flex items-end justify-between"><span className="text-[10px] text-slate-300">Current tank</span><span className="text-xl font-black text-white">{Math.round(fuel)}%</span></div>
+      <div className="mt-1 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-orange-400 transition-all" style={{ width: fuel + "%" }} /></div>
+      <div className="mt-2 text-[10px] text-slate-300">{atStation ? "Fuel station nearby" : "Not at a fuel station"} · {driving ? "Vehicle active" : "Not driving"}</div>
+    </div>
+    {notice && <div role="status" className="rounded-xl border border-orange-300/20 bg-orange-300/10 p-2 text-xs text-orange-100">{notice}</div>}
+    {[
+      { amount: 25, price: 1500, label: "Add 25% tank", desc: "Short top-up" },
+      { amount: 50, price: 2800, label: "Add 50% tank", desc: "Half tank" },
+      { amount: 100, price: 5000, label: "Fill the tank", desc: "Full tank, up to 100%" },
+    ].map((option) => <button key={option.amount} onClick={() => buy(option.amount, option.price)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left hover:bg-white/10">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-300/10 text-orange-200"><Fuel className="h-5 w-5" /></span>
+      <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">{option.label}</span><span className="mt-0.5 block text-[10px] text-hud-muted">{option.desc}</span></span>
+      <span className="text-xs font-bold text-amber-200">{naira(option.price)}</span>
+    </button>)}
+  </div>;
+}
+
 function DistrictsApp() {
   const unlocked = useGame((s) => s.unlockedDistricts);
   const unlockDistrict = useGame((s) => s.unlockDistrict);
@@ -753,6 +786,7 @@ export default function Phone() {
     app === "food" ? <FoodApp /> :
     app === "travel" ? <TravelApp /> :
     app === "districts" ? <DistrictsApp /> :
+    app === "fuel" ? <FuelApp /> :
     <HomeApp />;
 
   return (
