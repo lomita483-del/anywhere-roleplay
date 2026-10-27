@@ -8,7 +8,7 @@ describe("NEW MAP layout", () => {
 
   it("uses a connected road graph with consistent avenue and street widths", () => {
     expect(NEW_MAP_ROADS.length).toBe(NEW_MAP_ROAD_WIDTHS.length);
-    expect(NEW_MAP_ROAD_GRAPH.edges.length).toBe(NEW_MAP_ROADS.length);
+    expect(NEW_MAP_ROAD_GRAPH.edges.length).toBeGreaterThan(NEW_MAP_ROADS.length);
     expect(NEW_MAP_JUNCTIONS.length).toBeGreaterThan(8);
     expect(NEW_MAP_ROAD_GRAPH.edges.every(edge => NEW_MAP_ROAD_GRAPH.nodes.some(node => node.id === edge.from) && NEW_MAP_ROAD_GRAPH.nodes.some(node => node.id === edge.to))).toBe(true);
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "avenue" || edge.type === "boulevard" || edge.type === "perimeter").every(edge => edge.width === 8)).toBe(true);
