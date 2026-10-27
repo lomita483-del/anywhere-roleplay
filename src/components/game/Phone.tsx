@@ -164,6 +164,7 @@ function HomeApp() {
   const setName = useGame((s) => s.setName);
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
+  const needs = useGame((s) => s.needs);
   const stats = useGame((s) => s.jobStats);
   const owned = useGame((s) => s.owned);
   const background = useGame((s) => s.background);
@@ -209,6 +210,19 @@ function HomeApp() {
           <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Bank</div><div className="text-sm font-bold text-hud-bright">{naira(bank)}</div></div>
           <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Jobs completed</div><div className="text-sm font-bold text-hud-bright">{stats.deliveries + stats.drives + stats.trades + stats.patrols}</div></div>
           <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-center"><div className="text-[10px] text-hud-muted">Vehicles</div><div className="text-sm font-bold text-hud-bright">{owned.length}</div></div>
+        </div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+        <div className="flex items-center justify-between"><span className="text-sm font-bold text-white">Level {Math.max(1,1+Math.floor((stats.deliveries+stats.drives+stats.trades+stats.patrols)/3))}</span><span className="text-xs text-slate-300">{((stats.deliveries+stats.drives+stats.trades+stats.patrols)%3)} / 3 job milestones</span></div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-300" style={{width:(((stats.deliveries+stats.drives+stats.trades+stats.patrols)%3)/3*100)+"%"}} /></div>
+        <div className="mt-3 space-y-2">
+          {([{label:"Health",value:needs.health,color:"#fb7185"},{label:"Hunger",value:needs.hunger,color:"#fbbf24"},{label:"Energy",value:needs.energy,color:"#60a5fa"}] as const).map(n=><div key={n.label}><div className="mb-1 flex justify-between text-xs"><span className="text-slate-100">{n.label}</span><span className="text-slate-200">{Math.round(n.value)}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full" style={{width:Math.max(0,Math.min(100,n.value))+"%",background:n.color}} /></div></div>)}
+        </div>
+      </div>
+      <div className="rounded-xl border border-amber-300/20 bg-amber-300/[0.04] p-3">
+        <div className="mb-2 text-sm font-bold text-white">Achievements</div>
+        <div className="grid grid-cols-2 gap-2">
+          {([{title:"First Hustle",done:stats.deliveries+stats.drives+stats.trades+stats.patrols>0,desc:"Complete your first job"},{title:"₦100K Club",done:cash+bank>=100000,desc:"Hold ₦100,000 total"},{title:"First Vehicle",done:owned.length>0,desc:"Own a vehicle"},{title:"City Explorer",done:useGame.getState().unlockedDistricts.length>=3,desc:"Unlock three districts"}] as const).map(a=><div key={a.title} className={`rounded-xl border p-2 ${a.done?"border-emerald-300/25 bg-emerald-400/10":"border-white/10 bg-black/10"}`}><div className={`text-xs font-bold ${a.done?"text-emerald-200":"text-slate-200"}`}>{a.done?"✓ ":"🔒 "}{a.title}</div><div className="mt-1 text-xs text-slate-300">{a.desc}</div></div>)}
         </div>
       </div>
       <div className="rounded-xl border border-hud-line bg-white/[0.035] p-3">
