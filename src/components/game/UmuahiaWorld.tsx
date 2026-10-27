@@ -155,9 +155,9 @@ export default function UmuahiaWorld() {
       <planeGeometry args={[WORLD, 10]} /><meshStandardMaterial color="#287fa1" roughness={0.28} metalness={0.12} />
     </mesh>
     <mesh position={[0, 0.35, -169]} receiveShadow>
-      <boxGeometry args={[26, 0.55, 12]} /><meshStandardMaterial color="#a7aaa7" roughness={0.8} />
+      <boxGeometry args={[12, 0.55, 26]} /><meshStandardMaterial color="#a7aaa7" roughness={0.8} />
     </mesh>
-    {[-11, 11].map((x) => <mesh key={x} position={[x, -0.8, -169]}><boxGeometry args={[0.7, 2.4, 10]} /><meshStandardMaterial color="#727c7e" /></mesh>)}
+    {[-5.5, 5.5].map((x) => <mesh key={x} position={[x, -0.8, -169]}><boxGeometry args={[0.7, 2.4, 10]} /><meshStandardMaterial color="#727c7e" /></mesh>)}
     <Html position={[0, 2, -158]} center distanceFactor={30}><div className="rounded bg-[#0e2c37]/90 px-3 py-1 text-[10px] font-black tracking-widest text-cyan-100">RIVER CROSSING</div></Html>
     <Roundabout />
     {BUILDINGS.map((b, i) => <UmuahiaBuilding key={(b.label ?? "building") + i} b={b} />)}
