@@ -131,6 +131,97 @@ function InteriorLife() {
   </group>;
 }
 
+
+/** Distinct residential zones: a guarded Lekki estate and a lived-in mainland village edge. */
+function EstateAndVillageDetail() {
+  const estateX = 119;
+  const estateZ = 103;
+  const wall = "#d7d0bd";
+  return <group>
+    {/* Gated estate perimeter, gatehouse and boom barrier. */}
+    <group position={[estateX, 0, estateZ]}>
+      {[-18, 18].map((x) => <group key={"sidewall" + x} position={[x, 0, 0]}>
+        <mesh position={[0, 1.15, 0]} castShadow><boxGeometry args={[0.65, 2.3, 29]} /><meshStandardMaterial color={wall} roughness={0.9} /></mesh>
+        {[-12, -6, 0, 6, 12].map((z) => <mesh key={z} position={[0, 2.38, z]}><boxGeometry args={[0.85, 0.18, 0.8]} /><meshStandardMaterial color="#b9b3a5" /></mesh>)}
+      </group>)}
+      {[-13, 13].map((z) => <mesh key={"backwall" + z} position={[0, 1.15, z]} castShadow><boxGeometry args={[36, 2.3, 0.55]} /><meshStandardMaterial color={wall} roughness={0.9} /></mesh>)}
+      {/* Entrance pillars and illuminated estate nameboard */}
+      {[-5.2, 5.2].map((x) => <group key={x} position={[x, 0, 14.5]}>
+        <mesh position={[0, 2, 0]} castShadow><boxGeometry args={[1.1, 4, 1.1]} /><meshStandardMaterial color="#e4d9c2" roughness={0.65} /></mesh>
+        <mesh position={[0, 4.12, 0]}><boxGeometry args={[1.3, 0.2, 1.3]} /><meshStandardMaterial color="#c7a44f" metalness={0.65} roughness={0.3} /></mesh>
+        <mesh position={[0, 4.35, 0]}><sphereGeometry args={[0.12, 10, 8]} /><meshStandardMaterial color="#ffe7a0" emissive="#e8b84b" emissiveIntensity={0.7} /></mesh>
+      </group>)}
+      <mesh position={[0, 3.35, 14.2]} castShadow><boxGeometry args={[8.5, 0.72, 0.45]} /><meshStandardMaterial color="#173d34" roughness={0.5} /></mesh>
+      <Html position={[0, 3.36, 14.48]} center distanceFactor={22}><div className="whitespace-nowrap border border-amber-300/60 bg-[#10271f]/95 px-3 py-1 text-[10px] font-black tracking-[0.16em] text-amber-100">LEKKI GARDENS ESTATE</div></Html>
+      {/* Guard booth */}
+      <group position={[8, 0, 16]}>
+        <mesh position={[0, 1.3, 0]} castShadow><boxGeometry args={[3.2, 2.6, 2.8]} /><meshStandardMaterial color="#e7e0d1" roughness={0.88} /></mesh>
+        <mesh position={[0, 2.68, 0]}><boxGeometry args={[3.4, 0.16, 3]} /><meshStandardMaterial color="#173d34" /></mesh>
+        <mesh position={[0, 1.55, 1.43]}><boxGeometry args={[1.6, 0.85, 0.06]} /><meshStandardMaterial color="#4c7783" metalness={0.25} roughness={0.25} /></mesh>
+        <Html position={[0, 2.15, 1.55]} center distanceFactor={18}><div className="rounded bg-slate-950/90 px-2 py-1 text-[8px] font-bold text-white">SECURITY / VISITORS</div></Html>
+      </group>
+      {/* Sliding gate and boom arm */}
+      {[-3.7, -2.6, -1.5, -0.4, 0.7, 1.8, 2.9, 4].map((x) => <mesh key={"gate" + x} position={[x, 1.35, 14.5]}><boxGeometry args={[0.09, 2.25, 0.16]} /><meshStandardMaterial color="#202c2a" metalness={0.45} roughness={0.35} /></mesh>)}
+      <mesh position={[0, 1.55, 18.4]} rotation-z={-0.06}><boxGeometry args={[7.5, 0.16, 0.16]} /><meshStandardMaterial color="#f0e9d9" /></mesh>
+      {[-3, -1, 1, 3].map((x) => <mesh key={"barstripe" + x} position={[x, 1.55, 18.32]} rotation-z={-0.06}><boxGeometry args={[0.65, 0.17, 0.18]} /><meshStandardMaterial color="#c83c32" /></mesh>)}
+      {/* Landscaped estate courtyard */}
+      {[-11, 11].map((x) => [-7, 0, 7].map((z) => <group key={x + ":" + z} position={[x, 0, z]}>
+        <mesh position={[0, 0.22, 0]}><cylinderGeometry args={[1.1, 1.2, 0.44, 10]} /><meshStandardMaterial color="#526b43" roughness={1} /></mesh>
+        <mesh position={[0, 1.15, 0]} castShadow><cylinderGeometry args={[0.12, 0.2, 1.9, 7]} /><meshStandardMaterial color="#6d5035" /></mesh>
+        <mesh position={[0, 2.2, 0]} castShadow><sphereGeometry args={[1.05, 8, 7]} /><meshStandardMaterial color="#39764a" roughness={1} /></mesh>
+      </group>))}
+      <mesh position={[0, 0.04, -1]} receiveShadow><boxGeometry args={[7.5, 0.08, 25]} /><meshStandardMaterial color="#a5a094" roughness={1} /></mesh>
+    </group>
+
+    {/* Mainland village compound: family homes, water tank, well and courtyard. */}
+    <group position={[94, 0, 91]}>
+      <mesh position={[0, 0.025, 0]} receiveShadow><boxGeometry args={[34, 0.05, 25]} /><meshStandardMaterial color="#b29b78" roughness={1} /></mesh>
+      {[-10, 0, 10].map((x, i) => <group key={"compound" + x} position={[x, 0, i === 1 ? -5 : 4]}>
+        <mesh position={[0, 1.35, 0]} castShadow receiveShadow><boxGeometry args={[7, 2.7, 6]} /><meshStandardMaterial color={["#c6a47d", "#d4bd98", "#b99168"][i] ?? "#c6a47d"} roughness={0.98} /></mesh>
+        <mesh position={[0, 2.95, 0]} rotation-y={Math.PI / 4} castShadow><coneGeometry args={[5.1, 1.45, 4]} /><meshStandardMaterial color={i === 1 ? "#5f6a58" : "#765039"} roughness={1} /></mesh>
+        <mesh position={[0, 0.92, 3.06]}><boxGeometry args={[1.05, 1.75, 0.08]} /><meshStandardMaterial color="#473225" roughness={0.9} /></mesh>
+        <mesh position={[-1.75, 1.55, 3.06]}><boxGeometry args={[1.1, 0.75, 0.08]} /><meshStandardMaterial color="#6b9aaa" roughness={0.4} /></mesh>
+      </group>)}
+      {/* Low compound wall with an open entrance */}
+      {[-15, 15].map((x) => <mesh key={"compoundwall" + x} position={[x, 0.6, 0]}><boxGeometry args={[0.45, 1.2, 23]} /><meshStandardMaterial color="#cbb99b" roughness={1} /></mesh>)}
+      {[-10, -5, 0, 5, 10].map((z) => <mesh key={"frontwall" + z} position={[0, 0.6, 12]}><boxGeometry args={[z === 0 ? 3 : 5, 1.2, 0.4]} /><meshStandardMaterial color="#cbb99b" roughness={1} /></mesh>)}
+      {/* Borehole stand and elevated plastic water tank */}
+      <mesh position={[12, 2.7, -7]} castShadow><cylinderGeometry args={[0.12, 0.12, 5.4, 7]} /><meshStandardMaterial color="#575c5c" /></mesh>
+      <mesh position={[12, 5.5, -7]} castShadow><cylinderGeometry args={[1.15, 1.15, 1.5, 12]} /><meshStandardMaterial color="#2c6882" roughness={0.5} /></mesh>
+      <mesh position={[4, 0.6, -8]}><cylinderGeometry args={[0.75, 0.85, 1.2, 10]} /><meshStandardMaterial color="#8d8b7a" roughness={1} /></mesh>
+      <mesh position={[4, 1.25, -8]}><torusGeometry args={[0.72, 0.08, 6, 14]} /><meshStandardMaterial color="#5c5b50" /></mesh>
+      <Html position={[0, 5.5, 10]} center distanceFactor={30}><div className="rounded border border-amber-200/30 bg-[#241b12]/90 px-3 py-1 text-[9px] font-black tracking-widest text-amber-100">UMUDIKE OUTSKIRTS · FAMILY COMPOUNDS</div></Html>
+    </group>
+
+    {/* More street-side commerce, drainage and signboards along the mainland and waterfront. */}
+    {[
+      { x: -165, z: -58, c: "#d6a738", t: "SPARE PARTS" },
+      { x: -155, z: -58, c: "#3c855c", t: "MAMA PUT" },
+      { x: -145, z: -58, c: "#c34a3b", t: "PHONE REPAIR" },
+      { x: -162, z: 43, c: "#3979ad", t: "FISH MARKET" },
+      { x: -151, z: 43, c: "#d6a738", t: "SEAFOOD" },
+      { x: -140, z: 43, c: "#b74637", t: "COLD DRINKS" },
+    ].map((s, i) => <group key={"districtstall" + i} position={[s.x, 0, s.z]}>
+      <mesh position={[0, 1.15, 0]} castShadow><boxGeometry args={[3.3, 2.3, 2.6]} /><meshStandardMaterial color="#987451" roughness={0.96} /></mesh>
+      <mesh position={[0, 2.42, 0]} castShadow><coneGeometry args={[2.35, 0.5, 4]} /><meshStandardMaterial color={s.c} side={THREE.DoubleSide} roughness={0.98} /></mesh>
+      <mesh position={[0, 2.08, 1.33]}><boxGeometry args={[2.7, 0.34, 0.08]} /><meshStandardMaterial color={s.c} /></mesh>
+      <Html position={[0, 2.12, 1.42]} center distanceFactor={24}><div className="whitespace-nowrap bg-[#171b18]/90 px-1.5 py-0.5 text-[8px] font-black text-white">{s.t}</div></Html>
+    </group>)}
+    {[-169, -137, -105, 105, 137, 169].map((x) => <group key={"streetlight" + x} position={[x, 0, 5]}>
+      <mesh position={[0, 3.2, 0]}><cylinderGeometry args={[0.07, 0.11, 6.4, 6]} /><meshStandardMaterial color="#555c60" /></mesh>
+      <mesh position={[0.6, 6.1, 0]} rotation-z={-0.2}><boxGeometry args={[1.25, 0.1, 0.1]} /><meshStandardMaterial color="#555c60" /></mesh>
+      <mesh position={[1.1, 6, 0]}><boxGeometry args={[0.35, 0.14, 0.25]} /><meshStandardMaterial color="#f7e6b5" emissive="#f7d06b" emissiveIntensity={0.25} /></mesh>
+    </group>)}
+    {/* Large roadside billboard for the city skyline and destination districts. */}
+    <group position={[112, 0, 56]}>
+      <mesh position={[0, 5.6, 0]}><boxGeometry args={[0.22, 11.2, 0.25]} /><meshStandardMaterial color="#4e5558" metalness={0.35} /></mesh>
+      <mesh position={[0, 8.2, 0.3]} castShadow><boxGeometry args={[12, 4.2, 0.35]} /><meshStandardMaterial color="#102e32" roughness={0.7} /></mesh>
+      <mesh position={[0, 8.2, 0.5]}><boxGeometry args={[11.5, 3.7, 0.06]} /><meshStandardMaterial color="#d6ae48" roughness={0.65} /></mesh>
+      <Html position={[0, 8.2, 0.56]} center distanceFactor={28}><div className="text-center text-[12px] font-black tracking-widest text-[#17251f]">LAGOS LIFE RP<br/><span className="text-[9px] tracking-normal">LIVE · WORK · OWN YOUR CITY</span></div></Html>
+    </group>
+  </group>;
+}
+
 export default function LivingCity() {
   const vendors = [
     { x: -62, z: 20, color: "#dc493b", label: "SUYA / GRILLS" },
@@ -201,6 +292,7 @@ export default function LivingCity() {
       <Html position={[-145, 5.8, 133]} center distanceFactor={38}><div className="rounded border border-cyan-200/30 bg-[#102326]/90 px-3 py-1.5 text-[10px] font-black tracking-widest text-cyan-100">MAKOKO WATERFRONT COMMUNITY</div></Html>
     </group>
 
+    <EstateAndVillageDetail />
     <InteriorLife />
   </group>;
 }
