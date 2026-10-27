@@ -954,12 +954,14 @@ export default function GameWorld() {
     const alpha = 1 - Math.exp(-5 * dt);
     if (st.stadiumMode) {
       const yaw = g.playerYaw + g.camYaw;
-      camera.position.lerp(new THREE.Vector3(g.playerPos.x, 1.62, g.playerPos.z), alpha);
-      camLook.current.lerp(new THREE.Vector3(
+      _ideal.set(g.playerPos.x, 1.62, g.playerPos.z);
+      camera.position.lerp(_ideal, alpha);
+      _target.set(
         g.playerPos.x + Math.sin(yaw) * 60 * Math.cos(g.camPitch),
         1.62 - Math.sin(g.camPitch) * 60,
         g.playerPos.z + Math.cos(yaw) * 60 * Math.cos(g.camPitch)
-      ), alpha);
+      );
+      camLook.current.lerp(_target, alpha);
       camera.lookAt(camLook.current);
       const targetFov = THREE.MathUtils.clamp(42 + g.camDistance * 0.34, 44, 76);
       camera.fov += (targetFov - camera.fov) * Math.min(1, 5 * dt);
