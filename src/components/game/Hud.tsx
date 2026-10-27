@@ -76,21 +76,23 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
     ctx.clearRect(0, 0, S, S);
     ctx.save();
     ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI * 2); ctx.clip();
-    ctx.fillStyle = "#13242a"; ctx.fillRect(0, 0, S, S);
-    ctx.strokeStyle = "#d1b95c"; ctx.lineWidth = 5;
-    for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
-    for (const z of ROADS_Z) { const py = sy(z); ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(S, py); ctx.stroke(); }
-    ctx.strokeStyle = "#a9b9b2"; ctx.lineWidth = 1;
-    for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px - ROAD_HALF, 0); ctx.lineTo(px - ROAD_HALF, S); ctx.moveTo(px + ROAD_HALF, 0); ctx.lineTo(px + ROAD_HALF, S); ctx.stroke(); }
-    for (const z of ROADS_Z) { const py = sy(z); ctx.beginPath(); ctx.moveTo(0, py - ROAD_HALF); ctx.lineTo(S, py - ROAD_HALF); ctx.moveTo(0, py + ROAD_HALF); ctx.lineTo(S, py + ROAD_HALF); ctx.stroke(); }
-    for (const p of POIS) { const x = sx(p.x), y = sy(p.z); if (Math.hypot(x - center, y - center) > radius - 3) continue; ctx.fillStyle = p.kind === "atm" ? "#5be1a3" : p.kind === "police" ? "#75baff" : "#f6d36b"; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = city === "newmap" ? "#668553" : "#13242a"; ctx.fillRect(0, 0, S, S);
+    if (city !== "newmap") {
+      ctx.strokeStyle = "#d1b95c"; ctx.lineWidth = 5;
+      for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
+      for (const z of ROADS_Z) { const py = sy(z); ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(S, py); ctx.stroke(); }
+      ctx.strokeStyle = "#a9b9b2"; ctx.lineWidth = 1;
+      for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px - ROAD_HALF, 0); ctx.lineTo(px - ROAD_HALF, S); ctx.moveTo(px + ROAD_HALF, 0); ctx.lineTo(px + ROAD_HALF, S); ctx.stroke(); }
+      for (const z of ROADS_Z) { const py = sy(z); ctx.beginPath(); ctx.moveTo(0, py - ROAD_HALF); ctx.lineTo(S, py - ROAD_HALF); ctx.moveTo(0, py + ROAD_HALF); ctx.lineTo(S, py + ROAD_HALF); ctx.stroke(); }
+      for (const p of POIS) { const x = sx(p.x), y = sy(p.z); if (Math.hypot(x - center, y - center) > radius - 3) continue; ctx.fillStyle = p.kind === "atm" ? "#5be1a3" : p.kind === "police" ? "#75baff" : "#f6d36b"; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    }
     if (waypoint) { const tx = sx(waypoint.x), ty = sy(waypoint.z); ctx.strokeStyle = "#39ef9b"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(center, center); ctx.lineTo(tx, ty); ctx.stroke(); ctx.fillStyle = "#39ef9b"; ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI * 2); ctx.fill(); }
     ctx.save(); ctx.translate(center, center); ctx.rotate(g.playerYaw); ctx.fillStyle = "#72d3ff"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-5, 5); ctx.lineTo(0, 2); ctx.lineTo(5, 5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
     ctx.restore();
   }, [waypoint, tick]);
   return <button type="button" onClick={onOpen} aria-label="Open full city map" className="pointer-events-auto absolute right-3 top-[7.8rem] rounded-full border border-amber-200/35 bg-[#07131b]/90 p-1 shadow-lg active:scale-95">
     <canvas ref={canvasRef} width={128} height={128} className="h-[104px] w-[104px] rounded-full sm:h-[118px] sm:w-[118px]" />
-    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">{city === "umuahia" ? "UMUAHIA · MAP" : "LAGOS · MAP"}</span>
+    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">{city === "newmap" ? "NEW MAP" : city === "umuahia" ? "UMUAHIA · MAP" : "LAGOS · MAP"}</span>
   </button>;
 }
 
@@ -179,12 +181,12 @@ export default function Hud() {
       <div className="pointer-events-auto absolute left-1/2 top-3 -translate-x-1/2">
         <button
           type="button"
-          onClick={() => setCity(city === "lagos" ? "umuahia" : "lagos")}
+          onClick={() => setCity(city === "newmap" ? "lagos" : city === "lagos" ? "umuahia" : "newmap")}
           className="flex items-center gap-2 rounded-xl border border-amber-200/40 bg-[#10231f]/95 px-3 py-2 text-[10px] font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95"
           title="Switch playable city"
         >
           <MapPin className="h-3.5 w-3.5" />
-          {city === "lagos" ? "ENTER UMUAHIA" : "RETURN TO LAGOS"}
+          {city === "newmap" ? "ENTER LAGOS" : city === "lagos" ? "ENTER UMUAHIA" : "RETURN TO NEW MAP"}
         </button>
       </div>
 
