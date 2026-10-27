@@ -36,6 +36,13 @@ export const g = {
   sirenOn: false,
   vehicles: new Map<string, VehicleRuntime>(),
   sprint: false,
+  adminInvisible: false,
+  adminLevitating: false,
+  adminFlying: false,
+  adminFrozen: false,
+  adminFlySpeed: 28,
+  adminFlyHeight: 0,
+  adminSpawnedNpcs: [] as { id: string; x: number; z: number; name: string }[],
 };
 
 export const DAY_SECONDS = 600; // 10 real minutes = one in-game day
