@@ -464,6 +464,29 @@ function ApartmentInterior() {
           <Html position={[0, 2.5, -3.8]} center distanceFactor={13}><div className="rounded-md border border-orange-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-orange-100">MARKET STALLS · GOODS & SUPPLIES</div></Html>
         </group>
       )}
+      {interiorLabel.toLowerCase().includes("church") && (
+        <group>
+          {[-2.8, 0, 2.8].map((x) => [-2.6, -0.8, 1].map((z) => <mesh key={x + ":" + z} position={[x, 0.42, z]} castShadow><boxGeometry args={[2.1, 0.72, 0.42]} /><meshStandardMaterial color="#76553a" roughness={0.9} /></mesh>))}
+          <mesh position={[0, 1.9, -4.72]}><boxGeometry args={[0.12, 1.5, 0.08]} /><meshStandardMaterial color="#eab308" metalness={0.2} /></mesh>
+          <mesh position={[0, 2.05, -4.72]}><boxGeometry args={[0.8, 0.12, 0.08]} /><meshStandardMaterial color="#eab308" metalness={0.2} /></mesh>
+          <Html position={[0, 2.65, -3.8]} center distanceFactor={13}><div className="rounded-md border border-amber-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-amber-100">WORSHIP HALL · PEWS</div></Html>
+        </group>
+      )}
+      {interiorLabel.toLowerCase().includes("mosque") && (
+        <group>
+          {[-2.6, -0.9, 0.9, 2.6].map((x) => [-2.7, -0.9, 0.9].map((z) => <mesh key={x + ":" + z} position={[x, 0.12, z]}><boxGeometry args={[1.25, 0.08, 1.25]} /><meshStandardMaterial color="#2c765e" roughness={0.9} /></mesh>))}
+          <mesh position={[0, 1.4, -4.7]}><cylinderGeometry args={[0.65, 0.8, 1.6, 12]} /><meshStandardMaterial color="#d8b65c" metalness={0.3} roughness={0.6} /></mesh>
+          <Html position={[0, 2.65, -3.8]} center distanceFactor={13}><div className="rounded-md border border-emerald-300/40 bg-emerald-950/90 px-3 py-1 text-[10px] font-bold text-emerald-100">PRAYER HALL · PRAYER MATS</div></Html>
+        </group>
+      )}
+      {interiorLabel.toLowerCase().includes("polling") && (
+        <group>
+          <mesh position={[0, 0.65, 1.4]} castShadow><boxGeometry args={[4.5, 1.1, 0.85]} /><meshStandardMaterial color="#d5c7a8" roughness={0.9} /></mesh>
+          <mesh position={[2.3, 0.45, 0.9]} castShadow><boxGeometry args={[0.65, 0.8, 0.65]} /><meshStandardMaterial color="#dce2e5" roughness={0.8} /></mesh>
+          <mesh position={[2.3, 0.88, 0.9]}><boxGeometry args={[0.2, 0.025, 0.08]} /><meshStandardMaterial color="#20272b" /></mesh>
+          <Html position={[0, 2.65, 1.2]} center distanceFactor={13}><div className="rounded-md border border-blue-300/40 bg-blue-950/90 px-3 py-1 text-[10px] font-bold text-blue-100">INEC · VOTER REGISTRATION</div></Html>
+        </group>
+      )}
     </group>
   );
 }
