@@ -632,19 +632,22 @@ function TerrainDetails() {
   const patchRef=useRef<THREE.InstancedMesh>(null);
   const farmRef=useRef<THREE.InstancedMesh>(null);
   const pitchRef=useRef<THREE.InstancedMesh>(null);
+  const hillRef=useRef<THREE.InstancedMesh>(null);
   const patches=useMemo(()=>Array.from({length:42},(_,i)=>({x:-155+(i%7)*43,z:-135+Math.floor(i/7)*43,w:12+(i%3)*3,d:10+(i%4)*2})),[]);
   useEffect(()=>{
     const dummy=new THREE.Object3D();
-    const patch=patchRef.current,farm=farmRef.current,pitch=pitchRef.current;
+    const patch=patchRef.current,farm=farmRef.current,pitch=pitchRef.current,hills=hillRef.current;
     if(patch) patches.forEach((p,i)=>{dummy.position.set(p.x,-0.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%5)*0.12;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);if(i%2===0)patch.setColorAt(i,new THREE.Color("#718657"));else patch.setColorAt(i,new THREE.Color("#92975f"));});
     if(farm) for(let i=0;i<12;i++){dummy.position.set(-145+(i%4)*13,0.01,70+Math.floor(i/4)*12);dummy.scale.set(10,0.1,8);dummy.rotation.y=0;dummy.updateMatrix();farm.setMatrixAt(i,dummy.matrix);}
     if(pitch) for(let i=0;i<2;i++){dummy.position.set(-112+i*26,0.025,34);dummy.scale.set(20,0.1,12);dummy.rotation.y=0;dummy.updateMatrix();pitch.setMatrixAt(i,dummy.matrix);}
-    for(const mesh of [patch,farm,pitch])if(mesh){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
+    if(hills) for(let i=0;i<18;i++){const a=i*2.399963,r=122+(i%4)*10;dummy.position.set(Math.cos(a)*r,.42,Math.sin(a)*r);dummy.scale.set(11+(i%3)*4,1.2+(i%2)*.7,8+(i%4)*2);dummy.rotation.y=a;dummy.updateMatrix();hills.setMatrixAt(i,dummy.matrix);if(i%2===0)hills.setColorAt(i,new THREE.Color("#7d8e58"));else hills.setColorAt(i,new THREE.Color("#969960"));}
+    for(const mesh of [patch,farm,pitch,hills])if(mesh){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
   },[patches]);
   return <>
     <instancedMesh ref={patchRef} args={[undefined,undefined,patches.length]} receiveShadow><boxGeometry args={[1,0.03,1]} /><meshStandardMaterial color="#89935e" roughness={1} /></instancedMesh>
     <instancedMesh ref={farmRef} args={[undefined,undefined,12]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#8a7048" roughness={1} /></instancedMesh>
     <instancedMesh ref={pitchRef} args={[undefined,undefined,2]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#3a8549" roughness={1} /></instancedMesh>
+    <instancedMesh ref={hillRef} args={[undefined,undefined,18]} receiveShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial color="#89935e" roughness={1}/></instancedMesh>
   </>;
 }
 
@@ -831,6 +834,9 @@ function CityEcosystem() {
     <CityBirdsAndFlags />
     <RoadFurniture />
     <DrainCovers />
+    <Html position={[-143,12,-46]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>INDUSTRIAL DISTRICT</div></Html>
+    <Html position={[78,12,10]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
+    <Html position={[-112,8,84]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
