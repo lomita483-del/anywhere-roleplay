@@ -29,6 +29,8 @@ export interface ActiveJob {
   payout: number;
   title: string;
   hint: string;
+  startedAt?: number;
+  timeLimitSeconds?: number;
 }
 
 export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | "fuel" | "vendor" | null;
@@ -425,7 +427,7 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
 
-  acceptJob: (type) => { const job = makeJob(type); const target = job.targets[0]; set({ activeJob: job, phoneOpen: false, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · pickup", kind: "job" } : null }); get().save(); },
+  acceptJob: (type) => { const job = { ...makeJob(type), startedAt: Date.now(), timeLimitSeconds: 8 * 60 }; const target = job.targets[0]; set({ activeJob: job, phoneOpen: false, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · pickup", kind: "job" } : null }); get().save(); },
   advanceJob: () => {
     const job = get().activeJob;
     if (!job) return;
