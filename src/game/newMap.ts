@@ -68,7 +68,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-140,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"south"},
  {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
  {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
- {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:138,z:108,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
+ {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:138,z:110,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
  {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:82,z:132,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"south"},
  {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:138,z:156,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-132,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
@@ -89,7 +89,7 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
 export const NEW_MAP_BOUNDS = { minX: -180, maxX: 180, minZ: -180, maxZ: 180 };
 
 export interface NewMapTree {x:number;z:number;type:"round"|"palm";h:number;park?:string}
-export interface NewMapStall {x:number;z:number;w:number;d:number;id:string;color:string}
+export interface NewMapStall {x:number;z:number;w:number;d:number;id:string;color:string}\nexport interface NewMapHill {x:number;z:number;w:number;d:number;h:number}
 const treeCandidates: NewMapTree[] = [
  ...Array.from({length:14},(_,i)=>({x:-137+(i%7)*7,z:119+Math.floor(i/7)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.4,park:"lake-park"})),
  ...Array.from({length:12},(_,i)=>({x:104+(i%6)*9,z:112+Math.floor(i/6)*8,type:(i%3===0?"palm":"round") as "palm"|"round",h:2.2,park:"port"})),
@@ -98,7 +98,7 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
+export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-151,z:151,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];\nexport const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,3)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-48+(i%6)*5.2,z:-121+Math.floor(i/6)*5.2,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
 export function validateNewMapLayout() {
@@ -108,11 +108,11 @@ export function validateNewMapLayout() {
   if(Math.hypot(a.x,a.z)<28)errors.push(`building ${a.id} overlaps stadium plaza`);
   for(const e of NEW_MAP_ROAD_GRAPH.edges)for(let j=1;j<e.points.length;j++){
    const dist=pointSegmentDistance(a.x,a.z,e.points[j-1]!,e.points[j]!);
-   if(dist < e.width/2+Math.min(a.w,a.d)/2+3) { errors.push(`building ${a.id} too close to road ${e.id}`); break; }
+   if(dist < e.width/2+Math.max(a.w,a.d)/2+3) { errors.push(`building ${a.id} too close to road ${e.id}`); break; }
   }
   for(let j=i+1;j<NEW_MAP_BUILDINGS.length;j++){const b=NEW_MAP_BUILDINGS[j]!;if(Math.abs(a.x-b.x)<(a.w+b.w)/2+1&&Math.abs(a.z-b.z)<(a.d+b.d)/2+1)errors.push(`building collision: ${a.id} / ${b.id}`);}
  }
- for(const s of NEW_MAP_MARKET_STALLS){if(newMapPointOnRoad(s.x,s.z,s.d/2+1))errors.push(`stall ${s.id} intersects road corridor`);}
- for(const t of NEW_MAP_TREES){if(newMapPointOnRoad(t.x,t.z,3))errors.push(`tree intersects road corridor at ${t.x},${t.z}`);if(NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2))errors.push(`tree intersects building at ${t.x},${t.z}`);}
+ for(let i=0;i<NEW_MAP_MARKET_STALLS.length;i++){const s=NEW_MAP_MARKET_STALLS[i]!;if(newMapPointOnRoad(s.x,s.z,Math.max(s.w,s.d)/2+1))errors.push(`stall ${s.id} intersects road corridor`);if(Math.hypot(s.x,s.z)<28)errors.push(`stall ${s.id} overlaps stadium plaza`);for(let j=i+1;j<NEW_MAP_MARKET_STALLS.length;j++){const q=NEW_MAP_MARKET_STALLS[j]!;if(Math.abs(s.x-q.x)<(s.w+q.w)/2&&Math.abs(s.z-q.z)<(s.d+q.d)/2)errors.push(`stall collision: ${s.id} / ${q.id}`);}}
+ for(let i=0;i<NEW_MAP_TREES.length;i++){const t=NEW_MAP_TREES[i]!;if(newMapPointOnRoad(t.x,t.z,3))errors.push(`tree intersects road corridor at ${t.x},${t.z}`);if(Math.hypot(t.x,t.z)<31)errors.push(`tree overlaps stadium plaza at ${t.x},${t.z}`);if(NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2))errors.push(`tree intersects building at ${t.x},${t.z}`);if(NEW_MAP_MARKET_STALLS.some(s=>Math.abs(t.x-s.x)<s.w/2+1&&Math.abs(t.z-s.z)<s.d/2+1))errors.push(`tree intersects market stall at ${t.x},${t.z}`);for(let j=i+1;j<NEW_MAP_TREES.length;j++){const q=NEW_MAP_TREES[j]!;if(Math.hypot(t.x-q.x,t.z-q.z)<3.5)errors.push(`tree collision at ${t.x},${t.z} / ${q.x},${q.z}`);}}\n for(const h of NEW_MAP_HILLS){if(newMapPointOnRoad(h.x,h.z,Math.max(h.w,h.d)/2+1))errors.push(`hill intersects road corridor at ${h.x},${h.z}`);if(Math.hypot(h.x,h.z)<31)errors.push(`hill overlaps stadium plaza at ${h.x},${h.z}`);if(NEW_MAP_BUILDINGS.some(b=>Math.abs(h.x-b.x)<b.w/2+h.w/2&&Math.abs(h.z-b.z)<b.d/2+h.d/2))errors.push(`hill intersects building at ${h.x},${h.z}`);if(NEW_MAP_TREES.some(t=>Math.abs(h.x-t.x)<h.w/2+2&&Math.abs(h.z-t.z)<h.d/2+2))errors.push(`hill intersects tree at ${h.x},${h.z}`);}
  return errors;
 }
