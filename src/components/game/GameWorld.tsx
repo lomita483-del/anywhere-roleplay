@@ -1037,16 +1037,25 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   if (s2.interior) { st.setPrompt(null); return; }
 
   let nearest: (typeof BUILDINGS)[number] | null = null;
-  let nearestDistance = 4.5;
+  let nearestDistance = 3.0;
+  const entranceSide = (kind: string | undefined) => {
+    if (kind === "bank") return { dx: 1, dz: 0 };
+    if (kind === "police") return { dx: 0, dz: -1 };
+    if (kind === "dealership" || kind === "market" || kind === "apartments" || kind === "depot" || kind === "clothing" || kind === "airport" || kind === "civic") return { dx: 0, dz: -1 };
+    return null;
+  };
   for (const building of BUILDINGS) {
-    if (building.kind === "apartments") continue;
-    const dx = Math.max(Math.abs(x - building.x) - building.w / 2, 0);
-    const dz = Math.max(Math.abs(z - building.z) - building.d / 2, 0);
-    const distance = Math.hypot(dx, dz);
+    if (!building.label || building.kind === "apartments") continue;
+    const side = entranceSide(building.kind);
+    if (!side) continue;
+    // The prompt is measured from the actual marked doorway, not from the building footprint.
+    const doorX = building.x + side.dx * (building.w / 2 + 0.72);
+    const doorZ = building.z + side.dz * (building.d / 2 + 0.72);
+    const distance = Math.hypot(x - doorX, z - doorZ);
     if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
   }
   if (nearest) {
-    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
+    st.setPrompt({ kind: "building", label: "Enter " + nearest.label, buildingLabel: nearest.label });
     return;
   }
 
