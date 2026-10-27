@@ -576,6 +576,118 @@ function CityTraffic() {
   </group>)}</>;
 }
 
+
+function TerrainDetails() {
+  const patchRef=useRef<THREE.InstancedMesh>(null);
+  const farmRef=useRef<THREE.InstancedMesh>(null);
+  const pitchRef=useRef<THREE.InstancedMesh>(null);
+  const patches=useMemo(()=>Array.from({length:42},(_,i)=>({x:-155+(i%7)*43,z:-135+Math.floor(i/7)*43,w:12+(i%3)*3,d:10+(i%4)*2})),[]);
+  useEffect(()=>{
+    const dummy=new THREE.Object3D();
+    const patch=patchRef.current,farm=farmRef.current,pitch=pitchRef.current;
+    if(patch) patches.forEach((p,i)=>{dummy.position.set(p.x,-0.01,p.z);dummy.scale.set(p.w,1,p.d);dummy.rotation.y=(i%5)*0.12;dummy.updateMatrix();patch.setMatrixAt(i,dummy.matrix);if(i%2===0)patch.setColorAt(i,new THREE.Color("#718657"));else patch.setColorAt(i,new THREE.Color("#92975f"));});
+    if(farm) for(let i=0;i<12;i++){dummy.position.set(-145+(i%4)*13,0.01,70+Math.floor(i/4)*12);dummy.scale.set(10,0.1,8);dummy.rotation.y=0;dummy.updateMatrix();farm.setMatrixAt(i,dummy.matrix);}
+    if(pitch) for(let i=0;i<2;i++){dummy.position.set(-112+i*26,0.025,34);dummy.scale.set(20,0.1,12);dummy.rotation.y=0;dummy.updateMatrix();pitch.setMatrixAt(i,dummy.matrix);}
+    for(const mesh of [patch,farm,pitch])if(mesh){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
+  },[patches]);
+  return <>
+    <instancedMesh ref={patchRef} args={[undefined,undefined,patches.length]} receiveShadow><boxGeometry args={[1,0.03,1]} /><meshStandardMaterial color="#89935e" roughness={1} /></instancedMesh>
+    <instancedMesh ref={farmRef} args={[undefined,undefined,12]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#8a7048" roughness={1} /></instancedMesh>
+    <instancedMesh ref={pitchRef} args={[undefined,undefined,2]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#3a8549" roughness={1} /></instancedMesh>
+  </>;
+}
+
+function MarketStreetLife() {
+  const tables=useRef<THREE.InstancedMesh>(null);
+  const canopies=useRef<THREE.InstancedMesh>(null);
+  const generators=useRef<THREE.InstancedMesh>(null);
+  const umbrellas=useRef<THREE.InstancedMesh>(null);
+  const billboards=useRef<THREE.InstancedMesh>(null);
+  const poles=useRef<THREE.InstancedMesh>(null);
+  const stalls=useMemo(()=>Array.from({length:36},(_,i)=>({x:-59+(i%9)*5.2,z:-82+Math.floor(i/9)*5.2,color:["#d84f3f","#e2b74f","#347c9d","#4e8052","#eee0bf"][i%5]!})),[]);
+  const vendorSpots=useMemo(()=>Array.from({length:14},(_,i)=>({x:-42+(i%7)*13,z:28+Math.floor(i/7)*7})),[]);
+  const poleSpots=useMemo(()=>Array.from({length:18},(_,i)=>({x:-150+(i%9)*34,z:-20+Math.floor(i/9)*44})),[]);
+  useEffect(()=>{
+    const dummy=new THREE.Object3D();
+    const write=(ref:React.RefObject<THREE.InstancedMesh|null>,items:{x:number;z:number;w?:number;h?:number;d?:number;color?:string}[],defaults:[number,number,number])=>{
+      const mesh=ref.current;if(!mesh)return;
+      items.forEach((p,i)=>{dummy.position.set(p.x,p.h??0.8,p.z);dummy.scale.set(p.w??defaults[0],p.h??defaults[1],p.d??defaults[2]);dummy.rotation.set(0,0,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(p.color)mesh.setColorAt(i,new THREE.Color(p.color));});
+      mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();
+    };
+    write(tables,stalls.map(s=>({...s,h:0.7,w:3.8,d:2.2})),[3.8,.7,2.2]);
+    write(canopies,stalls.map(s=>({...s,h:2.5,w:4.3,d:2.7})),[4.3,.25,2.7]);
+    write(generators,vendorSpots.map((p,i)=>({...p,h:.55,w:1.4,d:.9,color:i%2?"#3b4547":"#697071"})),[1.4,.55,.9]);
+    write(umbrellas,vendorSpots.map((p,i)=>({...p,x:p.x+2.5,h:2.5,w:2.5,d:2.5,color:["#db5546","#e1b548","#4387a0","#4d8054"][i%4]!})),[2.5,.25,2.5]);
+    write(billboards,[{x:-82,z:-88,h:8,w:1,d:12,color:"#203d4b"},{x:8,z:-100,h:7,w:1,d:12,color:"#9c3d35"},{x:44,z:20,h:6,w:1,d:10,color:"#2c5145"},{x:110,z:83,h:6,w:1,d:10,color:"#b98a3f"}],[1,8,12]);
+    write(poles,poleSpots.map(p=>({...p,h:5,w:.18,d:.18,color:"#464b49"})),[.18,5,.18]);
+  },[stalls,vendorSpots,poleSpots]);
+  return <>
+    <instancedMesh ref={tables} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#a48b67" roughness={.9}/></instancedMesh>
+    <instancedMesh ref={canopies} args={[undefined,undefined,stalls.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d84f3f" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={generators} args={[undefined,undefined,vendorSpots.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#3b4547" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={umbrellas} args={[undefined,undefined,vendorSpots.length]} castShadow><coneGeometry args={[.5,.22,8]}/><meshStandardMaterial color="#db5546" roughness={.85}/></instancedMesh>
+    <instancedMesh ref={billboards} args={[undefined,undefined,4]} castShadow><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#203d4b" roughness={.8}/></instancedMesh>
+    <instancedMesh ref={poles} args={[undefined,undefined,poleSpots.length]}><cylinderGeometry args={[.5,.5,1,6]}/><meshStandardMaterial color="#464b49" roughness={.7}/></instancedMesh>
+    {poleSpots.slice(0,8).map((p,i)=><mesh key={"wire-"+i} position={[p.x+16,6,p.z+10]} rotation-y={.4}><boxGeometry args={[36,.06,.06]}/><meshBasicMaterial color="#282d30"/></mesh>)}
+    <Html position={[-39,4,-61]} center distanceFactor={32} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#532c18e8",border:"1px solid #e0b85d",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.2}}>CENTRAL MARKET & DEPOT</div></Html>
+  </>;
+}
+
+function CityPedestrians() {
+  const bodies=useRef<THREE.InstancedMesh>(null);
+  const heads=useRef<THREE.InstancedMesh>(null);
+  const quality=useGame(s=>s.graphicsQuality);
+  const count=quality==="low"?20:quality==="high"?80:45;
+  const anchors=useMemo(()=>[[-38,-76],[-28,-72],[-110,32],[-102,35],[0,0],[12,8],[78,10],[98,-40],[-112,118]] as [number,number][],[]);
+  useEffect(()=>{
+    const body=bodies.current,head=heads.current;if(!body||!head)return;
+    for(let i=0;i<count;i++){body.setColorAt(i,new THREE.Color(["#c94f3d","#2c536f","#d6b75e","#e4d7bd","#42764c","#704e82"][i%6]!));head.setColorAt(i,new THREE.Color(["#754a31","#8c5b3d","#9b6947","#5b3a29"][i%4]!));}
+    if(body.instanceColor)body.instanceColor.needsUpdate=true;if(head.instanceColor)head.instanceColor.needsUpdate=true;
+  },[count]);
+  useFrame((state)=>{
+    const body=bodies.current,head=heads.current;if(!body||!head)return;
+    const dummy=new THREE.Object3D(),t=state.clock.elapsedTime;
+    for(let i=0;i<count;i++){
+      const a=anchors[i%anchors.length]!,phase=i*1.73;
+      const x=a[0]+Math.sin(t*.32+phase)*2.8,z=a[1]+Math.cos(t*.27+phase)*2.2;
+      dummy.position.set(x,.78,z);dummy.scale.set(.34,.95,.28);dummy.rotation.y=Math.sin(t*.32+phase)*.7;dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
+      dummy.position.set(x,1.48,z);dummy.scale.set(.23,.23,.23);dummy.rotation.set(0,0,0);dummy.updateMatrix();head.setMatrixAt(i,dummy.matrix);
+    }
+    body.instanceMatrix.needsUpdate=true;head.instanceMatrix.needsUpdate=true;
+  });
+  return <>
+    <instancedMesh ref={bodies} args={[undefined,undefined,count]} frustumCulled={false} castShadow><capsuleGeometry args={[.28,.52,3,5]}/><meshStandardMaterial color="#c94f3d" roughness={.9}/></instancedMesh>
+    <instancedMesh ref={heads} args={[undefined,undefined,count]} frustumCulled={false}><sphereGeometry args={[.23,7,6]}/><meshStandardMaterial color="#754a31" roughness={.9}/></instancedMesh>
+  </>;
+}
+
+function WaterShimmer() {
+  const lake=useRef<THREE.MeshStandardMaterial>(null);
+  const port=useRef<THREE.MeshStandardMaterial>(null);
+  const pond=useRef<THREE.MeshStandardMaterial>(null);
+  useFrame((state)=>{
+    const pulse=.1+((Math.sin(state.clock.elapsedTime*1.4)+1)*.045);
+    for(const material of [lake.current,port.current,pond.current])if(material){material.emissiveIntensity=pulse;material.roughness=.28+Math.sin(state.clock.elapsedTime*.7)*.04;}
+  });
+  return <>
+    <mesh rotation-x={-Math.PI/2} position={[-112,.08,118]}><circleGeometry args={[18,40]}/><meshStandardMaterial ref={lake} color="#3a9fbd" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.32} roughness={.3}/></mesh>
+    <mesh rotation-x={-Math.PI/2} position={[121,.08,120]}><planeGeometry args={[84,60]}/><meshStandardMaterial ref={port} color="#3998b5" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.22} roughness={.3}/></mesh>
+    <mesh rotation-x={-Math.PI/2} position={[-92,.06,103]}><circleGeometry args={[7,24]}/><meshStandardMaterial ref={pond} color="#4aa7b9" emissive="#237a95" emissiveIntensity={.1} transparent opacity={.25} roughness={.3}/></mesh>
+  </>;
+}
+
+function AnimatedAircraft() {
+  const first=useRef<THREE.Group>(null);
+  const second=useRef<THREE.Group>(null);
+  useFrame((state)=>{
+    const t=state.clock.elapsedTime;
+    if(first.current){first.current.position.set(-12+Math.cos(t*.12)*55,18,-142+Math.sin(t*.12)*24);first.current.rotation.y=-t*.12;}
+    if(second.current){second.current.position.set(12+Math.cos(t*.1+Math.PI)*55,15,-142+Math.sin(t*.1+Math.PI)*24);second.current.rotation.y=-t*.1;}
+  });
+  const plane=<><mesh><boxGeometry args={[7,.65,1.05]}/><meshStandardMaterial color="#e8e9e3" roughness={.6}/></mesh><mesh><boxGeometry args={[2.1,.12,8]}/><meshStandardMaterial color="#d3d8d5" roughness={.55}/></mesh><mesh position={[-3.1,.5,0]}><boxGeometry args={[1.2,.9,.18]}/><meshStandardMaterial color="#7ca8b6"/></mesh></>;
+  return <><group ref={first}>{plane}</group><group ref={second}>{plane}</group></>;
+}
+
 function CityEcosystem() {
   const buildings = useMemo<CityBlock[]>(() => {
     const out: CityBlock[] = [];
@@ -598,6 +710,11 @@ function CityEcosystem() {
   return <>
     {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
     <CurvedRoadNetwork />
+    <TerrainDetails />
+    <MarketStreetLife />
+    <CityPedestrians />
+    <WaterShimmer />
+    <AnimatedAircraft />
     <RoadFurniture />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
