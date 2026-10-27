@@ -774,7 +774,10 @@ export default function GameWorld() {
     const st = useGame.getState();
     const camera = state.camera as THREE.PerspectiveCamera;
 
-    if (g.ridingPassenger) {\n      g.playerSpeed = 0;\n      st.setSpeed(0);\n    } else if (g.drivingId) {
+    if (g.ridingPassenger) {
+      g.playerSpeed = 0;
+      st.setSpeed(0);
+    } else if (g.drivingId) {
       const v = g.vehicles.get(g.drivingId);
       if (!v) {
         g.drivingId = null;
@@ -859,7 +862,8 @@ export default function GameWorld() {
 
     const pg = playerGroup.current;
     if (pg) {
-      pg.visible = !g.ridingPassenger;\n      pg.position.set(g.playerPos.x, 0, g.playerPos.z);
+      pg.visible = !g.ridingPassenger;
+      pg.position.set(g.playerPos.x, 0, g.playerPos.z);
       pg.rotation.y = g.playerYaw;
     }
 
@@ -931,7 +935,8 @@ export default function GameWorld() {
       <Pedestrians />
       <JobMarker />
       <JobPickupVisual job={activeJob} />
-      <GpsRoute waypoint={waypoint} />\n      <RideDriver />
+      <GpsRoute waypoint={waypoint} />
+      <RideDriver />
     </>
   );
 }
