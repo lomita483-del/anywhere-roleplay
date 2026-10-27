@@ -33,7 +33,7 @@ export interface ActiveJob {
   timeLimitSeconds?: number;
 }
 
-export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | "fuel" | "vendor" | null;
+export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | "food" | "fuel" | "vendor" | "interior-hotspot" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface RideRequest { id: string; service: "ride" | "bike" | "private"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
@@ -212,7 +212,8 @@ interface GameStore {
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
   interior: boolean;
   interiorLabel: string;
-  setInterior: (inside: boolean, label?: string) => void;
+  interiorKind: string;
+  setInterior: (inside: boolean, label?: string, kind?: string) => void;
   waypoint: GpsWaypoint | null;
   rideRequest: RideRequest | null;
   requestRide: (service: RideRequest["service"]) => boolean;
@@ -220,7 +221,7 @@ interface GameStore {
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
   phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings" | "friends";
-  prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string } | null;
+  prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string; buildingKind?: string; hotspotId?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
   speedKph: number;
@@ -296,6 +297,7 @@ const DEFAULTS = {
   rentals: {} as Record<string, number>,
   interior: false,
   interiorLabel: "Ikoyi Apartment",
+  interiorKind: "home",
   waypoint: null as GpsWaypoint | null,
   rideRequest: null as RideRequest | null,
   phoneApp: "home" as const,
@@ -567,7 +569,7 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save();
     get().radio("🏠 You rested until 07:00. Energy restored; a new Lagos morning begins.");
   },
-  setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
+  setInterior: (inside, label, kind) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}), ...(kind ? { interiorKind: kind } : {}) }),
   setWaypoint: (waypoint) => { set({ waypoint }); get().save(); },
   requestRide: (service) => {
     const s = get();
