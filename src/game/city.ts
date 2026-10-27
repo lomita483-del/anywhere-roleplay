@@ -185,7 +185,7 @@ export const NEW_MAP_POI_DATA: Poi[] = NEW_MAP_POIS.map((p) => ({
   id: p.id, label: p.label, x: p.x, z: p.z,
   kind: p.kind === "mama-put" ? "food" :
     p.kind === "residential" ? "apartments" :
-    p.kind === "shop" ? "clothing" : p.kind,
+    p.kind,
 }));
 export let POIS: Poi[] = LAGOS_POIS;
 
