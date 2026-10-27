@@ -97,7 +97,7 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
       const blocks:[number,number,number,number,string][]=[[-145,-82,34,25,"#7d9ca9"],[-143,-46,26,22,"#8e887a"],[-38,-76,34,19,"#c28b4f"],[-110,32,30,24,"#a88f78"],[98,-40,56,58,"#c7bca5"],[78,10,30,24,"#b3a99a"],[116,120,42,28,"#8b9b9b"],[6,-142,50,48,"#a6b2b0"]];
       for(const [x,z,w,d,c] of blocks){ctx.fillStyle=c;ctx.fillRect(sx(x-w/2),sy(z-d/2),w*scale,d*scale);}
       ctx.fillStyle="#b8a58a";for(let row=0;row<8;row++)for(let col=0;col<8;col++){const x=82+col*10.4,z=-63+row*10.3;ctx.fillRect(sx(x)-2,sy(z)-2,4,4);}
-      for(const p of NEW_MAP_POIS){const x=sx(p.x),y=sy(p.z);if(Math.hypot(x-center,y-center)>radius-3)continue;ctx.fillStyle=p.kind==="airport"?"#8cc8ff":p.kind==="port"?"#f0b56a":p.kind==="stadium"?"#f7d35c":p.kind==="university"?"#c5a7ff":p.kind==="lake"?"#5fe0d1":p.kind==="bank"?"#69e3a7":p.kind==="police"?"#79aaff":"#ffdc8a";ctx.beginPath();ctx.arc(x,y,p.kind==="stadium"?3.5:2.5,0,Math.PI*2);ctx.fill();}
+      for(const p of NEW_MAP_POIS){const x=sx(p.x),y=sy(p.z);if(Math.hypot(x-center,y-center)>radius-3)continue;ctx.fillStyle=p.kind==="airport"?"#8cc8ff":p.kind==="port"?"#f0b56a":p.kind==="stadium"?"#f7d35c":p.kind==="university"?"#c5a7ff":p.kind==="lake"?"#5fe0d1":(p.kind==="bank"||p.kind==="atm")?"#69e3a7":p.kind==="police"?"#79aaff":"#ffdc8a";ctx.beginPath();ctx.arc(x,y,p.kind==="stadium"?3.5:2.5,0,Math.PI*2);ctx.fill();}
     } else {
       ctx.strokeStyle = "#d1b95c"; ctx.lineWidth = 5;
       for (const x of ROADS_X) { const px = sx(x); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
