@@ -363,9 +363,25 @@ function Traffic() {
       })),
     []
   );
-  useFrame((_, rawDelta) => {
+  useFrame((state, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
+    const horizontalGreen = Math.floor(state.clock.elapsedTime / 12) % 2 === 0;
     cars.forEach((c, i) => {
+      const crossings = c.t.lane.axis === "x" ? ROADS_X : ROADS_Z;
+      const nextCrossing = crossings
+        .map((point) => ({ point, ahead: (point - c.p) * c.dir }))
+        .filter((point) => point.ahead >= 0 && point.ahead < 7)
+        .sort((a, b) => a.ahead - b.ahead)[0];
+      const green = c.t.lane.axis === "x" ? horizontalGreen : !horizontalGreen;
+      // A simple alternating signal phase creates visible go-slows at busy junctions.
+      if (nextCrossing && !green) {
+        const grp = refs.current[i];
+        if (grp) {
+          if (c.t.lane.axis === "x") { grp.position.set(c.p, 0, c.t.lane.fixed); grp.rotation.y = c.dir > 0 ? Math.PI / 2 : -Math.PI / 2; }
+          else { grp.position.set(c.t.lane.fixed, 0, c.p); grp.rotation.y = c.dir > 0 ? 0 : Math.PI; }
+        }
+        return;
+      }
       c.p += c.dir * c.t.speed * dt;
       if (c.p > c.t.lane.to) c.p = c.t.lane.from;
       if (c.p < c.t.lane.from) c.p = c.t.lane.to;
