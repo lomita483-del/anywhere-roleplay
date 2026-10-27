@@ -377,7 +377,7 @@ function ApartmentInterior() {
           {[-3.4, 0, 3.4].map((x, i) => <group key={x} position={[x, 0, -1.2]}>
             <mesh position={[0, 1.75, 0]}><cylinderGeometry args={[0.035, 0.035, 2.6, 8]} /><meshStandardMaterial color="#d2b56c" metalness={0.7} /></mesh>
             <mesh position={[0, 2.65, 0]}><boxGeometry args={[2.1, 0.08, 0.08]} /><meshStandardMaterial color="#d2b56c" metalness={0.7} /></mesh>
-            {[-0.65, 0, 0.65].map((dx, j) => <mesh key={j} position={[dx, 1.95, 0]}><boxGeometry args={[0.42, 0.82, 0.1]} /><meshStandardMaterial color={["#174b3b", "#eab308", "#793e55"][(i + j) % 3]} roughness={0.75} /></mesh>)}
+            {[-0.65, 0, 0.65].map((dx, j) => <mesh key={j} position={[dx, 1.95, 0]}><boxGeometry args={[0.42, 0.82, 0.1]} /><meshStandardMaterial color={(["#174b3b", "#eab308", "#793e55"][(i + j) % 3] ?? "#174b3b")} roughness={0.75} /></mesh>)}
           </group>)}
           <mesh position={[0, 0.62, 3.1]}><boxGeometry args={[4.8, 1.15, 0.75]} /><meshStandardMaterial color="#6b472d" /></mesh>
           <Html position={[0, 2.6, -3.8]} center distanceFactor={13}><div className="rounded-md border border-amber-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-amber-100">FITTING ROOM · NEW ARRIVALS</div></Html>
@@ -408,7 +408,7 @@ function ApartmentInterior() {
         <group>
           {[-3.6, 0, 3.6].map((x) => <group key={x} position={[x, 0, -1.5]}>
             <mesh position={[0, 0.7, 0]}><boxGeometry args={[2.2, 1.3, 1.3]} /><meshStandardMaterial color="#9b6b3e" /></mesh>
-            {[-0.55, 0, 0.55].map((dx, i) => <mesh key={dx} position={[dx, 1.42, 0]}><boxGeometry args={[0.48, 0.16, 0.7]} /><meshStandardMaterial color={["#d95e39", "#eab308", "#277b58"][i]} /></mesh>)}
+            {[-0.55, 0, 0.55].map((dx, i) => <mesh key={dx} position={[dx, 1.42, 0]}><boxGeometry args={[0.48, 0.16, 0.7]} /><meshStandardMaterial color={(["#d95e39", "#eab308", "#277b58"][i] ?? "#d95e39")} /></mesh>)}
           </group>)}
           <Html position={[0, 2.5, -3.8]} center distanceFactor={13}><div className="rounded-md border border-orange-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-orange-100">MARKET STALLS · GOODS & SUPPLIES</div></Html>
         </group>
