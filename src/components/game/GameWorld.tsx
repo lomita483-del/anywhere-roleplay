@@ -4,6 +4,8 @@ import { useGLTF, useAnimations, Html } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
 import { g } from "@/game/state";
+import { getInteriorDefinition } from "@/game/interiors";
+import InteriorWorld from "@/components/game/InteriorWorld";
 import { NEW_MAP_SCALE } from "@/game/newMap";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
@@ -1035,6 +1037,7 @@ export default function GameWorld() {
       <group ref={playerGroup} position={[-14, 0, -14]} scale={isNewMap ? 0.45 : 1}>
         <CharacterBody />
       </group>
+      <InteriorWorld />
       {!isNewMap && Object.entries(remotePlayers).map(([id, player], index) => (
         <RemotePlayerAvatar key={id} player={player} variant={index + 1} />
       ))}
@@ -1102,7 +1105,12 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     return;
   }
 
-  if (s2.interior) { st.setPrompt(null); return; }
+  if (s2.interior) {
+    const def = getInteriorDefinition(s2.interiorLabel, s2.interiorKind);
+    const hotspot = def.hotspots.find(h => Math.hypot(x - (104 + h.x), z - (104 + h.z)) < 1.8);
+    st.setPrompt(hotspot ? { kind: "interior-hotspot", label: "E / Interact · " + hotspot.label, hotspotId: hotspot.id } : null);
+    return;
+  }
 
   const nearbyStall = STALLS.find((stall) => Math.hypot(x - stall.x, z - stall.z) < 3.0);
   if (nearbyStall) { st.setPrompt({ kind: "vendor", label: "Browse street vendor" }); return; }
@@ -1126,7 +1134,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
   }
   if (nearest) {
-    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
+    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building", buildingKind: nearest.kind ?? "building" });
     return;
   }
 
