@@ -245,8 +245,29 @@ function DanfoMesh() {
   );
 }
 
+function MotorcycleMesh() {
+  return (
+    <group>
+      <mesh position={[0, 0.76, 0]} castShadow><boxGeometry args={[0.32, 0.32, 0.92]} /><meshStandardMaterial color="#24292e" metalness={0.58} roughness={0.38} /></mesh>
+      <mesh position={[0, 1.02, -0.18]} castShadow><boxGeometry args={[0.42, 0.34, 0.58]} /><meshStandardMaterial color="#d62828" metalness={0.22} roughness={0.42} /></mesh>
+      <mesh position={[0, 0.97, 0.38]}><boxGeometry args={[0.28, 0.28, 0.3]} /><meshStandardMaterial color="#d9dde0" metalness={0.4} roughness={0.32} /></mesh>
+      {[-0.68, 0.7].map((z) => <group key={z} position={[0, 0.38, z]}>
+        <mesh rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.34, 0.34, 0.13, 18]} /><meshStandardMaterial color="#17191c" roughness={0.96} /></mesh>
+        <mesh rotation-z={Math.PI / 2}><cylinderGeometry args={[0.18, 0.18, 0.145, 12]} /><meshStandardMaterial color="#aab4bc" metalness={0.85} roughness={0.25} /></mesh>
+      </group>)}
+      <mesh position={[0, 0.7, 0.62]} rotation-x={-0.18} castShadow><cylinderGeometry args={[0.055, 0.055, 0.72, 8]} /><meshStandardMaterial color="#aeb8bf" metalness={0.82} roughness={0.25} /></mesh>
+      <mesh position={[0, 1.25, 0.55]}><boxGeometry args={[0.84, 0.055, 0.055]} /><meshStandardMaterial color="#333a40" metalness={0.7} roughness={0.28} /></mesh>
+      <mesh position={[0, 1.15, 0.79]}><sphereGeometry args={[0.13, 12, 8]} /><meshStandardMaterial color="#fff1bc" emissive="#ffce53" emissiveIntensity={0.9} /></mesh>
+      <mesh position={[0, 1.23, -0.18]}><boxGeometry args={[0.32, 0.12, 0.42]} /><meshStandardMaterial color="#181b20" roughness={0.82} /></mesh>
+      <mesh position={[0, 0.62, -0.8]}><boxGeometry args={[0.14, 0.12, 0.04]} /><meshStandardMaterial color="#ef463b" emissive="#a71916" emissiveIntensity={0.35} /></mesh>
+      {[-1, 1].map((side) => <mesh key={side} position={[side * 0.18, 0.84, -0.05]}><boxGeometry args={[0.08, 0.3, 0.45]} /><meshStandardMaterial color={side > 0 ? "#eab308" : "#d62828"} roughness={0.46} /></mesh>)}
+    </group>
+  );
+}
+
 function VehicleBody({ model }: { model: string }) {
   if (model === "keke") return <KekeMesh />;
+  if (model === "bike") return <MotorcycleMesh />;
   if (model === "danfo") return <DanfoMesh />;
   return <CarGlb name={model} />;
 }
