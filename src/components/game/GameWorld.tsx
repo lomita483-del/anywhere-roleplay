@@ -837,6 +837,11 @@ export default function GameWorld() {
     const st = useGame.getState();
     const controlsBlocked = st.phoneOpen;
     if (controlsBlocked) { g.joy.x = 0; g.joy.y = 0; }
+    const active = st.activeJob;
+    if (active?.startedAt && active.timeLimitSeconds && Date.now() - active.startedAt >= active.timeLimitSeconds * 1000) {
+      st.cancelJob();
+      st.radio("⏱ Job timed out. Return to the job board and try another shift.");
+    }
     const camera = state.camera as THREE.PerspectiveCamera;
 
     if (g.ridingPassenger) {
