@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, Settings as SettingsIcon, X,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, Settings as SettingsIcon, Users as UsersIcon, UserPlus, UserMinus, ShieldAlert, X,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle, exitVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings" | "friends";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -27,6 +27,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   fuel: { icon: Fuel, label: "Fuel", tint: "#fb923c" },
   radar: { icon: RadarIcon, label: "Radar", tint: "#62d7f2" },
   settings: { icon: SettingsIcon, label: "Settings", tint: "#cbd5e1" },
+  friends: { icon: UsersIcon, label: "Friends", tint: "#a78bfa" },
 };
 
 function atAtm() {
@@ -214,7 +215,7 @@ function HomeApp() {
       <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
         <div className="mb-2 text-sm font-bold text-white">All apps</div>
         <div className="grid grid-cols-4 gap-2">
-          {(["radio","market","wardrobe","rides","food","travel","districts","fuel","settings"] as App[]).map(a=>{const I=APP_ICONS[a].icon;return <button key={a} onClick={()=>useGame.getState().openPhone(a)} className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2 text-center active:scale-95"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5"><I className="h-5 w-5" style={{color:APP_ICONS[a].tint}}/></span><span className="text-xs font-semibold text-slate-100">{APP_ICONS[a].label}</span></button>;})}
+          {(["radio","friends","market","wardrobe","rides","food","travel","districts","fuel","settings"] as App[]).map(a=>{const I=APP_ICONS[a].icon;return <button key={a} onClick={()=>useGame.getState().openPhone(a)} className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2 text-center active:scale-95"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5"><I className="h-5 w-5" style={{color:APP_ICONS[a].tint}}/></span><span className="text-xs font-semibold text-slate-100">{APP_ICONS[a].label}</span></button>;})}
         </div>
       </section>
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-[#eab308]/20 bg-gradient-to-br from-[#332911] to-[#111b20] p-4">
@@ -1007,6 +1008,31 @@ function SettingsApp() {
   </div>;
 }
 
+
+function FriendsApp() {
+  const players = useGame((s) => s.onlinePlayers);
+  const setWaypoint = useGame((s) => s.setWaypoint);
+  const [friends, setFriends] = useState<string[]>(() => { try { return typeof window === "undefined" ? [] : JSON.parse(localStorage.getItem("lagos-friends") ?? "[]") as string[]; } catch { return []; } });
+  const [blocked, setBlocked] = useState<string[]>(() => { try { return typeof window === "undefined" ? [] : JSON.parse(localStorage.getItem("lagos-blocked") ?? "[]") as string[]; } catch { return []; } });
+  const [notice, setNotice] = useState("");
+  const [reports, setReports] = useState<string[]>(() => { try { return typeof window === "undefined" ? [] : JSON.parse(localStorage.getItem("lagos-player-reports") ?? "[]") as string[]; } catch { return []; } });
+  const online = Object.entries(players).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const toggleFriend = (id: string) => { const next=friends.includes(id)?friends.filter(x=>x!==id):[...friends,id];setFriends(next);localStorage.setItem("lagos-friends",JSON.stringify(next));setNotice(next.includes(id)?"Friend added to your list.":"Friend removed from your list."); };
+  const toggleBlock = (id: string) => { const next=blocked.includes(id)?blocked.filter(x=>x!==id):[...blocked,id];setBlocked(next);localStorage.setItem("lagos-blocked",JSON.stringify(next));setNotice(next.includes(id)?"Player blocked on this device.":"Player unblocked."); };
+  const reportPlayer = (id: string) => { const next=[...reports,id+" · "+new Date().toISOString()];setReports(next);localStorage.setItem("lagos-player-reports",JSON.stringify(next));setNotice("Report saved on this device for review."); };
+  return <div className="flex flex-col gap-3 p-3 text-white">
+    <div className="rounded-2xl border border-violet-300/20 bg-violet-950/30 p-4"><div className="text-sm font-bold text-white">Friends & online players</div><div className="mt-1 text-xs text-slate-200">{online.length} player{online.length===1?"":"s"} visible in the shared world</div></div>
+    {notice&&<div role="status" className="rounded-xl border border-violet-300/20 bg-violet-400/10 p-3 text-xs text-violet-100">{notice}</div>}
+    {online.length===0&&<div className="rounded-xl border border-dashed border-white/15 p-5 text-center"><UsersIcon className="mx-auto h-8 w-8 text-slate-300"/><div className="mt-2 text-sm font-bold text-white">No other players online yet</div><div className="mt-1 text-xs text-slate-300">Your friends appear here when they join the same live world.</div></div>}
+    {online.map(([id,p])=>{const isFriend=friends.includes(id),isBlocked=blocked.includes(id);const distance=Math.round(Math.hypot(p.x-g.playerPos.x,p.z-g.playerPos.z));return <article key={id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+      <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-violet-300/30 bg-violet-400/10"><UsersIcon className="h-5 w-5 text-violet-200"/></div><div className="min-w-0 flex-1"><div className="truncate text-sm font-bold text-white">{p.name}</div><div className="mt-1 text-xs text-emerald-200">● Online · {distance} m away</div><div className="mt-1 text-xs text-slate-300">{p.vehicle?"Travelling in a vehicle":"On foot"}</div></div></div>
+      <div className="mt-3 grid grid-cols-2 gap-2"><button onClick={()=>toggleFriend(id)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-violet-300/25 bg-violet-400/10 px-2 text-xs font-bold text-violet-100">{isFriend?<UserMinus className="h-4 w-4"/>:<UserPlus className="h-4 w-4"/>}{isFriend?"Remove friend":"Add friend"}</button><button onClick={()=>setWaypoint({x:p.x,z:p.z,label:"Meet "+p.name,kind:"friend"})} className="min-h-10 rounded-lg bg-emerald-400/15 px-2 text-xs font-bold text-emerald-100">Navigate to player</button></div>
+      <div className="mt-2 grid grid-cols-2 gap-2"><button onClick={()=>reportPlayer(id)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-amber-300/20 bg-amber-400/10 px-2 text-xs font-semibold text-amber-100"><ShieldAlert className="h-4 w-4"/>Report</button><button onClick={()=>toggleBlock(id)} className="min-h-10 rounded-lg border border-rose-300/20 bg-rose-500/10 px-2 text-xs font-semibold text-rose-100">{isBlocked?"Unblock player":"Block player"}</button></div>
+    </article>;})}
+    <div className="text-xs leading-relaxed text-slate-400">Friend lists, blocks and report notes are currently stored on this device. Navigation sets a GPS destination; direct teleport and server-side moderation are not enabled yet.</div>
+  </div>;
+}
+
 export default function Phone() {
   const open = useGame((s) => s.phoneOpen);
   const [app, setApp] = useState<App>("home");
@@ -1031,6 +1057,7 @@ export default function Phone() {
     app === "fuel" ? <FuelApp /> :
     app === "radar" ? <RadarApp /> :
     app === "settings" ? <SettingsApp /> :
+    app === "friends" ? <FriendsApp /> :
     <HomeApp />;
   const bottomTabs: App[] = ["home", "bank", "jobs", "garage", "inventory", "map", "radar"];
   return (
