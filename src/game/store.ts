@@ -340,7 +340,18 @@ export const useGame = create<GameStore>((set, get) => ({
   cancelJob: () => set({ activeJob: null }),
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
-  rentMarketItem: (key) => {\n    const item = MARKET_ITEMS.find((entry) => entry.id === key && entry.category === "Property");\n    if (!item || (get().inventory[key] ?? 0) > 0) return false;\n    const expiry = get().rentals[key] ?? 0;\n    if (expiry > Date.now()) return false;\n    const rentPrice = Math.max(1000, Math.round(item.price * 0.2));\n    if (!get().spend(rentPrice, "bank")) return false;\n    set({ rentals: { ...get().rentals, [key]: Date.now() + 7 * 24 * 60 * 60 * 1000 } });\n    get().save();\n    return true;\n  },\n  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
+  rentMarketItem: (key) => {
+    const item = MARKET_ITEMS.find((entry) => entry.id === key && entry.category === "Property");
+    if (!item || (get().inventory[key] ?? 0) > 0) return false;
+    const expiry = get().rentals[key] ?? 0;
+    if (expiry > Date.now()) return false;
+    const rentPrice = Math.max(1000, Math.round(item.price * 0.2));
+    if (!get().spend(rentPrice, "bank")) return false;
+    set({ rentals: { ...get().rentals, [key]: Date.now() + 7 * 24 * 60 * 60 * 1000 } });
+    get().save();
+    return true;
+  },
+  setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
   setInterior: (inside) => set({ interior: inside }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
