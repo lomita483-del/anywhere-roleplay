@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User,
+  ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -18,6 +18,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   map: { icon: MapIcon, label: "Map", tint: "#5bb06a" },
   radio: { icon: RadioIcon, label: "Radio", tint: "#9db8c9" },
   market: { icon: ShoppingBag, label: "Market", tint: "#59d6a2" },
+  wardrobe: { icon: Shirt, label: "Wardrobe", tint: "#eab308" },
 };
 
 function atAtm() {
@@ -361,6 +362,38 @@ function MapApp() {
   );
 }
 
+function WardrobeApp() {
+  const outfit = useGame((s) => s.outfit);
+  const setOutfit = useGame((s) => s.setOutfit);
+  const [notice, setNotice] = useState("");
+  const choices = {
+    skinTone: [{label:"Warm brown",value:"#a86f48"},{label:"Deep brown",value:"#69402d"},{label:"Light brown",value:"#c58b61"},{label:"Dark",value:"#3e2b24"}],
+    hair: [{label:"Short fade",value:"short"},{label:"Locs",value:"locs"},{label:"Braids",value:"braids"},{label:"Low cut",value:"lowcut"}],
+    top: [{label:"Streetwear",value:"streetwear"},{label:"Formal",value:"formal"},{label:"Traditional Agbada",value:"agbada"},{label:"Police uniform",value:"uniform"}],
+    bottom: [{label:"Jeans",value:"jeans"},{label:"Formal trousers",value:"formal"},{label:"Traditional trousers",value:"traditional"},{label:"Cargo pants",value:"cargo"}],
+    accessory: [{label:"None",value:"none"},{label:"Gold chain",value:"chain"},{label:"Cap",value:"cap"},{label:"Sunglasses",value:"shades"}],
+  };
+  const field = (key: keyof typeof choices, title: string) => (
+    <label key={key} className="flex flex-col gap-1.5 rounded-xl border border-white/10 bg-white/[0.035] p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-hud-muted">{title}</span>
+      <select value={outfit[key]} onChange={(e) => { setOutfit({[key]:e.target.value}); setNotice(title + " updated and saved."); }} className="rounded-lg border border-white/10 bg-[#111b20] px-2 py-2 text-xs text-white">
+        {choices[key].map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
+  );
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-[#eab308]/30 bg-gradient-to-br from-[#332911] to-[#111b20] p-4">
+      <div className="text-[10px] uppercase tracking-[0.2em] text-[#f4d16a]">Lagos Boutique</div>
+      <div className="mt-1 text-lg font-bold text-white">Character wardrobe</div>
+      <div className="mt-1 text-[11px] text-hud-muted">Choose your look. Outfit preferences save to your game profile.</div>
+      <div className="mt-3 flex items-center gap-3"><div className="h-12 w-12 rounded-full border-2 border-white/20" style={{backgroundColor:outfit.skinTone}}/><div><div className="text-xs font-semibold text-white">{outfit.top === "agbada" ? "Traditional Agbada" : outfit.top.charAt(0).toUpperCase()+outfit.top.slice(1)}</div><div className="text-[10px] text-hud-muted">{outfit.hair} hair · {outfit.accessory}</div></div></div>
+    </div>
+    {notice && <div role="status" className="rounded-lg bg-[#eab308]/10 p-2 text-[10px] text-[#f4d16a]">{notice}</div>}
+    <div className="grid grid-cols-1 gap-2">{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
+    <button className="rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a]" onClick={() => setNotice("Wardrobe saved to this character.")}>Save outfit</button>
+  </div>;
+}
+
 function RadioApp() {
   const [msgs, setMsgs] = useState<string[]>(["📻 Wazobia FM 99.5 — live from Lagos"]);
   const feedRef = useRef<HTMLDivElement>(null);
@@ -409,6 +442,7 @@ export default function Phone() {
     app === "map" ? <MapApp /> :
     app === "radio" ? <RadioApp /> :
     app === "market" ? <MarketplaceApp /> :
+    app === "wardrobe" ? <WardrobeApp /> :
     <HomeApp />;
 
   return (
