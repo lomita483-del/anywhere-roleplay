@@ -7,7 +7,7 @@ import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO,
 import { deliverOwnedVehicle, exitVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
-import { NEW_MAP_POIS, NEW_MAP_ROADS } from "@/game/newMap";
+import { NEW_MAP_POIS, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_DISTRICTS, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES } from "@/game/newMap";
 
 type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings" | "friends";
 
@@ -387,16 +387,12 @@ function MapApp() {
         ctx.fillStyle = "#d5c08e"; ctx.beginPath(); ctx.ellipse(lx,ly,22*S/WORLD,18*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = "#287f9d"; ctx.beginPath(); ctx.ellipse(lx,ly,18*S/WORLD,14*S/WORLD,-0.25,0,Math.PI*2); ctx.fill();
         const [wx,wy] = to(116,120,S); ctx.fillStyle="#2b7e9d"; ctx.fillRect(wx-35*S/WORLD,wy-27*S/WORLD,70*S/WORLD,54*S/WORLD);
-        const zones: [number,number,number,number,string][] = [[-145,-82,38,30,"#819b83"],[-143,-46,34,25,"#a29a7b"],[-38,-76,42,24,"#bda16f"],[-110,32,36,30,"#a98f7b"],[98,-40,80,82,"#bdb79c"],[78,10,42,30,"#b3a895"],[116,120,50,35,"#9c9e91"],[6,-142,65,60,"#9ba9a5"]];
-        for (const zone of zones) { const x=zone[0],z=zone[1],w=zone[2],d=zone[3],color=zone[4]; const a=to(x-w/2,z-d/2,S),b=to(x+w/2,z+d/2,S);ctx.fillStyle=color;ctx.globalAlpha=.72;ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.globalAlpha=1; }
-        ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#d2d0c4";ctx.lineWidth=10*S/WORLD;
-        for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>{const q=to(x,z,S);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.stroke();}
-        ctx.strokeStyle="#3f464a";ctx.lineWidth=7*S/WORLD;
-        for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>{const q=to(x,z,S);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.stroke();}
-        ctx.strokeStyle="#f0eee2";ctx.lineWidth=Math.max(.7,.8*S/WORLD);ctx.setLineDash([4*S/WORLD,3*S/WORLD]);
-        for(const path of NEW_MAP_ROADS){ctx.beginPath();path.forEach(([x,z],i)=>{const q=to(x,z,S);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.stroke();}ctx.setLineDash([]);
-        const stadium=to(0,0,S);ctx.fillStyle="#24343b";ctx.beginPath();ctx.ellipse(stadium[0],stadium[1],15*S/WORLD,11*S/WORLD,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#2f8d4b";ctx.beginPath();ctx.ellipse(stadium[0],stadium[1],9*S/WORLD,6*S/WORLD,0,0,Math.PI*2);ctx.fill();
-        for(let row=0;row<8;row++)for(let col=0;col<8;col++){const q=to(82+col*10.4,-63+row*10.3,S);ctx.fillStyle=(row+col)%3?"#d1c4a9":"#a9b9ad";ctx.fillRect(q[0]-2.5*S/WORLD,q[1]-2.5*S/WORLD,5*S/WORLD,5*S/WORLD);}
+        NEW_MAP_DISTRICTS.forEach(d=>{const a=to(d.x-d.w/2,d.z-d.d/2,S),b=to(d.x+d.w/2,d.z+d.d/2,S);ctx.fillStyle=d.color;ctx.globalAlpha=.64;ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);});ctx.globalAlpha=1;
+        ctx.lineCap="round";ctx.lineJoin="round";
+        NEW_MAP_ROADS.forEach((path,i)=>{const width=NEW_MAP_ROAD_WIDTHS[i]??5;const draw=(color:string,w:number)=>{ctx.beginPath();path.forEach(([x,z],j)=>{const q=to(x,z,S);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,w*S/WORLD);ctx.stroke();};draw("#d2d0c4",width+2.4);draw("#3f464a",width);if(width>=8){ctx.setLineDash([4*S/WORLD,3*S/WORLD]);draw("#f0eee2",.8);ctx.setLineDash([]);}});
+        for(const b of NEW_MAP_BUILDINGS){const a=to(b.x-b.w/2,b.z-b.d/2,S),q=to(b.x+b.w/2,b.z+b.d/2,S);ctx.fillStyle=b.district==="residential"?"#d1c4a9":b.kind==="tower"?"#7d9ca9":b.kind==="market"?"#c28b4f":"#b8b6a7";ctx.fillRect(a[0],a[1],q[0]-a[0],q[1]-a[1]);}
+        for(const s of NEW_MAP_MARKET_STALLS){const a=to(s.x-s.w/2,s.z-s.d/2,S),q=to(s.x+s.w/2,s.z+s.d/2,S);ctx.fillStyle=s.color;ctx.fillRect(a[0],a[1],q[0]-a[0],q[1]-a[1]);}
+        for(const t of NEW_MAP_TREES){const q=to(t.x,t.z,S);ctx.fillStyle="#376b43";ctx.beginPath();ctx.arc(q[0],q[1],1.7,0,Math.PI*2);ctx.fill();}
         for(const poi of NEW_MAP_POIS){const q=to(poi.x,poi.z,S);ctx.fillStyle=poi.kind==="airport"?"#8cc8ff":poi.kind==="port"?"#f0b56a":poi.kind==="stadium"?"#f7d35c":poi.kind==="university"?"#c5a7ff":poi.kind==="lake"?"#5fe0d1":(poi.kind==="bank"||poi.kind==="atm")?"#69e3a7":poi.kind==="police"?"#79aaff":"#ffdc8a";ctx.beginPath();ctx.arc(q[0],q[1],2.4,0,Math.PI*2);ctx.fill();if(["airport","port","stadium","university","lake","bank","market","hospital","police"].includes(poi.kind)){ctx.font="bold 5px sans-serif";ctx.textAlign="left";ctx.fillStyle="#fff8e8";ctx.strokeStyle="rgba(7,20,25,.9)";ctx.lineWidth=1;ctx.strokeText(poi.label,q[0]+3,q[1]-3);ctx.fillText(poi.label,q[0]+3,q[1]-3);}}
         if(waypoint){const a=to(g.playerPos.x,g.playerPos.z,S),b=to(waypoint.x,waypoint.z,S);ctx.strokeStyle="#39ef9b";ctx.lineWidth=1.4;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#39ef9b";ctx.beginPath();ctx.arc(b[0],b[1],3.5,0,Math.PI*2);ctx.fill();}
         const player=to(g.playerPos.x,g.playerPos.z,S);ctx.fillStyle="#72d3ff";ctx.beginPath();ctx.arc(player[0],player[1],3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();ctx.save();ctx.translate(player[0],player[1]);ctx.rotate(g.playerYaw);ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(-3,3);ctx.lineTo(0,1);ctx.lineTo(3,3);ctx.closePath();ctx.fill();ctx.restore();
