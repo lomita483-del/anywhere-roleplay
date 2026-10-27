@@ -10,6 +10,7 @@ export interface VehicleRuntime {
   yaw: number;
   speed: number;
   color: string;
+  fuel?: number;
   ai?: boolean; // ambient traffic, not enterable
 }
 
