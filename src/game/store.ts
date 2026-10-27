@@ -22,7 +22,7 @@ export interface ActiveJob {
   hint: string;
 }
 
-export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | null;
+export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | "wardrobe" | "jobboard" | "police" | "building" | null;
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface PlayerOutfit { skinTone: string; hair: string; top: string; bottom: string; accessory: string; }
@@ -149,7 +149,7 @@ interface GameStore {
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
   phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
-  prompt: { kind: PromptKind; label: string; vehicleId?: string } | null;
+  prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
   speedKph: number;
@@ -354,7 +354,7 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
   setOutfit: (outfit) => { const next = { ...get().outfit, ...outfit }; set({ outfit: next }); get().save(); },
-  setInterior: (inside) => set({ interior: inside }),
+  setInterior: (inside, label) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}) }),
   setWaypoint: (waypoint) => set({ waypoint }),
   clearWaypoint: () => set({ waypoint: null }),
   openPhone: (app) => set({ phoneOpen: true, phoneApp: app ?? get().phoneApp }),
