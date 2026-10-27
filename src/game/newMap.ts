@@ -58,7 +58,7 @@ export const NEW_MAP_ROAD_GRAPH = {
 export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
 export const NEW_MAP_ROAD_ENDPOINTS = roadEdges.flatMap(e=>{const first=e.points[0]!,last=e.points[e.points.length-1]!;if(Math.hypot(first[0]-last[0],first[1]-last[1])<0.1)return [];return [first,last].filter(p=>!NEW_MAP_JUNCTIONS.some(j=>Math.hypot(j[0]-p[0],j[1]-p[1])<1)).map(p=>({x:p[0],z:p[1],width:e.width}));});
-export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.type==="street");
+export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.id==="corporate-street-n");
 
 export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
  {id:"corporate",label:"CORPORATE DISTRICT",x:-126,z:-120,w:70,d:56,color:"#819b83"},
