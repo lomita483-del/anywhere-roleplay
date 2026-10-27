@@ -259,81 +259,103 @@ function InventoryApp() {
 
 function MapApp() {
   const job = useGame((s) => s.activeJob);
+  const waypoint = useGame((s) => s.waypoint);
+  const setWaypoint = useGame((s) => s.setWaypoint);
+  const clearWaypoint = useGame((s) => s.clearWaypoint);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
+  const [positionTick, setPositionTick] = useState(0);
+  const to = (x: number, z: number, size = 280): [number, number] => [((x + 120) / 240) * size, ((z + 120) / 240) * size];
 
   useEffect(() => {
     const draw = () => {
       const c = canvasRef.current;
       if (!c) return;
-      const ctx = c.getContext("2d")!;
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
       const S = c.width;
-      const to = (x: number, z: number): [number, number] => [((x + 120) / 240) * S, ((z + 120) / 240) * S];
       ctx.clearRect(0, 0, S, S);
-      ctx.fillStyle = "#252b36";
+      ctx.fillStyle = "#17232b";
       ctx.fillRect(0, 0, S, S);
-      // roads
-      ctx.strokeStyle = "#4a5260";
+      // Subtle city-block grid
+      ctx.strokeStyle = "rgba(177,203,195,.08)";
+      ctx.lineWidth = 1;
+      for (let n = 0; n <= S; n += 14) {
+        ctx.beginPath(); ctx.moveTo(n, 0); ctx.lineTo(n, S); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, n); ctx.lineTo(S, n); ctx.stroke();
+      }
+      ctx.strokeStyle = "#53616b";
       ctx.lineWidth = ROAD_HALF * (S / 120) * 1.6;
-      for (const rx of ROADS_X) {
-        const [px] = to(rx, 0);
-        ctx.beginPath();
-        ctx.moveTo(px, 0);
-        ctx.lineTo(px, S);
-        ctx.stroke();
-      }
-      for (const rz of ROADS_Z) {
-        const [, pz] = to(0, rz);
-        ctx.beginPath();
-        ctx.moveTo(0, pz);
-        ctx.lineTo(S, pz);
-        ctx.stroke();
-      }
-      // POIs
+      for (const rx of ROADS_X) { const [px] = to(rx, 0, S); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
+      for (const rz of ROADS_Z) { const [, pz] = to(0, rz, S); ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(S, pz); ctx.stroke(); }
+      // Landmark pins
       for (const p of POIS) {
-        const [px, pz] = to(p.x, p.z);
-        ctx.fillStyle = p.kind === "atm" ? "#59d6a2" : "#ffd257";
-        ctx.beginPath();
-        ctx.arc(px, pz, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        const [px, pz] = to(p.x, p.z, S);
+        ctx.fillStyle = p.kind === "atm" ? "#59d6a2" : p.kind === "police" ? "#7fb7ff" : p.kind === "dealership" ? "#eab308" : "#d9c18a";
+        ctx.beginPath(); ctx.arc(px, pz, 4.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 1; ctx.stroke();
       }
-      // job target
       if (job) {
         const t = job.targets[job.stage];
-        if (t) {
-          const [px, pz] = to(t[0], t[1]);
-          ctx.fillStyle = "#ff5c5c";
-          ctx.beginPath();
-          ctx.arc(px, pz, 5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = "#ffd0d0";
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
+        if (t) { const [px, pz] = to(t[0], t[1], S); ctx.fillStyle = "#ff5c5c"; ctx.beginPath(); ctx.arc(px, pz, 5, 0, Math.PI * 2); ctx.fill(); }
       }
-      // player
-      const [px, pz] = to(g.playerPos.x, g.playerPos.z);
-      ctx.fillStyle = "#7fd0ff";
-      ctx.beginPath();
-      ctx.arc(px, pz, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#e8f7ff";
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      if (waypoint) {
+        const [wx, wz] = to(waypoint.x, waypoint.z, S);
+        ctx.strokeStyle = "rgba(255,83,83,.3)"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(wx, wz); ctx.lineTo(wx, wz); ctx.stroke();
+        ctx.fillStyle = "#ff5757"; ctx.beginPath(); ctx.arc(wx, wz, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff1d6"; ctx.lineWidth = 2; ctx.stroke();
+      }
+      const [px, pz] = to(g.playerPos.x, g.playerPos.z, S);
+      ctx.fillStyle = "#7fd0ff"; ctx.beginPath(); ctx.arc(px, pz, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#effaff"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#d5e4e8"; ctx.font = "9px sans-serif";
+      ctx.fillText("LAGOS", 8, 13);
     };
     draw();
-    const t = setInterval(draw, 700);
-    return () => clearInterval(t);
-  }, [job]);
+    const t = window.setInterval(() => { setPositionTick((v) => v + 1); draw(); }, 450);
+    return () => window.clearInterval(t);
+  }, [job, waypoint]);
+
+  const handleMapTap = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = e.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const cx = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const cy = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    const nearest = POIS.map((p) => ({ p, xy: to(p.x, p.z, canvas.width) })).map(({p,xy}) => ({p,d:Math.hypot(xy[0]-cx,xy[1]-cy)})).sort((a,b)=>a.d-b.d)[0];
+    if (nearest && nearest.d < 13) {
+      setSelectedPoi(nearest.p);
+      return;
+    }
+    const x = Math.max(-118, Math.min(118, (cx / canvas.width) * 240 - 120));
+    const z = Math.max(-118, Math.min(118, (cy / canvas.height) * 240 - 120));
+    setSelectedPoi(null);
+    setWaypoint({ x, z, label: "Custom GPS destination", kind: "custom" });
+  };
 
   return (
     <div className="flex flex-col gap-2 p-3">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">Lagos city map</div>
-      <canvas ref={canvasRef} width={280} height={280} className="w-full rounded-xl border border-hud-line" />
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] uppercase tracking-widest text-hud-muted">Lagos city map · live GPS</div>
+        <span className="text-[9px] text-[#7fd0ff]">● LIVE</span>
+      </div>
+      <canvas ref={canvasRef} width={280} height={280} onPointerUp={handleMapTap} className="w-full touch-manipulation rounded-xl border border-[#eab308]/25 shadow-[0_0_22px_rgba(234,179,8,.08)]" aria-label="Interactive Lagos map; tap to set GPS destination" />
+      {selectedPoi && (
+        <div className="rounded-xl border border-[#eab308]/30 bg-[#eab308]/[0.08] p-3">
+          <div className="text-xs font-bold text-hud-bright">{selectedPoi.label}</div>
+          <div className="mt-1 text-[10px] capitalize text-hud-muted">{selectedPoi.kind} · Lagos Life city landmark</div>
+          <button className="mt-2 w-full rounded-lg bg-[#eab308]/20 px-3 py-2 text-xs font-bold text-[#f5d875]" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind}); setSelectedPoi(null); }}>
+            Set GPS waypoint
+          </button>
+        </div>
+      )}
+      {waypoint ? (
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-red-400/25 bg-red-500/10 p-2">
+          <div className="min-w-0"><div className="text-[10px] uppercase tracking-wider text-red-200">GPS destination</div><div className="truncate text-xs font-semibold text-white">{waypoint.label}</div></div>
+          <button className="shrink-0 rounded-lg border border-white/10 px-2 py-1.5 text-[10px] font-semibold text-white" onClick={clearWaypoint}>Clear route</button>
+        </div>
+      ) : <div className="text-[10px] text-hud-muted">Tap a landmark for details, or tap any map location to set a waypoint.</div>}
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-hud-muted">
-        <span><span className="text-[#7fd0ff]">●</span> You</span>
-        <span><span className="text-[#ff5c5c]">●</span> Job target</span>
-        <span><span className="text-[#ffd257]">●</span> Landmarks</span>
-        <span><span className="text-[#59d6a2]">●</span> ATMs</span>
+        <span className="text-[#7fd0ff]">● You</span><span className="text-[#ff5c5c]">● GPS</span><span className="text-[#eab308]">● Landmarks</span><span className="text-[#59d6a2]">● ATMs</span>
       </div>
     </div>
   );
