@@ -892,6 +892,20 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
 
   if (s2.interior) { st.setPrompt(null); return; }
 
+  let nearest: (typeof BUILDINGS)[number] | null = null;
+  let nearestDistance = 4.5;
+  for (const building of BUILDINGS) {
+    if (building.kind === "apartments") continue;
+    const dx = Math.max(Math.abs(x - building.x) - building.w / 2, 0);
+    const dz = Math.max(Math.abs(z - building.z) - building.d / 2, 0);
+    const distance = Math.hypot(dx, dz);
+    if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
+  }
+  if (nearest) {
+    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
+    return;
+  }
+
   const poi = nearestPoi(x, z, 4.5);
   if (poi) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
@@ -909,18 +923,6 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     return;
   }
 
-  let nearest: (typeof BUILDINGS)[number] | null = null;
-  let nearestDistance = 4.5;
-  for (const building of BUILDINGS) {
-    const dx = Math.max(Math.abs(x - building.x) - building.w / 2, 0);
-    const dz = Math.max(Math.abs(z - building.z) - building.d / 2, 0);
-    const distance = Math.hypot(dx, dz);
-    if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
-  }
-  if (nearest) {
-    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
-    return;
-  }
   st.setPrompt(null);
 }
 
