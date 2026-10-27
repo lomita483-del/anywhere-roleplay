@@ -56,6 +56,7 @@ export interface SaveData {
   owned: string[];
   jobStats: JobStats;
   time: number;
+  savedAt?: number;
   x: number;
   z: number;
   activeJob?: ActiveJob | null;
@@ -289,7 +290,7 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!s.started) return;
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
-      jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
+      jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, outfit: s.outfit, needs: s.needs, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
