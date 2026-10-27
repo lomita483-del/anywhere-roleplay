@@ -461,10 +461,10 @@ function RoadFurniture() {
     });
     // Zebra crossings belong at real junctions, not at arbitrary road midpoints.
     const junctionCrossings:{x:number;z:number;yaw:number}[]=[
-      {x:-145,z:-64,yaw:0},{x:-145,z:-82,yaw:0},{x:-143,z:-46,yaw:0},
-      {x:-110,z:43,yaw:0},{x:-112,z:105,yaw:0},{x:-38,z:-76,yaw:Math.PI/2},
-      {x:-47,z:-52,yaw:Math.PI/4},{x:-72,z:1,yaw:0},{x:72,z:3,yaw:0},
-      {x:38,z:24,yaw:Math.PI/2},{x:78,z:24,yaw:Math.PI/2},{x:76,z:116,yaw:0}
+      {x:-130,z:-46,yaw:0},{x:-112,z:-99,yaw:Math.PI/2},{x:-100,z:43,yaw:0},
+      {x:-72,z:126,yaw:0},{x:-38,z:-76,yaw:Math.PI/2},{x:-47,z:-52,yaw:Math.PI/4},
+      {x:-72,z:1,yaw:0},{x:72,z:3,yaw:0},{x:38,z:24,yaw:Math.PI/2},
+      {x:92,z:24,yaw:Math.PI/2},{x:70,z:103,yaw:0},{x:6,z:-94,yaw:Math.PI/2}
     ];
     junctionCrossings.forEach(({x,z,yaw})=>{for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:x+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:z+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});});
     return {lamps,crossings,signs};
