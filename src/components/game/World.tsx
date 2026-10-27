@@ -348,6 +348,71 @@ function ApartmentInterior() {
       <mesh position={[-3.7, 0.65, -2.4]} castShadow><boxGeometry args={[2.8, 1.2, 1.8]} /><meshStandardMaterial color="#8a6b55" roughness={0.86} /></mesh>
       <mesh position={[-3.7, 1.28, -2.4]} castShadow><boxGeometry args={[2.9, 0.12, 1.9]} /><meshStandardMaterial color="#d7c6a8" roughness={0.92} /></mesh>
       <mesh position={[0.2, 1.05, -4.78]}><boxGeometry args={[2.3, 1.35, 0.08]} /><meshStandardMaterial color="#8fc4d4" emissive="#397a8a" emissiveIntensity={0.12} roughness={0.35} /></mesh>
+
+      {/* Distinct furnishings make each enterable destination feel like its own place. */}
+      {interiorLabel.toLowerCase().includes("bank") && (
+        <group>
+          <mesh position={[0, 0.58, 1.2]} castShadow><boxGeometry args={[7.8, 1.12, 0.8]} /><meshStandardMaterial color="#6a4a2d" roughness={0.55} /></mesh>
+          <mesh position={[0, 1.17, 1.2]}><boxGeometry args={[7.9, 0.1, 0.9]} /><meshStandardMaterial color="#d8b65c" metalness={0.55} roughness={0.3} /></mesh>
+          {[-2.4, 0, 2.4].map((x) => <group key={x} position={[x, 0, 0.62]}>
+            <mesh position={[0, 1.7, 0]}><boxGeometry args={[1.2, 0.65, 0.08]} /><meshStandardMaterial color="#153d32" emissive="#1c6047" emissiveIntensity={0.22} /></mesh>
+            <mesh position={[0, 0.28, 0.5]}><boxGeometry args={[0.65, 0.56, 0.58]} /><meshStandardMaterial color="#303b40" /></mesh>
+          </group>)}
+          <Html position={[0, 2.5, 1.2]} center distanceFactor={13}><div className="rounded-md border border-emerald-300/40 bg-emerald-950/90 px-3 py-1 text-[10px] font-bold text-emerald-100">CUSTOMER SERVICE · TELLERS</div></Html>
+        </group>
+      )}
+      {interiorLabel.toLowerCase().includes("police") && (
+        <group>
+          <mesh position={[0, 0.62, 1.35]} castShadow><boxGeometry args={[7.2, 1.2, 1.05]} /><meshStandardMaterial color="#263d54" roughness={0.62} /></mesh>
+          <mesh position={[0, 1.26, 1.35]}><boxGeometry args={[7.3, 0.1, 1.1]} /><meshStandardMaterial color="#eab308" metalness={0.6} /></mesh>
+          {[-2.3, 0, 2.3].map((x) => <group key={x} position={[x, 0, 1.35]}>
+            <mesh position={[0, 1.95, -0.45]}><boxGeometry args={[0.58, 0.65, 0.08]} /><meshStandardMaterial color="#eab308" metalness={0.55} /></mesh>
+            <mesh position={[0, 0.55, -0.55]}><boxGeometry args={[0.75, 0.8, 0.6]} /><meshStandardMaterial color="#1c2731" /></mesh>
+          </group>)}
+          <Html position={[0, 2.55, 1.2]} center distanceFactor={13}><div className="rounded-md border border-blue-300/40 bg-blue-950/90 px-3 py-1 text-[10px] font-bold text-blue-100">LAGOS POLICE · FRONT DESK</div></Html>
+        </group>
+      )}
+      {(interiorLabel.toLowerCase().includes("boutique") || interiorLabel.toLowerCase().includes("clothing")) && (
+        <group>
+          {[-3.4, 0, 3.4].map((x, i) => <group key={x} position={[x, 0, -1.2]}>
+            <mesh position={[0, 1.75, 0]}><cylinderGeometry args={[0.035, 0.035, 2.6, 8]} /><meshStandardMaterial color="#d2b56c" metalness={0.7} /></mesh>
+            <mesh position={[0, 2.65, 0]}><boxGeometry args={[2.1, 0.08, 0.08]} /><meshStandardMaterial color="#d2b56c" metalness={0.7} /></mesh>
+            {[-0.65, 0, 0.65].map((dx, j) => <mesh key={j} position={[dx, 1.95, 0]}><boxGeometry args={[0.42, 0.82, 0.1]} /><meshStandardMaterial color={["#174b3b", "#eab308", "#793e55"][(i + j) % 3]} roughness={0.75} /></mesh>)}
+          </group>)}
+          <mesh position={[0, 0.62, 3.1]}><boxGeometry args={[4.8, 1.15, 0.75]} /><meshStandardMaterial color="#6b472d" /></mesh>
+          <Html position={[0, 2.6, -3.8]} center distanceFactor={13}><div className="rounded-md border border-amber-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-amber-100">FITTING ROOM · NEW ARRIVALS</div></Html>
+        </group>
+      )}
+      {interiorLabel.toLowerCase().includes("dealership") || interiorLabel.toLowerCase().includes("motors") ? (
+        <group>
+          {[-2.8, 2.8].map((x, i) => <group key={x} position={[x, 0.48, -1.3]} rotation-y={i ? -0.16 : 0.16}>
+            <mesh castShadow><boxGeometry args={[1.6, 0.55, 2.8]} /><meshStandardMaterial color={i ? "#174b3b" : "#d8dce0"} metalness={0.4} roughness={0.3} /></mesh>
+            <mesh position={[0, 0.38, -0.15]}><boxGeometry args={[1.28, 0.45, 1.25]} /><meshStandardMaterial color="#263a4a" metalness={0.35} roughness={0.22} /></mesh>
+            {[-0.62, 0.62].map((wx) => [-0.85, 0.85].map((wz) => <mesh key={wx + ":" + wz} position={[wx, -0.2, wz]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.22, 0.22, 0.12, 12]} /><meshStandardMaterial color="#111820" roughness={0.8} /></mesh>))}
+          </group>)}
+          <Html position={[0, 2.5, -3.8]} center distanceFactor={13}><div className="rounded-md border border-amber-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-amber-100">SHOWROOM · FINANCE DESK</div></Html>
+        </group>
+      ) : null}
+      {(interiorLabel.toLowerCase().includes("airport") || interiorLabel.toLowerCase().includes("international")) && (
+        <group>
+          {[-3.6, -1.8, 0, 1.8, 3.6].map((x) => <group key={x} position={[x, 0, -1.8]}>
+            <mesh position={[0, 0.6, 0]}><boxGeometry args={[1.1, 0.16, 0.62]} /><meshStandardMaterial color="#344e61" metalness={0.35} /></mesh>
+            <mesh position={[0, 1.1, -0.22]}><boxGeometry args={[1.1, 0.9, 0.15]} /><meshStandardMaterial color="#46667a" roughness={0.6} /></mesh>
+            <mesh position={[0, 0.48, 0]}><cylinderGeometry args={[0.035, 0.035, 0.8, 8]} /><meshStandardMaterial color="#c4cbd0" metalness={0.65} /></mesh>
+          </group>)}
+          <mesh position={[0, 0.65, 2.2]}><boxGeometry args={[7.5, 1.3, 0.8]} /><meshStandardMaterial color="#174b3b" /></mesh>
+          <Html position={[0, 2.5, 2.2]} center distanceFactor={13}><div className="rounded-md border border-sky-300/40 bg-slate-950/90 px-3 py-1 text-[10px] font-bold text-sky-100">CHECK-IN · DEPARTURES</div></Html>
+        </group>
+      )}
+      {interiorLabel.toLowerCase().includes("market") && (
+        <group>
+          {[-3.6, 0, 3.6].map((x) => <group key={x} position={[x, 0, -1.5]}>
+            <mesh position={[0, 0.7, 0]}><boxGeometry args={[2.2, 1.3, 1.3]} /><meshStandardMaterial color="#9b6b3e" /></mesh>
+            {[-0.55, 0, 0.55].map((dx, i) => <mesh key={dx} position={[dx, 1.42, 0]}><boxGeometry args={[0.48, 0.16, 0.7]} /><meshStandardMaterial color={["#d95e39", "#eab308", "#277b58"][i]} /></mesh>)}
+          </group>)}
+          <Html position={[0, 2.5, -3.8]} center distanceFactor={13}><div className="rounded-md border border-orange-300/40 bg-stone-950/90 px-3 py-1 text-[10px] font-bold text-orange-100">MARKET STALLS · GOODS & SUPPLIES</div></Html>
+        </group>
+      )}
     </group>
   );
 }
