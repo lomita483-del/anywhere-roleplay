@@ -902,7 +902,7 @@ export default function GameWorld() {
     } else {
       const kf = !controlsBlocked ? ((k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0)) : 0;
       const ks = !controlsBlocked ? ((k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0)) : 0;
-      const ix = ks - g.joy.x;
+      const ix = ks + g.joy.x;
       const iz = kf - g.joy.y;
       const fx = -Math.sin(g.camYaw), fz = -Math.cos(g.camYaw);
       const rx = Math.cos(g.camYaw), rz = -Math.sin(g.camYaw);
