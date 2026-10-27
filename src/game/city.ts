@@ -14,12 +14,12 @@ export interface BuildingDef extends Box {
   label?: string;
 }
 
-export const WORLD = 240; // full world size; playable bounds ±118
-export const BOUND = 118;
+export const WORLD = 360; // expanded Lagos world; playable bounds ±178
+export const BOUND = 178;
 
-// Roads: N–S at x = -80, 0, 80; E–W at z = -80, 0, 80
-export const ROADS_X = [-80, 0, 80];
-export const ROADS_Z = [-80, 0, 80];
+// Main express roads connect the starter mainland to outer districts.
+export const ROADS_X = [-140, -80, 0, 80, 140];
+export const ROADS_Z = [-140, -80, 0, 80, 140];
 export const ROAD_HALF = 7;
 export const SIDEWALK = 3; // sidewalk band on each side of the road
 
@@ -59,11 +59,27 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 2, z: 42, w: 18, d: 14, h: 8, color: "#d2b46b", kind: "clothing", label: "LAGOS BOUTIQUE" },
   // Civic and education landmarks — shared by the 3D world, collisions and minimap.
   { x: -94, z: -36, w: 19, d: 13, h: 8, color: "#e6d3a5", label: "PRIMARY SCHOOL" },
-  { x: -92, z: -12, w: 22, d: 14, h: 10, color: "#d6c7b0", label: "SECONDARY SCHOOL" },
-  { x: 92, z: -42, w: 20, d: 16, h: 13, color: "#d9d2bd", label: "LAGOS UNIVERSITY" },
-  { x: 92, z: -16, w: 17, d: 13, h: 9, color: "#d8d2c8", label: "COURT OF JUSTICE" },
-  { x: 92, z: 10, w: 20, d: 15, h: 12, color: "#d8c8a6", label: "GOVERNMENT HOUSE" },
-  { x: -92, z: 12, w: 17, d: 13, h: 8, color: "#d5c2a5", label: "REAL ESTATE & PROPERTY" },
+  { x: -92, z: -12, w: 22, d: 14, h: 10, color: "#d6c7b0", label: "SECONDARY SCHOOL", kind: "civic" },
+  { x: 92, z: -42, w: 20, d: 16, h: 13, color: "#d9d2bd", label: "LAGOS UNIVERSITY", kind: "civic" },
+  { x: 92, z: -16, w: 17, d: 13, h: 9, color: "#d8d2c8", label: "COURT OF JUSTICE", kind: "civic" },
+  { x: 92, z: 10, w: 20, d: 15, h: 12, color: "#d8c8a6", label: "GOVERNMENT HOUSE", kind: "civic" },
+  { x: -92, z: 12, w: 17, d: 13, h: 8, color: "#d5c2a5", label: "REAL ESTATE & PROPERTY", kind: "civic" },
+  // Outer districts — opened up as the Lagos world expands.
+  { x: -142, z: -64, w: 28, d: 18, h: 7, color: "#d9a13b", kind: "market", label: "OSHODI TRANSPORT & MARKET HUB" },
+  { x: -118, z: -42, w: 18, d: 14, h: 12, color: "#c49a73", label: "MUSHIN STREET TRADE" },
+  { x: -145, z: -105, w: 22, d: 16, h: 9, color: "#a9b8c2", kind: "depot", label: "MAINLAND MOTOR PARK" },
+  { x: 140, z: -132, w: 38, d: 22, h: 12, color: "#b8c7cb", kind: "airport", label: "MURTALA MUHAMMED AIRPORT" },
+  { x: 111, z: -137, w: 18, d: 14, h: 10, color: "#d5d1c6", label: "AIRLINE CARGO & LOGISTICS" },
+  { x: 140, z: -82, w: 24, d: 18, h: 20, color: "#a8c6d3", label: "IKEJA BUSINESS DISTRICT" },
+  { x: 112, z: -61, w: 18, d: 15, h: 15, color: "#c7b5a1", label: "LAGOS GOVERNMENT OFFICES" },
+  { x: 140, z: 48, w: 24, d: 20, h: 34, color: "#9cb6c8", label: "VICTORIA ISLAND TOWER" },
+  { x: 112, z: 76, w: 20, d: 18, h: 27, color: "#d1c4a8", label: "LEKKI BUSINESS PLAZA" },
+  { x: 151, z: 88, w: 18, d: 18, h: 23, color: "#9ab9ad", label: "LEKKI GATED ESTATE" },
+  { x: -142, z: 58, w: 25, d: 16, h: 7, color: "#d3b38b", label: "AJEGUNLE COMMUNITY MARKET", kind: "market" },
+  { x: -112, z: 88, w: 24, d: 18, h: 6, color: "#b5a18b", label: "MAKOKO WATERFRONT", kind: "market" },
+  { x: -147, z: 93, w: 18, d: 12, h: 5, color: "#c49b72", label: "WATERFRONT FISH MARKET" },
+  { x: 140, z: 140, w: 32, d: 24, h: 48, color: "#a6c8d5", label: "EKO ATLANTIC FUTURE CITY" },
+  { x: 111, z: 141, w: 20, d: 18, h: 32, color: "#d3dce0", label: "EKO FINANCIAL CENTRE" },
 ];
 
 export interface Poi {
