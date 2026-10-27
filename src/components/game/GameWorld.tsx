@@ -127,34 +127,43 @@ function PedBody({ variant = 0 }: { variant?: number }) {
 }
 
 function KekeMesh() {
+  const rubber = "#17191c";
+  const yellow = "#eab308";
+  const frame = "#242b30";
+  const glass = "#7fb9cb";
   return (
     <group>
-      <mesh position={[0, 0.72, 0.1]} castShadow>
-        <boxGeometry args={[1.15, 0.75, 1.9]} />
-        <meshStandardMaterial color="#f2c230" flatShading roughness={0.5} />
-      </mesh>
-      <mesh position={[0, 1.4, 0.05]} castShadow>
-        <boxGeometry args={[1.25, 0.6, 1.7]} />
-        <meshStandardMaterial color="#23282f" flatShading roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 1.3, 0.92]} rotation-x={-0.3}>
-        <planeGeometry args={[1.05, 0.5]} />
-        <meshStandardMaterial color="#9fd6e8" transparent opacity={0.5} metalness={0.4} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0, 0.36, 1.08]} rotation-z={Math.PI / 2} castShadow>
-        <cylinderGeometry args={[0.34, 0.34, 0.16, 10]} />
-        <meshStandardMaterial color="#1a1a1e" roughness={0.9} />
-      </mesh>
-      {[0.58, -0.58].map((x, i) => (
-        <mesh key={i} position={[x, 0.4, -0.55]} rotation-z={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.4, 0.4, 0.2, 10]} />
-          <meshStandardMaterial color="#1a1a1e" roughness={0.9} />
-        </mesh>
+      {/* Chassis and painted passenger body */}
+      <mesh position={[0, 0.62, 0.02]} castShadow><boxGeometry args={[1.12, 0.48, 1.92]} /><meshStandardMaterial color={yellow} metalness={0.18} roughness={0.48} /></mesh>
+      <mesh position={[0, 0.95, -0.08]} castShadow><boxGeometry args={[1.04, 0.56, 1.22]} /><meshStandardMaterial color="#f4c62d" metalness={0.12} roughness={0.5} /></mesh>
+      {/* Canopy and tubular safety frame */}
+      <mesh position={[0, 1.65, -0.08]} castShadow><boxGeometry args={[1.28, 0.12, 1.75]} /><meshStandardMaterial color={yellow} metalness={0.15} roughness={0.42} /></mesh>
+      {[-0.54, 0.54].flatMap((x) => [-0.82, 0.62].map((z) => (
+        <mesh key={x + ":" + z} position={[x, 1.32, z]} castShadow><boxGeometry args={[0.055, 0.66, 0.055]} /><meshStandardMaterial color={frame} metalness={0.55} roughness={0.35} /></mesh>
+      )))}
+      {[-0.54, 0.54].map((x) => <mesh key={"rail" + x} position={[x, 1.18, -0.1]}><boxGeometry args={[0.055, 0.05, 1.55]} /><meshStandardMaterial color={frame} metalness={0.55} roughness={0.35} /></mesh>)}
+      {/* Front windscreen, rear panel and open passenger sides */}
+      <mesh position={[0, 1.35, 0.79]} rotation-x={-0.08}><planeGeometry args={[0.88, 0.46]} /><meshPhysicalMaterial color={glass} transparent opacity={0.48} roughness={0.18} metalness={0.28} side={THREE.DoubleSide} /></mesh>
+      <mesh position={[0, 1.27, -0.72]}><planeGeometry args={[0.78, 0.42]} /><meshPhysicalMaterial color={glass} transparent opacity={0.35} roughness={0.2} side={THREE.DoubleSide} /></mesh>
+      {/* Bench seat visible through the open sides */}
+      <mesh position={[0, 0.98, -0.22]}><boxGeometry args={[0.82, 0.12, 0.34]} /><meshStandardMaterial color="#4a3023" roughness={0.92} /></mesh>
+      <mesh position={[0, 1.13, -0.38]}><boxGeometry args={[0.82, 0.26, 0.09]} /><meshStandardMaterial color="#4a3023" roughness={0.92} /></mesh>
+      {/* Front fender, headlamps, grille and bumper */}
+      <mesh position={[0, 0.49, 1.01]}><boxGeometry args={[0.9, 0.14, 0.1]} /><meshStandardMaterial color="#30363b" metalness={0.5} roughness={0.4} /></mesh>
+      {[-0.37, 0.37].map((x) => <mesh key={"lamp" + x} position={[x, 0.72, 1.015]}><boxGeometry args={[0.2, 0.13, 0.045]} /><meshStandardMaterial color="#fff2c4" emissive="#ffd66b" emissiveIntensity={0.8} roughness={0.25} /></mesh>)}
+      {[-0.18, 0, 0.18].map((x) => <mesh key={"grille" + x} position={[x, 0.63, 1.02]}><boxGeometry args={[0.045, 0.16, 0.025]} /><meshStandardMaterial color="#30363b" metalness={0.65} roughness={0.35} /></mesh>)}
+      <mesh position={[0, 0.42, 1.05]}><boxGeometry args={[1.18, 0.12, 0.13]} /><meshStandardMaterial color="#b8bec3" metalness={0.75} roughness={0.28} /></mesh>
+      {/* Three wheels, with metallic hubs */}
+      {[{x:0,z:1.0},{x:-0.58,z:-0.63},{x:0.58,z:-0.63}].map((w,i) => (
+        <group key={"wheel" + i} position={[w.x, 0.35, w.z]}>
+          <mesh rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.31, 0.31, 0.16, 16]} /><meshStandardMaterial color={rubber} roughness={0.98} /></mesh>
+          <mesh position={[w.x === 0 ? 0.09 : Math.sign(w.x) * 0.09, 0, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.16, 0.16, 0.025, 12]} /><meshStandardMaterial color="#aeb8c0" metalness={0.82} roughness={0.24} /></mesh>
+          <mesh position={[w.x === 0 ? 0.105 : Math.sign(w.x) * 0.105, 0, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.055, 0.055, 0.03, 10]} /><meshStandardMaterial color="#3c454b" metalness={0.65} roughness={0.32} /></mesh>
+        </group>
       ))}
-      <mesh position={[0, 0.85, 1.12]}>
-        <sphereGeometry args={[0.1, 8, 6]} />
-        <meshStandardMaterial color="#fff3c4" emissive="#ffd257" emissiveIntensity={0.8} />
-      </mesh>
+      {/* Side safety stripe and registration plate */}
+      {[-1, 1].map((side) => <mesh key={"stripe" + side} position={[side * 0.57, 0.66, -0.06]}><boxGeometry args={[0.025, 0.09, 1.25]} /><meshStandardMaterial color="#fff0b0" roughness={0.5} /></mesh>)}
+      <mesh position={[0, 0.52, 1.125]}><boxGeometry args={[0.34, 0.1, 0.025]} /><meshStandardMaterial color="#f4f1e8" roughness={0.65} /></mesh>
     </group>
   );
 }
@@ -175,46 +184,54 @@ function CarGlb({ name }: { name: string }) {
 }
 
 function DanfoMesh() {
+  const yellow = "#f2c51d";
+  const glass = "#213b4b";
+  const tire = "#17191d";
   return (
     <group>
-      <mesh position={[0, 0.82, 0]} castShadow>
-        <boxGeometry args={[1.9, 1.55, 4.2]} />
-        <meshStandardMaterial color="#f4c928" roughness={0.58} />
-      </mesh>
-      <mesh position={[0, 1.55, -0.05]} castShadow>
-        <boxGeometry args={[1.82, 0.72, 3.05]} />
-        <meshStandardMaterial color="#f7d54a" roughness={0.45} />
-      </mesh>
-      {[-0.63, 0.63].map((x) => [-1.25, -0.15, 1.15].map((z) => (
-        <mesh key={x + ":" + z} position={[x, 1.48, z]} rotation-y={x < 0 ? -0.05 : 0.05}>
-          <planeGeometry args={[0.48, 0.48]} />
-          <meshStandardMaterial color="#243946" metalness={0.25} roughness={0.3} />
-        </mesh>
-      )))}
-      <mesh position={[0, 1.4, 2.115]}>
-        <planeGeometry args={[1.25, 0.62]} />
-        <meshStandardMaterial color="#243946" metalness={0.25} roughness={0.3} />
-      </mesh>
-      <mesh position={[0, 0.52, 2.12]}>
-        <boxGeometry args={[1.65, 0.16, 0.12]} />
-        <meshStandardMaterial color="#c7cbd0" metalness={0.65} roughness={0.3} />
-      </mesh>
-      {[-0.68, 0.68].map((x) => (
-        <mesh key={x} position={[x, 0.42, 1.38]}>
-          <boxGeometry args={[0.22, 0.14, 0.08]} />
-          <meshStandardMaterial color="#fff0b5" emissive="#ffd257" emissiveIntensity={0.65} />
-        </mesh>
+      {/* Classic high-roof Lagos minibus body */}
+      <mesh position={[0, 0.88, 0]} castShadow receiveShadow><boxGeometry args={[2.02, 1.55, 4.35]} /><meshStandardMaterial color={yellow} metalness={0.14} roughness={0.48} /></mesh>
+      <mesh position={[0, 1.63, -0.12]} castShadow><boxGeometry args={[1.94, 0.78, 3.15]} /><meshStandardMaterial color="#f6d43c" metalness={0.12} roughness={0.42} /></mesh>
+      <mesh position={[0, 2.04, -0.12]} castShadow><boxGeometry args={[1.88, 0.06, 3.05]} /><meshStandardMaterial color="#c89e12" metalness={0.25} roughness={0.38} /></mesh>
+      {/* Tinted side windows with pillars */}
+      {[-1, 1].map((side) => (
+        <group key={"windows" + side} position={[side * 1.018, 1.63, -0.12]} rotation-y={side * Math.PI / 2}>
+          {[-1.17, -0.22, 0.73].map((z) => <mesh key={z} position={[0, 0, z]}><planeGeometry args={[0.78, 0.47]} /><meshPhysicalMaterial color={glass} metalness={0.38} roughness={0.2} clearcoat={0.65} side={THREE.DoubleSide} /></mesh>)}
+          <mesh position={[0, -0.41, 0]}><boxGeometry args={[0.035, 0.055, 2.92]} /><meshStandardMaterial color="#e3b817" roughness={0.5} /></mesh>
+          <mesh position={[0, -0.71, 0]}><boxGeometry args={[0.045, 0.035, 3.08]} /><meshStandardMaterial color="#a98410" metalness={0.25} roughness={0.45} /></mesh>
+        </group>
       ))}
-      {[-0.82, 0.82].map((x) => [-1.35, 1.35].map((z) => (
-        <mesh key={x + ":" + z} position={[x, 0.38, z]} rotation-z={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.36, 0.36, 0.18, 12]} />
-          <meshStandardMaterial color="#17191d" roughness={0.9} />
-        </mesh>
+      {/* Windshield and rear window */}
+      <mesh position={[0, 1.63, 2.184]} rotation-x={-0.06}><planeGeometry args={[1.48, 0.58]} /><meshPhysicalMaterial color={glass} metalness={0.32} roughness={0.18} clearcoat={0.8} side={THREE.DoubleSide} /></mesh>
+      <mesh position={[0, 1.62, -2.184]}><planeGeometry args={[1.35, 0.55]} /><meshPhysicalMaterial color={glass} metalness={0.3} roughness={0.22} side={THREE.DoubleSide} /></mesh>
+      {/* Front grille, chrome bumpers and headlamps */}
+      <mesh position={[0, 0.59, 2.205]}><boxGeometry args={[1.72, 0.18, 0.12]} /><meshStandardMaterial color="#b8c0c5" metalness={0.82} roughness={0.25} /></mesh>
+      <mesh position={[0, 0.78, 2.207]}><boxGeometry args={[0.55, 0.2, 0.04]} /><meshStandardMaterial color="#30383d" metalness={0.6} roughness={0.32} /></mesh>
+      {[-0.7, -0.48, -0.26, 0.26, 0.48, 0.7].map((x) => <mesh key={"grille" + x} position={[x, 0.78, 2.23]}><boxGeometry args={[0.025, 0.16, 0.025]} /><meshStandardMaterial color="#aeb8bf" metalness={0.72} roughness={0.3} /></mesh>)}
+      {[-0.72, 0.72].map((x) => <group key={"head" + x}><mesh position={[x, 0.94, 2.21]}><boxGeometry args={[0.28, 0.2, 0.06]} /><meshStandardMaterial color="#fff0c2" emissive="#ffd45d" emissiveIntensity={0.75} roughness={0.25} /></mesh><mesh position={[x, 0.65, 2.21]}><boxGeometry args={[0.22, 0.09, 0.05]} /><meshStandardMaterial color="#e34c36" emissive="#9d251c" emissiveIntensity={0.25} /></mesh></group>)}
+      <mesh position={[0, 0.45, 2.25]}><boxGeometry args={[1.9, 0.14, 0.16]} /><meshStandardMaterial color="#9ba4ab" metalness={0.82} roughness={0.25} /></mesh>
+      <mesh position={[0, 0.45, -2.22]}><boxGeometry args={[1.9, 0.14, 0.16]} /><meshStandardMaterial color="#9ba4ab" metalness={0.82} roughness={0.25} /></mesh>
+      {/* Rear brake lamps */}
+      {[-0.76, 0.76].map((x) => <mesh key={"tail" + x} position={[x, 0.9, -2.2]}><boxGeometry args={[0.18, 0.32, 0.06]} /><meshStandardMaterial color="#d9322c" emissive="#7c1614" emissiveIntensity={0.35} /></mesh>)}
+      {/* Four road tyres with silver wheel hubs */}
+      {[-0.9, 0.9].flatMap((x) => [-1.42, 1.42].map((z) => (
+        <group key={x + ":" + z} position={[x, 0.43, z]}>
+          <mesh rotation-z={Math.PI / 2} castShadow><cylinderGeometry args={[0.38, 0.38, 0.22, 18]} /><meshStandardMaterial color={tire} roughness={0.98} /></mesh>
+          <mesh position={[Math.sign(x) * 0.12, 0, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.22, 0.22, 0.035, 14]} /><meshStandardMaterial color="#b8c1c7" metalness={0.88} roughness={0.22} /></mesh>
+          <mesh position={[Math.sign(x) * 0.145, 0, 0]} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.075, 0.075, 0.04, 10]} /><meshStandardMaterial color="#41494e" metalness={0.65} roughness={0.28} /></mesh>
+        </group>
       )))}
-      <mesh position={[0, 0.93, 2.18]}>
-        <boxGeometry args={[0.7, 0.18, 0.04]} />
-        <meshStandardMaterial color="#fff1c2" emissive="#ffd257" emissiveIntensity={0.35} />
-      </mesh>
+      {/* Mirrors, door seams and recognizable Lagos Danfo livery */}
+      {[-1, 1].map((side) => (
+        <group key={"mirror" + side}>
+          <mesh position={[side * 1.12, 1.47, 1.46]} rotation-z={side * 0.22}><boxGeometry args={[0.24, 0.16, 0.13]} /><meshStandardMaterial color="#20272c" metalness={0.45} roughness={0.3} /></mesh>
+          <mesh position={[side * 1.025, 1.35, 0.45]}><boxGeometry args={[0.025, 0.76, 0.035]} /><meshStandardMaterial color="#a7800d" roughness={0.55} /></mesh>
+          <mesh position={[side * 1.025, 0.76, -0.25]}><boxGeometry args={[0.035, 0.025, 1.12]} /><meshStandardMaterial color="#fff0a5" roughness={0.5} /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 1.2, 2.215]}><boxGeometry args={[0.86, 0.16, 0.035]} /><meshStandardMaterial color="#f7f0d9" roughness={0.65} /></mesh>
+      <mesh position={[0, 1.2, 2.24]}><planeGeometry args={[0.74, 0.1]} /><meshBasicMaterial color="#25313a" /></mesh>
+      <mesh position={[0, 1.1, -2.215]}><boxGeometry args={[0.48, 0.13, 0.04]} /><meshStandardMaterial color="#f7f0d9" roughness={0.65} /></mesh>
     </group>
   );
 }
