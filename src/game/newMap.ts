@@ -5,11 +5,11 @@
 export const NEW_MAP_SCALE = 0.48;
 export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; }
-export const NEW_MAP_LOCAL_ROAD_START_INDEX = 7;
+export const NEW_MAP_LOCAL_ROAD_START_INDEX = 8;
 export const NEW_MAP_ROADS: [number, number][][] = [
   // West-side distributor follows the outside edge of the lake, university and industrial plots,
   // then skirts the south edge of downtown before joining the market.
-  [[-70, 150], [-70, 126], [-70, 105], [-70, 84], [-70, 64], [-70, 43], [-70, 20], [-70, 0], [-95, 0], [-114, 0], [-125, -24], [-130, -46], [-130, -67], [-130, -91], [-112, -99], [-90, -99], [-70, -91], [-55, -96], [-40, -98], [-25, -98], [-20, -96]],
+  [[-70, 150], [-70, 126], [-70, 105], [-70, 84], [-70, 64], [-70, 43], [-70, 20], [-70, 0], [-95, 0], [-105, -20], [-105, -46], [-105, -67], [-105, -91], [-112, -99], [-90, -99], [-70, -91], [-55, -96], [-40, -98], [-25, -98], [-20, -96]],
   // Airport terminal access: approaches the terminal apron from the south without crossing runways.
   [[36, -94], [32, -100], [32, -108], [10, -108], [-10, -108], [-20, -108], [-20, -96], [-20, -86], [-20, -82], [-18, -75], [-9, -70]],
   // East arterial links the terminal apron, stadium's east junction, civic edge and port approach.
@@ -22,6 +22,8 @@ export const NEW_MAP_ROADS: [number, number][][] = [
   [[72, 3], [65, 12], [54, 19], [44, 23], [38, 24]],
   // Hospital access spur stops beside the building instead of running through its footprint.
   [[84, 8], [91, 12], [94, 18], [92, 24]],
+  // Industrial gate spur meets the avenue at the east edge of the factory plots.
+  [[-105, -46], [-110, -46], [-116, -46]],
   // Residential grid streets follow the gaps between plots, not through the houses.
   [[101.8, -69.6], [101.8, -56.4], [101.8, -30], [101.8, -3.6], [101.8, 22.8], [101.8, 36]],
   [[128.2, -69.6], [128.2, -56.4], [128.2, -30], [128.2, -3.6], [128.2, 22.8], [128.2, 36]],
