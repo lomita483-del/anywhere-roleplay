@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -21,6 +21,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   market: { icon: ShoppingBag, label: "Market", tint: "#59d6a2" },
   wardrobe: { icon: Shirt, label: "Wardrobe", tint: "#eab308" },
   rides: { icon: MapPin, label: "Ride & GPS", tint: "#63c7f0" },
+  food: { icon: Utensils, label: "Buka & Food", tint: "#f59e0b" },
 };
 
 function atAtm() {
@@ -560,6 +561,37 @@ function RadioApp() {
 }
 
 
+
+function FoodApp() {
+  const needs = useGame((s) => s.needs);
+  const eatFood = useGame((s) => s.eatFood);
+  const [notice, setNotice] = useState("");
+  const buy = (kind: "mama-put" | "snack" | "water", label: string) => {
+    const ok = eatFood(kind);
+    setNotice(ok ? label + " purchased. Your needs have been restored." : "Not enough funds. Check your cash and bank balance.");
+  };
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-amber-300/20 bg-gradient-to-br from-[#4b2b13] to-[#17130e] p-4">
+      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">Yaba roadside food</div>
+      <div className="mt-1 text-lg font-bold text-white">Buka & Mama Put</div>
+      <div className="mt-1 text-[11px] text-amber-50/70">Chop well, recover energy and continue your Lagos hustle.</div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: needs.hunger + "%" }} /></div>
+      <div className="mt-1 text-[10px] text-amber-100/80">Hunger · {Math.round(needs.hunger)}%</div>
+    </div>
+    {notice && <div role="status" className="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-2 text-xs text-emerald-100">{notice}</div>}
+    {[
+      { id: "mama-put" as const, title: "Rice, stew & protein", desc: "Proper Mama Put plate", price: 900, emoji: "🍲", gain: "+42 hunger · +12 energy" },
+      { id: "snack" as const, title: "Puff-puff / meat pie", desc: "Quick street snack", price: 250, emoji: "🥟", gain: "+12 hunger · +3 energy" },
+      { id: "water" as const, title: "Cold sachet water", desc: "Cool down in Lagos heat", price: 150, emoji: "💧", gain: "Refreshes stress" },
+    ].map((item) => <button key={item.id} onClick={() => buy(item.id, item.title)} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3 text-left hover:bg-white/10">
+      <span className="text-2xl">{item.emoji}</span>
+      <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-hud-bright">{item.title}</span><span className="mt-0.5 block text-[10px] text-hud-muted">{item.desc}</span><span className="mt-1 block text-[9px] text-emerald-200">{item.gain}</span></span>
+      <span className="text-xs font-bold text-amber-200">{naira(item.price)}</span>
+    </button>)}
+    <p className="text-[10px] text-hud-muted">Food is paid from cash first, then your bank account. Needs recover immediately and are saved with your character.</p>
+  </div>;
+}
+
 function RideApp() {
   const waypoint = useGame((s) => s.waypoint);
   const cash = useGame((s) => s.cash);
@@ -661,6 +693,7 @@ export default function Phone() {
     app === "market" ? <MarketplaceApp /> :
     app === "wardrobe" ? <WardrobeApp /> :
     app === "rides" ? <RideApp /> :
+    app === "food" ? <FoodApp /> :
     <HomeApp />;
 
   return (
