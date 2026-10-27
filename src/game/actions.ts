@@ -43,8 +43,9 @@ export function interact() {
   else if (p.kind === "dealer") s.setModal("dealer");
   else if (p.kind === "home") {
     if ((s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0 || (s.rentals["mainland-studio"] ?? 0) > Date.now() || (s.rentals["ikoyi-apartment"] ?? 0) > Date.now()) {
+      g.interiorReturn.copy(g.playerPos);
       g.playerPos.set(104, 0, 104);
-      s.setInterior(true);
+      s.setInterior(true, "Ikoyi Apartment");
       s.setWaypoint(null);
       s.radio("🏠 Welcome home. Your apartment storage is safe here.");
     } else s.setModal("home");
@@ -52,6 +53,13 @@ export function interact() {
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
   else if (p.kind === "jobboard") s.openPhone("jobs");
   else if (p.kind === "police") { s.setOutfit({ top: "uniform" }); s.acceptJob("security"); s.radio("🚔 Police duty started. Patrol uniform equipped."); }
+  else if (p.kind === "building") {
+    g.interiorReturn.copy(g.playerPos);
+    g.playerPos.set(104, 0, 104);
+    s.setInterior(true, p.buildingLabel ?? "City Building");
+    s.setWaypoint(null);
+    s.radio("🏢 Welcome inside " + (p.buildingLabel ?? "the building") + ". Explore the interior and use Exit to return outside.");
+  }
 }
 
 // Spawn an owned vehicle on the nearest road lane to the player.
@@ -85,7 +93,7 @@ export function deliverOwnedVehicle(model: string) {
 export function exitApartment() {
   const s = useGame.getState();
   if (!s.interior) return;
-  g.playerPos.set(42, 0, 38);
+  g.playerPos.copy(g.interiorReturn);
   s.setInterior(false);
   s.radio("🏠 You left your apartment.");
 }
