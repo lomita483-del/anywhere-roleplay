@@ -354,11 +354,11 @@ function JobMarker() {
   );
 }
 
-function RemotePlayer({ name, x, z, yaw, vehicle }: { name: string; x: number; z: number; yaw: number; vehicle: string | null }) {
+function RemotePlayer({ name, x, y, z, yaw, vehicle, outfit }: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone: string; top: string } }) {
   const ref = useRef<THREE.Group>(null);
   useFrame(() => {
     if (!ref.current) return;
-    ref.current.position.set(x, 0, z);
+    ref.current.position.set(x, y, z);
     ref.current.rotation.y = yaw;
   });
   return (
@@ -367,8 +367,8 @@ function RemotePlayer({ name, x, z, yaw, vehicle }: { name: string; x: number; z
         <mesh position={[0, 0.85, 0]} castShadow><boxGeometry args={[1.6, 1.1, 3.2]} /><meshStandardMaterial color="#eab308" roughness={0.45} metalness={0.2} /></mesh>
       ) : (
         <>
-          <mesh position={[0, 0.95, 0]} castShadow><capsuleGeometry args={[0.32, 0.9, 4, 8]} /><meshStandardMaterial color="#2d8b67" roughness={0.8} /></mesh>
-          <mesh position={[0, 1.8, 0]} castShadow><sphereGeometry args={[0.24, 12, 12]} /><meshStandardMaterial color="#9b694b" roughness={0.8} /></mesh>
+          <mesh position={[0, 0.95, 0]} castShadow><capsuleGeometry args={[0.32, 0.9, 4, 8]} /><meshStandardMaterial color={outfit?.top === "uniform" ? "#263d66" : outfit?.top === "formal" ? "#24334c" : outfit?.top === "agbada" ? "#d4a72c" : "#2d8b67"} roughness={0.8} /></mesh>
+          <mesh position={[0, 1.8, 0]} castShadow><sphereGeometry args={[0.24, 12, 12]} /><meshStandardMaterial color={outfit?.skinTone ?? "#9b694b"} roughness={0.8} /></mesh>
         </>
       )}
       <Html position={[0, 2.25, 0]} center distanceFactor={18} occlude={false}>
@@ -445,7 +445,7 @@ export default function GameWorld() {
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
   const activeJob = useGame((s) => s.activeJob);
-  const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; z: number; yaw: number; vehicle: string | null }>>({});
+  const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { skinTone: string; top: string } }>>({});
 
   const register = (id: string, grp: THREE.Group | null) => {
     vehRefs.current.set(id, grp);
@@ -464,9 +464,9 @@ export default function GameWorld() {
         channel = supabase.channel("lagos-life-world", { config: { presence: { key: playerId }, broadcast: { self: false } } });
         channel
           .on("broadcast", { event: "player_state" }, ({ payload }) => {
-            const p = payload as { id?: string; name?: string; x?: number; z?: number; yaw?: number; vehicle?: string | null };
+            const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { skinTone: string; top: string } };
             if (!p.id || p.id === playerId || typeof p.x !== "number" || typeof p.z !== "number") return;
-            setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null } }));
+            setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, y: p.y ?? 0, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null, outfit: p.outfit } }));
           })
           .on("presence", { event: "sync" }, () => {
             const state = channel?.presenceState() ?? {};
@@ -480,7 +480,7 @@ export default function GameWorld() {
             publishTimer = window.setInterval(() => {
               if (!channel || !playerId) return;
               const v = g.drivingId ? g.vehicles.get(g.drivingId) : null;
-              void channel.send({ type: "broadcast", event: "player_state", payload: { id: playerId, name: useGame.getState().name || "Hustler", x: g.playerPos.x, z: g.playerPos.z, yaw: g.playerYaw, vehicle: v?.model ?? null } });
+              void channel.send({ type: "broadcast", event: "player_state", payload: { id: playerId, name: useGame.getState().name || "Hustler", x: g.playerPos.x, y: g.playerPos.y, z: g.playerPos.z, yaw: g.playerYaw, vehicle: v?.model ?? null, outfit: { skinTone: useGame.getState().outfit.skinTone, top: useGame.getState().outfit.top } } });
             }, 250);
           });
       } catch (error) {
