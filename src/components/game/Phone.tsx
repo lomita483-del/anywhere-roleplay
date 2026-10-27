@@ -595,6 +595,7 @@ function RadarApp() {
   const px = g.playerPos.x, pz = g.playerPos.z;
   const contacts = [
     ...POIS.map(p => ({ name:p.label, type:p.kind === "atm" ? "ATM" : p.kind === "bank" ? "Bank" : p.kind === "market" ? "Market" : "Landmark", x:p.x, z:p.z, color:p.kind === "atm" ? "#59d6a2" : "#eab308" })),
+    ...Array.from(g.vehicles.values()).filter(v => v.ai && Math.hypot(v.px-px,v.pz-pz)<=100).map(v => ({name:v.model==="danfo"?"Danfo bus":v.model==="keke"?"Keke Napep":v.model==="bike"?"Okada rider":"Road traffic",type:"NPC traffic",x:v.px,z:v.pz,color:"#c4b5fd"})),
     ...(job ? [{name:job.title+" target",type:"Job target",x:job.targets[job.stage]?.[0] ?? px,z:job.targets[job.stage]?.[1] ?? pz,color:"#ff5c5c"}] : []),
     ...(waypoint ? [{name:waypoint.label,type:"Destination",x:waypoint.x,z:waypoint.z,color:"#62d7f2"}] : []),
   ].map(p=>({...p,distance:Math.hypot(p.x-px,p.z-pz)})).filter(p=>p.distance<=100).sort((a,b)=>a.distance-b.distance);
