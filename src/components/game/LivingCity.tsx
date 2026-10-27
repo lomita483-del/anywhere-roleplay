@@ -22,7 +22,7 @@ function StreetUmbrella({ x, z, color, label, phase = 0 }: { x: number; z: numbe
     <mesh position={[0, 1.95, 0]} castShadow><cylinderGeometry args={[0.035, 0.05, 3.9, 6]} /><meshStandardMaterial color="#8a7353" roughness={0.9} /></mesh>
     <mesh position={[0, 3.55, 0]} castShadow><coneGeometry args={[1.85, 0.5, 8]} /><meshStandardMaterial color={color} roughness={0.92} side={THREE.DoubleSide} /></mesh>
     <mesh position={[0, 0.8, 0.25]} castShadow><boxGeometry args={[1.8, 0.18, 0.8]} /><meshStandardMaterial color="#70472d" roughness={0.95} /></mesh>
-    {[-0.55, 0, 0.55].map((px, i) => <mesh key={px} position={[px, 1.02, 0.3]} castShadow><boxGeometry args={[0.42, 0.28, 0.48]} /><meshStandardMaterial color={["#d9a441", "#be493a", "#53935a"][i]} /></mesh>)}
+    {[-0.55, 0, 0.55].map((px, i) => <mesh key={px} position={[px, 1.02, 0.3]} castShadow><boxGeometry args={[0.42, 0.28, 0.48]} /><meshStandardMaterial color={["#d9a441", "#be493a", "#53935a"][i] ?? "#d9a441"} /></mesh>)}
     <mesh position={[0.82, 0.43, 0.82]} castShadow><cylinderGeometry args={[0.22, 0.22, 0.18, 10]} /><meshStandardMaterial color="#493a2d" /></mesh>
     <Html position={[0, 3.9, 0]} center distanceFactor={23}><div className="whitespace-nowrap rounded-sm border border-white/20 bg-[#1a1712]/90 px-2 py-1 text-[9px] font-black uppercase text-amber-100">{label}</div></Html>
   </group>;
@@ -35,7 +35,7 @@ function Shopfront({ x, z, color, title, phase = 0 }: { x: number; z: number; co
     <mesh position={[0, 2.5, 1.94]}><boxGeometry args={[3.7, 0.68, 0.12]} /><meshStandardMaterial color={color} roughness={0.9} /></mesh>
     <Html position={[0, 2.5, 2.04]} center distanceFactor={20}><div className="max-w-[105px] whitespace-nowrap text-center text-[10px] font-black uppercase tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{title}</div></Html>
     <mesh position={[0, 1.12, 1.98]} castShadow><boxGeometry args={[4.3, 0.12, 0.5]} /><meshStandardMaterial color="#573d2b" roughness={0.95} /></mesh>
-    {[-1.35, 0, 1.35].map((px, i) => <mesh key={px} position={[px, 1.33, 2.03]}><boxGeometry args={[0.62, 0.35, 0.4]} /><meshStandardMaterial color={["#c7a33e", "#8e4a35", "#4d8756"][i]} roughness={0.9} /></mesh>)}
+    {[-1.35, 0, 1.35].map((px, i) => <mesh key={px} position={[px, 1.33, 2.03]}><boxGeometry args={[0.62, 0.35, 0.4]} /><meshStandardMaterial color={["#c7a33e", "#8e4a35", "#4d8756"][i] ?? "#c7a33e"} roughness={0.9} /></mesh>)}
   </group>;
 }
 
