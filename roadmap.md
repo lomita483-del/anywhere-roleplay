@@ -14,6 +14,8 @@
 - [x] Save data includes active job and spawned owned vehicles
 - [x] Transaction amount validation and tests for money movement/save restoration added
 - [x] Signup trigger execute privileges revoked from public, anon and authenticated roles; verified by SQL privilege check
+- [x] Optimized profile/save RLS policies with scalar auth.uid() checks; Supabase security and performance advisors now return no findings
+- [x] Recorded the RLS policy optimization in supabase/migrations/
 
 ## Remaining work
 - [ ] Confirm email sign-up behavior against the project's actual Auth provider configuration
