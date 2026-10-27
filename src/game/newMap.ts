@@ -23,8 +23,6 @@ export const NEW_MAP_ROADS: [number, number][][] = [
   [[72, 3], [65, 12], [54, 19], [44, 23], [38, 24]],
   // Hospital access spur stops beside the building instead of running through its footprint.
   [[84, 8], [91, 12], [94, 18], [92, 24]],
-  // Port approach follows the dry western edge of the waterfront and reaches the cargo-yard gate.
-  [[70, 103], [70, 108], [70, 116], [70, 124]],
   // U-shaped boulevard around the central stadium plaza; kept as the final route.
   [[-9, -70], [22, -68], [49, -52], [67, -27], [72, 3], [63, 33], [43, 55], [14, 67], [-17, 67], [-45, 53], [-64, 30], [-72, 1], [-66, -29], [-47, -52], [-21, -67], [-9, -70]],
 ];
