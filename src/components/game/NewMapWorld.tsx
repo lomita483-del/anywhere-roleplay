@@ -153,6 +153,164 @@ function BigScreen({ z, rotate = false }: { z: number; rotate?: boolean }) {
   );
 }
 
+
+type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string };
+
+function CityBuilding({ b }: { b: CityBlock }) {
+  return (
+    <group position={[b.x, 0, b.z]}>
+      <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[b.w, b.h, b.d]} />
+        <meshStandardMaterial color={b.color} roughness={0.72} metalness={b.h > 18 ? 0.24 : 0.04} />
+      </mesh>
+      <mesh position={[0, b.h + 0.18, 0]} castShadow>
+        <boxGeometry args={[b.w + 0.8, 0.36, b.d + 0.8]} />
+        <meshStandardMaterial color={b.h > 18 ? "#253847" : "#c5b99e"} roughness={0.7} metalness={0.2} />
+      </mesh>
+      {b.h > 14 && <mesh position={[0, b.h * 0.56, b.d / 2 + 0.015]}>
+        <boxGeometry args={[b.w * 0.82, b.h * 0.58, 0.04]} />
+        <meshStandardMaterial color="#7ea7b6" metalness={0.35} roughness={0.32} />
+      </mesh>}
+      {b.label && <Html position={[0, b.h + 1.3, 0]} center distanceFactor={30} style={{ pointerEvents: "none" }}>
+        <div style={{ whiteSpace: "nowrap", padding: "4px 8px", borderRadius: 5, background: "rgba(7,19,28,.88)", border: "1px solid rgba(230,199,127,.75)", color: "#f8e8bd", fontSize: 10, fontWeight: 900, letterSpacing: 1.3 }}>{b.label}</div>
+      </Html>}
+    </group>
+  );
+}
+
+function CityTrees() {
+  const trunkRef = useRef<THREE.InstancedMesh>(null);
+  const crownRef = useRef<THREE.InstancedMesh>(null);
+  const spots = useMemo(() => {
+    const out: [number, number, number][] = [];
+    for (let i = 0; i < 120; i++) {
+      const a = i * 2.399963;
+      const r = 104 + (i % 5) * 11;
+      out.push([Math.cos(a) * r, 0, Math.sin(a) * r]);
+    }
+    for (let i = 0; i < 30; i++) {
+      const a = i * 2.399963;
+      out.push([Math.cos(a) * (32 + (i % 3) * 4), 0, Math.sin(a) * (32 + (i % 3) * 4)]);
+    }
+    return out;
+  }, []);
+  useEffect(() => {
+    const trunks = trunkRef.current, crowns = crownRef.current;
+    if (!trunks || !crowns) return;
+    const dummy = new THREE.Object3D();
+    spots.forEach(([x, y, z], i) => {
+      const h = 1.5 + (i % 4) * 0.2;
+      dummy.position.set(x, y + h * 0.5, z); dummy.scale.set(0.34, h, 0.34); dummy.rotation.set(0, i, 0); dummy.updateMatrix(); trunks.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(x, y + h + 1.1 + (i % 3) * 0.18, z); dummy.scale.set(1.05 + (i % 3) * 0.12, 1.45 + (i % 2) * 0.2, 1.05 + (i % 3) * 0.12); dummy.updateMatrix(); crowns.setMatrixAt(i, dummy.matrix);
+    });
+    trunks.instanceMatrix.needsUpdate = true; crowns.instanceMatrix.needsUpdate = true;
+    trunks.computeBoundingSphere(); crowns.computeBoundingSphere();
+  }, [spots]);
+  return <>
+    <instancedMesh ref={trunkRef} args={[undefined, undefined, spots.length]} frustumCulled={false}><cylinderGeometry args={[0.5, 0.65, 1, 5]} /><meshStandardMaterial color="#71533b" roughness={1} /></instancedMesh>
+    <instancedMesh ref={crownRef} args={[undefined, undefined, spots.length]} frustumCulled={false}><coneGeometry args={[1, 2, 5]} /><meshStandardMaterial color="#315f3b" roughness={1} /></instancedMesh>
+  </>;
+}
+
+function CityTraffic() {
+  const refs = useRef<(THREE.Group | null)[]>([]);
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    refs.current.forEach((car, i) => {
+      if (!car) return;
+      const lane = i % 4;
+      const p = ((t * (3.5 + (i % 3) * 0.7) + i * 27) % 300) - 150;
+      if (lane === 0) { car.position.set(p, 0.12, -42); car.rotation.y = Math.PI / 2; }
+      else if (lane === 1) { car.position.set(42, 0.12, p); car.rotation.y = 0; }
+      else if (lane === 2) { car.position.set(-82, 0.12, p); car.rotation.y = 0; }
+      else { car.position.set(p, 0.12, 82); car.rotation.y = Math.PI / 2; }
+    });
+  });
+  return <>{Array.from({ length: 12 }, (_, i) => <group key={i} ref={(el) => { refs.current[i] = el; }}>
+    <mesh castShadow><boxGeometry args={[2.6, 0.75, 1.25]} /><meshStandardMaterial color={["#d9dfe0", "#d9ad4d", "#376a8a", "#a83d35", "#263b32"][i % 5]} roughness={0.65} /></mesh>
+    <mesh position={[0, 0.43, 0]}><boxGeometry args={[1.25, 0.42, 1.05]} /><meshStandardMaterial color="#8eb0bb" metalness={0.2} roughness={0.25} /></mesh>
+  </group>)}</>;
+}
+
+function CityEcosystem() {
+  const buildings = useMemo<CityBlock[]>(() => {
+    const out: CityBlock[] = [];
+    // Industrial and corporate skyline, north-west.
+    for (let i = 0; i < 10; i++) out.push({ x: -145 + (i % 5) * 14, z: -88 + Math.floor(i / 5) * 17, w: 9 + (i % 3) * 2, d: 9, h: 18 + ((i * 7) % 28), color: ["#8daab5", "#b3b9b7", "#d0c4ad", "#728d9b"][i % 4], label: i === 2 ? "CORPORATE DISTRICT" : undefined });
+    for (let i = 0; i < 8; i++) out.push({ x: -151 + (i % 4) * 12, z: -55 + Math.floor(i / 4) * 13, w: 8, d: 8, h: 6 + (i % 3), color: ["#a8a69a", "#b5a18b", "#c8bca5"][i % 3] });
+    // Residential streets, north-east.
+    for (let row = 0; row < 4; row++) for (let col = 0; col < 5; col++) out.push({ x: 64 + col * 16, z: -77 + row * 14, w: 10, d: 8, h: 4.2 + ((row + col) % 2) * 0.7, color: ["#dfd3bb", "#d9c8a7", "#bfc9bb", "#d7b6a0"][(row + col) % 4]!, label: row === 0 && col === 2 ? "RESIDENTIAL DISTRICT" : undefined });
+    // Commercial blocks around the centre, leaving a clear stadium ring.
+    for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4] });
+    // University district and civic campus, west.
+    out.push({ x: -111, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
+    out.push({ x: -83, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
+    out.push({ x: -108, z: 42, w: 17, d: 12, h: 7, color: "#b4c4b7" });
+    out.push({ x: -85, z: 42, w: 16, d: 12, h: 6, color: "#d8c7a5" });
+    // Port logistics buildings, east/south.
+    out.push({ x: 124, z: 91, w: 23, d: 15, h: 8, color: "#b7a58a", label: "PORT OF LAGOS" });
+    out.push({ x: 148, z: 75, w: 14, d: 12, h: 7, color: "#c8bca6" });
+    return out;
+  }, []);
+  return <>
+    {/* Interconnected asphalt roads and white dashed lane markings */}
+    {[-140, -100, -42, 42, 82, 122, 150].map((x) => <group key={"rx"+x}>
+      <mesh rotation-x={-Math.PI / 2} position={[x, 0.025, 0]}><planeGeometry args={[5.2, 330]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
+      {Array.from({ length: 22 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[x, 0.04, -158 + i * 15]}><planeGeometry args={[0.12, 6]} /><meshBasicMaterial color="#f0eee4" /></mesh>)}
+    </group>)}
+    {[-140, -100, -42, 42, 82, 122, 150].map((z) => <group key={"rz"+z}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.026, z]}><planeGeometry args={[330, 5.2]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
+      {Array.from({ length: 22 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[-158 + i * 15, 0.045, z]}><planeGeometry args={[6, 0.12]} /><meshBasicMaterial color="#f0eee4" /></mesh>)}
+    </group>)}
+    {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
+    <group position={[6, 0, -142]}>
+      {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
+        <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[9, 82]} /><meshStandardMaterial color="#4a5054" roughness={1} /></mesh>
+        {Array.from({ length: 8 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[0, 0.015, -34 + i * 9]}><planeGeometry args={[0.22, 4]} /><meshBasicMaterial color="#f5f1df" /></mesh>)}
+      </group>)}
+      <mesh position={[0, 1.6, 48]}><boxGeometry args={[44, 3.2, 13]} /><meshStandardMaterial color="#c5c9c6" metalness={0.3} roughness={0.5} /></mesh>
+      <mesh position={[0, 3.3, 48]}><boxGeometry args={[34, 0.5, 9]} /><meshStandardMaterial color="#7ea9b6" metalness={0.25} roughness={0.3} /></mesh>
+      <mesh position={[27, 5, 48]}><cylinderGeometry args={[1.2, 1.5, 10, 8]} /><meshStandardMaterial color="#d0d4d2" /></mesh>
+      <mesh position={[27, 10, 48]}><boxGeometry args={[4, 2.4, 4]} /><meshStandardMaterial color="#7194a2" metalness={0.2} /></mesh>
+      {[[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4]].map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
+        <mesh><boxGeometry args={[9, 1.1, 1.8]} /><meshStandardMaterial color={i%2?"#e9e8df":"#d4d9d8"} /></mesh>
+        <mesh position={[0, 0.15, 0]}><boxGeometry args={[2.5, 0.16, 12]} /><meshStandardMaterial color="#d6dbd9" /></mesh>
+        <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
+      </group>)}
+      <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>LAGOS INTERNATIONAL AIRPORT</div></Html>
+    </group>
+    {/* Port and waterfront with container stacks, crane frames and ships. */}
+    <group position={[116, 0, 120]}>
+      <mesh rotation-x={-Math.PI / 2} position={[5, 0, 0]}><planeGeometry args={[88, 64]} /><meshStandardMaterial color="#267b9c" roughness={0.34} metalness={0.1} /></mesh>
+      <mesh position={[-22, 0.28, -1]}><boxGeometry args={[47, 0.55, 17]} /><meshStandardMaterial color="#777e7e" roughness={0.9} /></mesh>
+      {Array.from({ length: 28 }, (_, i) => <mesh key={i} position={[-40 + (i % 7) * 5.6, 1.3 + Math.floor(i / 7) * 1.65, -5 + Math.floor(i / 7) * 3.6]} castShadow><boxGeometry args={[5, 1.5, 3.1]} /><meshStandardMaterial color={["#d45d45", "#d4ad4d", "#396a89", "#b9c2be", "#406b55"][i % 5]} roughness={0.8} /></mesh>)}
+      {[[-27, -11], [8, -12]].map(([x,z],i) => <group key={i} position={[x, 0, z]}>
+        <mesh position={[0, 7, 0]}><boxGeometry args={[1, 14, 1]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
+        <mesh position={[4, 13, 0]}><boxGeometry args={[9, 0.8, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
+        <mesh position={[7, 6, 0]}><boxGeometry args={[0.8, 12, 0.8]} /><meshStandardMaterial color="#d4b76f" metalness={0.35} /></mesh>
+      </group>)}
+      {[-10, 18].map((x,i) => <group key={i} position={[x, 0.5, 20]}>
+        <mesh><boxGeometry args={[19, 1.3, 5]} /><meshStandardMaterial color="#263b49" metalness={0.35} roughness={0.4} /></mesh>
+        <mesh position={[0, 1.4, -1]}><boxGeometry args={[7, 1.2, 3]} /><meshStandardMaterial color="#e4e3d8" /></mesh>
+      </group>)}
+      <Html position={[8, 8, 28]} center distanceFactor={35} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>PORT OF LAGOS</div></Html>
+    </group>
+    {/* Scenic lake and sandy recreational edge, south-west. */}
+    <group position={[-112, 0, 118]}>
+      <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><circleGeometry args={[27, 40]} /><meshStandardMaterial color="#287f9d" roughness={0.35} /></mesh>
+      <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[27, 32, 40]} /><meshStandardMaterial color="#d7c391" roughness={1} side={THREE.DoubleSide} /></mesh>
+      {[-1, 1].map((side) => <group key={side} position={[side * 12, 0.3, 0]}><mesh><boxGeometry args={[5, 0.6, 3.5]} /><meshStandardMaterial color="#c5a779" /></mesh><mesh position={[0, 1.8, -0.7]}><boxGeometry args={[5, 3, 0.3]} /><meshStandardMaterial color="#876344" /></mesh><mesh position={[0, 3.4, 0]}><boxGeometry args={[6, 0.3, 4.5]} /><meshStandardMaterial color="#cfa85d" /></mesh></group>)}
+    </group>
+    {/* District labels and premium map title. */}
+    <Html position={[0, 8, -166]} center distanceFactor={48} style={{ pointerEvents: "none" }}>
+      <div style={{ whiteSpace: "nowrap", textAlign: "center", padding: "12px 22px", borderRadius: 9, color: "#f8e4ac", background: "linear-gradient(135deg,rgba(7,19,29,.97),rgba(19,46,48,.94))", border: "2px solid rgba(224,188,105,.9)", boxShadow: "0 8px 28px #0008", fontWeight: 1000, letterSpacing: 5, fontSize: 25 }}>LAGOS METROPLEX<div style={{ marginTop: 4, fontSize: 10, letterSpacing: 3, color: "#d8e3d9" }}>A LIVING OPEN-WORLD CITY · ALWAYS ROLEPLAY</div></div>
+    </Html>
+    <CityTrees />
+    {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
+    <CityTraffic />
+  </>;
+}
+
 export default function NewMapWorld() {
   const players = useMemo<MatchPlayerData[]>(() => {
     const home: [number, number][] = [
@@ -169,6 +327,8 @@ export default function NewMapWorld() {
 
   return (
     <group>
+      {/* Named, connected open-world districts surrounding the central stadium. */}
+      <CityEcosystem />
       {/* Plain world beyond the stadium */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[WORLD * 3, WORLD * 3]} />
@@ -176,7 +336,7 @@ export default function NewMapWorld() {
       </mesh>
 
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
-      <group scale={[0.28, 0.28, 0.28]}>
+      <group scale={[0.22, 0.22, 0.22]}>
         {/* Thick outer shell walls; these sit outside the open pitch rather than over the player */}
         <mesh position={[0, 5.2, 0]} scale={[60, 1, 40]} castShadow receiveShadow>
           <cylinderGeometry args={[1, 0.96, 10.4, 96, 1, true]} />
@@ -296,20 +456,20 @@ export default function NewMapWorld() {
       {/* Premium forecourt outside the compact stadium */}
       <group>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
-          <circleGeometry args={[25, 64]} />
+          <circleGeometry args={[17.5, 56]} />
           <meshStandardMaterial color="#a9b0b0" roughness={0.92} />
         </mesh>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.028, 0]} receiveShadow>
-          <ringGeometry args={[18, 20, 64]} />
+          <ringGeometry args={[12.4, 14.2, 56]} />
           <meshStandardMaterial color="#d1b16c" metalness={0.15} roughness={0.55} side={THREE.DoubleSide} />
         </mesh>
         {[
-          { x: -19, z: -12, title: "MATCH DAY GRILL", color: "#9e3e35" },
-          { x: 19, z: -12, title: "FAN SHOP", color: "#0c615b" },
-          { x: -19, z: 12, title: "CHILL & DRINKS", color: "#263d58" },
-          { x: 19, z: 12, title: "SPORTS STORE", color: "#72532d" },
+          { x: -13.5, z: -7.5, title: "MATCH DAY GRILL", color: "#9e3e35" },
+          { x: 13.5, z: -7.5, title: "FAN SHOP", color: "#0c615b" },
+          { x: -13.5, z: 7.5, title: "CHILL & DRINKS", color: "#263d58" },
+          { x: 13.5, z: 7.5, title: "SPORTS STORE", color: "#72532d" },
         ].map((shop) => (
-          <group key={shop.title} position={[shop.x, 0, shop.z]}>
+          <group key={shop.title} position={[shop.x, 0, shop.z]} scale={[0.68, 0.68, 0.68]}>
             <mesh position={[0, 2.1, 0]} castShadow receiveShadow>
               <boxGeometry args={[10, 4.2, 7]} />
               <meshStandardMaterial color="#e6e1d6" roughness={0.84} />
@@ -334,8 +494,8 @@ export default function NewMapWorld() {
         ))}
         {Array.from({ length: 8 }, (_, i) => {
           const a = (i / 8) * Math.PI * 2;
-          const x = Math.cos(a) * 22;
-          const z = Math.sin(a) * 22;
+          const x = Math.cos(a) * 15.4;
+          const z = Math.sin(a) * 15.4;
           return (
             <group key={i} position={[x, 0, z]}>
               <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[1.25, 1.5, 0.5, 12]} /><meshStandardMaterial color="#3b4947" roughness={0.8} /></mesh>
@@ -347,8 +507,8 @@ export default function NewMapWorld() {
             </group>
           );
         })}
-        <Html position={[0, 5, -8]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-          <div style={{ whiteSpace: "nowrap", textAlign: "center", color: "#f3d99a", textShadow: "0 2px 8px #000", fontWeight: 900, letterSpacing: 3, fontSize: 12 }}>ALWAYS ROLEPLAY · MATCH DAY PLAZA</div>
+        <Html position={[0, 3, -5]} center distanceFactor={22} style={{ pointerEvents: "none" }}>
+          <div style={{ whiteSpace: "nowrap", textAlign: "center", color: "#f3d99a", textShadow: "0 2px 8px #000", fontWeight: 900, letterSpacing: 3, fontSize: 12 }}>ALWAYS ROLEPLAY ARENA · MATCH DAY PLAZA</div>
         </Html>
       </group>
     </group>
