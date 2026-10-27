@@ -16,6 +16,8 @@ function Index() {
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [pendingVerification, setPendingVerification] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [checking, setChecking] = useState(true);
@@ -119,7 +121,18 @@ function Index() {
     setMessage("");
     setAuthError("");
     try {
-      if (authMode === "signup") {
+      if (pendingVerification) {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token: otp.trim(),
+          type: "signup",
+        });
+        if (error) throw error;
+        setSession(data.session);
+        setPendingVerification(false);
+        setOtp("");
+        setMessage("Email verified successfully. Welcome to Anywhere Roleplay.");
+      } else if (authMode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -127,7 +140,9 @@ function Index() {
         });
         if (error) throw error;
         if (!data.session) {
-          setMessage("Account created. Check your email to confirm your address, then sign in.");
+          setPendingVerification(true);
+          setOtp("");
+          setMessage("We sent a 6-digit verification code to your email. Enter it below to finish creating your account.");
         } else {
           setSession(data.session);
           setMessage("Account created successfully.");
@@ -211,10 +226,27 @@ function Index() {
                 <button type="button" onClick={() => { setAuthMode("signup"); setMessage(""); setAuthError(""); }} className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold ${authMode === "signup" ? "bg-[#e9ad49] text-[#17130b]" : "text-white/55"}`}><UserPlus className="h-4 w-4" /> Create account</button>
               </div>
               <form onSubmit={submitAuth} className="space-y-3">
-                {authMode === "signup" && <div><label htmlFor="player-name" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Player name</label><input id="player-name" value={playerName} maxLength={16} onChange={(e) => setPlayerName(e.target.value)} required placeholder="Choose a player name" autoComplete="nickname" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>}
-                <div><label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Email address</label><input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="you@example.com" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>
-                <div><label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Password</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={authMode === "signup" ? "new-password" : "current-password"} placeholder="At least 6 characters" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>
-                <button disabled={busy || checking} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f0b650] to-[#d58d2b] px-4 py-3.5 text-sm font-extrabold text-[#17130b] shadow-lg shadow-[#d58d2b]/15 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60">{busy ? "Please wait…" : authMode === "signup" ? "Create your account" : "Sign in to continue"} <ArrowRight className="h-4 w-4" /></button>
+                {pendingVerification ? (
+                  <>
+                    <div className="rounded-xl border border-[#e9ad49]/20 bg-[#e9ad49]/[0.06] p-4">
+                      <p className="text-sm font-semibold text-[#f0b650]">Verify your email with a code</p>
+                      <p className="mt-1 break-all text-xs leading-5 text-white/55">Enter the 6-digit OTP sent to {email}.</p>
+                    </div>
+                    <div>
+                      <label htmlFor="email-otp" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">6-digit verification code</label>
+                      <input id="email-otp" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} required placeholder="000000" className="h-14 w-full rounded-xl border border-[#e9ad49]/30 bg-black/25 px-4 text-center text-2xl font-bold tracking-[0.5em] outline-none placeholder:text-white/20 focus:border-[#e9ad49]/70" />
+                    </div>
+                    <button disabled={busy || otp.length !== 6} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f0b650] to-[#d58d2b] px-4 py-3.5 text-sm font-extrabold text-[#17130b] shadow-lg shadow-[#d58d2b]/15 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60">{busy ? "Verifying…" : "Verify code and continue"} <ArrowRight className="h-4 w-4" /></button>
+                    <button type="button" disabled={busy} onClick={() => { setPendingVerification(false); setOtp(""); setMessage(""); setAuthError(""); }} className="w-full py-2 text-xs font-semibold text-white/45 hover:text-white/75">Back to account details</button>
+                  </>
+                ) : (
+                  <>
+                    {authMode === "signup" && <div><label htmlFor="player-name" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Player name</label><input id="player-name" value={playerName} maxLength={16} onChange={(e) => setPlayerName(e.target.value)} required placeholder="Choose a player name" autoComplete="nickname" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>}
+                    <div><label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Email address</label><input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="you@example.com" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>
+                    <div><label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">Password</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={authMode === "signup" ? "new-password" : "current-password"} placeholder="At least 6 characters" className="h-12 w-full rounded-xl border border-white/10 bg-black/25 px-4 text-sm outline-none placeholder:text-white/25 focus:border-[#e9ad49]/70" /></div>
+                    <button disabled={busy || checking} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f0b650] to-[#d58d2b] px-4 py-3.5 text-sm font-extrabold text-[#17130b] shadow-lg shadow-[#d58d2b]/15 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60">{busy ? "Please wait…" : authMode === "signup" ? "Create your account" : "Sign in to continue"} <ArrowRight className="h-4 w-4" /></button>
+                  </>
+                )}
               </form>
               <div className="my-4 flex items-center gap-3"><div className="h-px flex-1 bg-white/10" /><span className="text-[10px] uppercase tracking-widest text-white/30">or play on this device</span><div className="h-px flex-1 bg-white/10" /></div>
               <button type="button" disabled={busy || checking} onClick={() => begin(false)} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/70 hover:bg-white/[0.08] disabled:opacity-50">Continue without an account</button>
