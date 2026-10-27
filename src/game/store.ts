@@ -357,7 +357,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
-      activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(runtime?.fuel !== undefined || vehicle.fuel !== undefined ? { fuel: runtime?.fuel ?? vehicle.fuel } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
+      activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
