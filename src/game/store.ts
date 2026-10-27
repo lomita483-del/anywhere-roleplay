@@ -320,8 +320,8 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save();
   },
   enterStadium: () => {
-    g.playerPos.set(0, 0, 12.4); g.playerYaw = Math.PI;
-    g.camYaw = 0; g.camPitch = 0.52; g.camDistance = 9;
+    g.playerPos.set(0, 0, 8.4); g.playerYaw = Math.PI;
+    g.camYaw = 0; g.camPitch = 0.68; g.camDistance = 14;
     g.joy.x = 0; g.joy.y = 0; g.drivingId = null; g.ridingPassenger = false; g.playerSpeed = 0;
     set({ stadiumMode: true, driving: false, speedKph: 0, phoneOpen: false, cash: get().city === "newmap" ? 1_000_000_000 : get().cash });
     get().save();
