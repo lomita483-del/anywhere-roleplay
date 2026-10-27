@@ -319,14 +319,17 @@ function CityTrees() {
     return out;
   }, []);
   const palms = useMemo(()=>spots.map((p,i)=>({...p,i})).filter(p=>p.type==="palm"),[spots]);
+  const roundTrees = useMemo(()=>spots.filter(p=>p.type==="round"),[spots]);
   useEffect(() => {
     const dummy = new THREE.Object3D();
     const trunks=trunkRef.current,crowns=crownRef.current,palmTrunks=palmTrunkRef.current,fronds=palmFrondRef.current;
     if(!trunks||!crowns||!palmTrunks||!fronds)return;
+    let treeIndex=0;
     spots.forEach((p,i)=>{
       if(p.type==="round"){
-        dummy.position.set(p.x,p.h*0.45,p.z);dummy.scale.set(0.32,p.h,0.32);dummy.rotation.set(0,i*0.2,0);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
-        dummy.position.set(p.x,p.h+0.65,p.z);dummy.scale.set(1.05+(i%3)*0.18,1.15+(i%4)*0.12,1.05+(i%3)*0.18);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
+        dummy.position.set(p.x,p.h*0.45,p.z);dummy.scale.set(0.32,p.h,0.32);dummy.rotation.set(0,i*0.2,0);dummy.updateMatrix();trunks.setMatrixAt(treeIndex,dummy.matrix);
+        dummy.position.set(p.x,p.h+0.65,p.z);dummy.scale.set(1.05+(i%3)*0.18,1.15+(i%4)*0.12,1.05+(i%3)*0.18);dummy.updateMatrix();crowns.setMatrixAt(treeIndex,dummy.matrix);
+        treeIndex++;
       }
     });
     palms.forEach((p,i)=>{
@@ -341,8 +344,8 @@ function CityTrees() {
     for(const mesh of [trunks,crowns,palmTrunks,fronds]){mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}
   },[spots,palms]);
   return <>
-    <instancedMesh ref={trunkRef} args={[undefined,undefined,spots.length]} frustumCulled={false}><cylinderGeometry args={[0.5,0.65,1,6]} /><meshStandardMaterial color="#71533b" roughness={1} /></instancedMesh>
-    <instancedMesh ref={crownRef} args={[undefined,undefined,spots.length]} frustumCulled={false}><icosahedronGeometry args={[1,1]} /><meshStandardMaterial color="#467442" roughness={1} /></instancedMesh>
+    <instancedMesh ref={trunkRef} args={[undefined,undefined,roundTrees.length]} frustumCulled={false}><cylinderGeometry args={[0.5,0.65,1,6]} /><meshStandardMaterial color="#71533b" roughness={1} /></instancedMesh>
+    <instancedMesh ref={crownRef} args={[undefined,undefined,roundTrees.length]} frustumCulled={false}><icosahedronGeometry args={[1,1]} /><meshStandardMaterial color="#467442" roughness={1} /></instancedMesh>
     <instancedMesh ref={palmTrunkRef} args={[undefined,undefined,palms.length]} frustumCulled={false}><cylinderGeometry args={[0.5,0.72,1,7]} /><meshStandardMaterial color="#8c6b42" roughness={1} /></instancedMesh>
     <instancedMesh ref={palmFrondRef} args={[undefined,undefined,palms.length*5]} frustumCulled={false}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#39764a" roughness={1} /></instancedMesh>
   </>;
