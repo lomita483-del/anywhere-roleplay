@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -22,6 +22,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   wardrobe: { icon: Shirt, label: "Wardrobe", tint: "#eab308" },
   rides: { icon: MapPin, label: "Ride & GPS", tint: "#63c7f0" },
   food: { icon: Utensils, label: "Buka & Food", tint: "#f59e0b" },
+  travel: { icon: PlaneTakeoff, label: "Airline", tint: "#8bbde8" },
 };
 
 function atAtm() {
@@ -563,6 +564,48 @@ function RadioApp() {
 
 
 
+
+function TravelApp() {
+  const cash = useGame((s) => s.cash);
+  const bank = useGame((s) => s.bank);
+  const spend = useGame((s) => s.spend);
+  const addItem = useGame((s) => s.addItem);
+  const [notice, setNotice] = useState("");
+  const [boardingPass, setBoardingPass] = useState("");
+  const flights = [
+    { city: "Abuja", code: "ABV", fare: 18500, airline: "Naija Air" },
+    { city: "Port Harcourt", code: "PHC", fare: 14200, airline: "Coastal Wings" },
+    { city: "Accra", code: "ACC", fare: 39500, airline: "West Coast Air" },
+  ];
+  const checkIn = (flight: typeof flights[number]) => {
+    if (!spend(flight.fare, "cash") && !spend(flight.fare, "bank")) {
+      setNotice("Insufficient funds for this ticket. Your balance has not changed.");
+      return;
+    }
+    const reference = "LR" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    addItem("flight-ticket-" + flight.code, 1);
+    setBoardingPass(reference);
+    setNotice("Check-in complete. Your " + flight.city + " boarding pass is ready at the terminal desk.");
+    useGame.getState().radio("✈️ Airline check-in complete. Boarding pass " + reference + " issued.");
+    useGame.getState().save();
+  };
+  return <div className="flex flex-col gap-3 p-3 text-sm">
+    <div className="rounded-2xl border border-sky-200/20 bg-gradient-to-br from-[#15374d] to-[#101722] p-4">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200"><PlaneTakeoff className="h-4 w-4" /> Murtala Muhammed International</div>
+      <div className="mt-1 text-lg font-bold text-white">Airline check-in</div>
+      <div className="mt-1 text-[11px] text-slate-300">Choose a flight and receive a ticket in your inventory.</div>
+    </div>
+    {boardingPass && <div className="rounded-xl border border-emerald-300/30 bg-emerald-300/10 p-3"><div className="text-[9px] uppercase tracking-widest text-emerald-200">Boarding pass issued</div><div className="mt-1 text-lg font-black tracking-[0.18em] text-white">{boardingPass}</div><div className="text-[10px] text-emerald-100/70">Keep this reference for your roleplay journey.</div></div>}
+    {notice && <div role="status" className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2 text-xs text-sky-100">{notice}</div>}
+    {flights.map((flight) => <div key={flight.code} className="flex items-center gap-3 rounded-2xl border border-hud-line bg-white/[0.045] p-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-300/10 text-xs font-black text-sky-200">{flight.code}</div>
+      <div className="min-w-0 flex-1"><div className="text-xs font-bold text-hud-bright">{flight.city}</div><div className="mt-0.5 text-[10px] text-hud-muted">{flight.airline} · Domestic / regional</div><div className="mt-1 text-xs font-bold text-emerald-200">{naira(flight.fare)}</div></div>
+      <button onClick={() => checkIn(flight)} className="rounded-lg bg-sky-300/15 px-3 py-2 text-[10px] font-bold text-sky-100">Check in</button>
+    </div>)}
+    <div className="text-[10px] text-hud-muted">Cash: {naira(cash)} · Bank: {naira(bank)}. This prototype issues roleplay tickets; actual flight travel is not yet connected.</div>
+  </div>;
+}
+
 function FoodApp() {
   const needs = useGame((s) => s.needs);
   const eatFood = useGame((s) => s.eatFood);
@@ -666,6 +709,7 @@ export default function Phone() {
     app === "wardrobe" ? <WardrobeApp /> :
     app === "rides" ? <RideApp /> :
     app === "food" ? <FoodApp /> :
+    app === "travel" ? <TravelApp /> :
     <HomeApp />;
 
   return (
