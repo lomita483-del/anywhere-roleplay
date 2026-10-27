@@ -448,7 +448,7 @@ function RoadFurniture() {
         if(d%3<1) signs.push({x:p.x-tan.z*5.2,z:p.z+tan.x*5.2,yaw});
       }
       const p=curve.getPointAt(0.5),tan=curve.getTangentAt(0.5);
-      crossings.push({x:p.x,z:p.z,yaw:Math.atan2(-tan.z,tan.x)});
+      for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:p.x+tan.x*stripe*1.05,z:p.z+tan.z*stripe*1.05,yaw:Math.atan2(-tan.z,tan.x)+Math.PI/2});
     });
     return {lamps,crossings,signs};
   }, []);
@@ -457,9 +457,9 @@ function RoadFurniture() {
     const write=(mesh:THREE.InstancedMesh|null,items:{x:number;z:number;yaw:number}[],kind:"lamp"|"cross"|"sign"|"stop")=>{
       if(!mesh)return;
       items.forEach((p,i)=>{
-        dummy.position.set(p.x,kind==="lamp"?3.3:kind==="cross"?0.072:kind==="sign"?1.8:1.1,p.z);
+        dummy.position.set(p.x,kind==="lamp"?3.3:kind==="cross"?0.072:kind==="sign"?1.8:2.4,p.z);
         dummy.rotation.set(0,p.yaw,0);
-        dummy.scale.set(kind==="lamp"?0.16:kind==="cross"?1.4:kind==="sign"?0.9:3.5,kind==="lamp"?6.6:kind==="cross"?0.018:kind==="sign"?1.6:2.2,kind==="lamp"?0.16:kind==="cross"?0.24:kind==="sign"?0.12:1.5);
+        dummy.scale.set(kind==="lamp"?0.16:kind==="cross"?7.2:kind==="sign"?0.9:3.5,kind==="lamp"?6.6:kind==="cross"?0.018:kind==="sign"?1.6:0.18,kind==="lamp"?0.16:kind==="cross"?0.22:kind==="sign"?0.12:1.5);
         dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
       });
       mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
@@ -749,7 +749,7 @@ function CityEcosystem() {
       <mesh position={[0, 3.3, 48]}><boxGeometry args={[34, 0.5, 9]} /><meshStandardMaterial color="#7ea9b6" metalness={0.25} roughness={0.3} /></mesh>
       <mesh position={[27, 5, 48]}><cylinderGeometry args={[1.2, 1.5, 10, 8]} /><meshStandardMaterial color="#d0d4d2" /></mesh>
       <mesh position={[27, 10, 48]}><boxGeometry args={[4, 2.4, 4]} /><meshStandardMaterial color="#7194a2" metalness={0.2} /></mesh>
-      {([[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
+      {([[-25, -20], [-5, -30], [8, -12], [24, -23], [2, -4], [-28, -8], [15, -38], [30, -18]] as [number, number][]).map(([x,z],i) => <group key={i} position={[x, 0.7, z]} rotation-y={i%2?0.3:-0.2}>
         <mesh><boxGeometry args={[9, 1.1, 1.8]} /><meshStandardMaterial color={i%2?"#e9e8df":"#d4d9d8"} /></mesh>
         <mesh position={[0, 0.15, 0]}><boxGeometry args={[2.5, 0.16, 12]} /><meshStandardMaterial color="#d6dbd9" /></mesh>
         <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
