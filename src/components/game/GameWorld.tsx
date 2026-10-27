@@ -1065,7 +1065,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
   }
   if (nearest) {
-    st.setPrompt({ kind: "building", label: "Enter " + nearest.label, buildingLabel: nearest.label });
+    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building" });
     return;
   }
 
