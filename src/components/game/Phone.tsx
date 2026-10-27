@@ -316,6 +316,7 @@ function MapApp() {
   const waypoint = useGame((s) => s.waypoint);
   const setWaypoint = useGame((s) => s.setWaypoint);
   const clearWaypoint = useGame((s) => s.clearWaypoint);
+  const unlockedDistricts = useGame((s) => s.unlockedDistricts);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
   const [, setPositionTick] = useState(0);
@@ -451,20 +452,29 @@ function MapApp() {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = "bold 7px sans-serif";
-      const districtLabels: [string, number, number][] = [
-        ["YABA / SURULERE", -30, -10], ["OSHODI / MUSHIN", -144, -45],
-        ["IKEJA / AIRPORT", 142, -96], ["LEKKI / V.I.", 143, 46],
-        ["AJEGUNLE / MAKOKO", -143, 62], ["EKO ATLANTIC", 142, 143],
-        ["OUTSKIRTS VILLAGE", 98, 77],
+      const districtLabels: [string, string, number, number][] = [
+        ["Yaba / Surulere", "YABA / SURULERE", -30, -10],
+        ["Oshodi / Mushin", "OSHODI / MUSHIN", -144, -45],
+        ["Ikeja / Airport", "IKEJA / AIRPORT", 142, -96],
+        ["Lekki / Victoria Island", "LEKKI / V.I.", 143, 46],
+        ["Ajegunle / Makoko", "AJEGUNLE / MAKOKO", -143, 62],
+        ["Eko Atlantic", "EKO ATLANTIC", 142, 143],
       ];
-      for (const [label, x, z] of districtLabels) {
+      for (const [district, label, x, z] of districtLabels) {
+        const open = unlockedDistricts.includes(district);
+        const shownLabel = open ? label : "LOCKED · " + label;
         const [px, pz] = to(x, z, S);
-        ctx.fillStyle = "rgba(10,24,27,.72)";
-        const width = ctx.measureText(label).width + 7;
+        ctx.fillStyle = open ? "rgba(10,24,27,.72)" : "rgba(28,30,32,.86)";
+        const width = ctx.measureText(shownLabel).width + 7;
         ctx.fillRect(px - width / 2, pz - 5, width, 10);
-        ctx.fillStyle = "#f2e8c8";
-        ctx.fillText(label, px, pz);
+        ctx.fillStyle = open ? "#f2e8c8" : "#c2c7c8";
+        ctx.fillText(shownLabel, px, pz);
       }
+      const [villageX, villageZ] = to(98, 77, S);
+      ctx.fillStyle = "rgba(10,24,27,.72)";
+      ctx.fillRect(villageX - 32, villageZ - 5, 64, 10);
+      ctx.fillStyle = "#f2e8c8";
+      ctx.fillText("OUTSKIRTS VILLAGE", villageX, villageZ);
       ctx.font = "bold 6px sans-serif";
       ctx.fillStyle = "#f0d26c";
       const [roadX, roadZ] = to(0, -82, S);
@@ -505,7 +515,7 @@ function MapApp() {
     draw();
     const t = window.setInterval(() => { setPositionTick((v) => v + 1); draw(); }, 450);
     return () => window.clearInterval(t);
-  }, [job, waypoint]);
+  }, [job, waypoint, unlockedDistricts]);
 
   const handleMapTap = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = e.currentTarget;
