@@ -26,7 +26,7 @@ export type PromptKind = "vehicle" | "atm" | "dealer" | "home" | "job-target" | 
 
 export interface GpsWaypoint { x: number; z: number; label: string; kind?: string; }
 export interface RideRequest { id: string; service: "ride" | "bike" | "private"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
-export interface PlayerOutfit { skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
+export interface PlayerOutfit { gender?: "male" | "female"; skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
 export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
 
@@ -219,7 +219,7 @@ const DEFAULTS = {
   jobStats: { deliveries: 0, drives: 0, trades: 0, patrols: 0 },
   activeJob: null as ActiveJob | null,
   phoneOpen: false,
-  outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
+  outfit: { gender: "male", skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
   needs: { ...DEFAULT_NEEDS },
   rentals: {} as Record<string, number>,
   interior: false,
@@ -253,7 +253,7 @@ export const useGame = create<GameStore>((set, get) => ({
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
-        outfit: saved.outfit ?? DEFAULTS.outfit,
+        outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
         needs: { ...DEFAULT_NEEDS, ...(saved.needs ?? {}) },
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
