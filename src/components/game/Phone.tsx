@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel,
+  ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, X,
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
@@ -8,7 +8,7 @@ import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
 
-type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel";
+type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar";
 
 const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }> = {
   home: { icon: User, label: "Profile", tint: "#3fa37a" },
@@ -25,6 +25,7 @@ const APP_ICONS: Record<App, { icon: typeof User; label: string; tint: string }>
   travel: { icon: PlaneTakeoff, label: "Airline", tint: "#8bbde8" },
   districts: { icon: MapIcon, label: "Districts", tint: "#a3e635" },
   fuel: { icon: Fuel, label: "Fuel", tint: "#fb923c" },
+  radar: { icon: RadarIcon, label: "Radar", tint: "#62d7f2" },
 };
 
 function atAtm() {
@@ -562,6 +563,30 @@ function MapApp() {
   );
 }
 
+function RadarApp() {
+  const [, refresh] = useState(0);
+  const job = useGame((s) => s.activeJob);
+  const waypoint = useGame((s) => s.waypoint);
+  const setWaypoint = useGame((s) => s.setWaypoint);
+  useEffect(() => { const timer = window.setInterval(() => refresh(v => v + 1), 900); return () => window.clearInterval(timer); }, []);
+  const px = g.playerPos.x, pz = g.playerPos.z;
+  const contacts = [
+    ...POIS.map(p => ({ name:p.label, type:p.kind === "atm" ? "ATM" : p.kind === "bank" ? "Bank" : p.kind === "market" ? "Market" : "Landmark", x:p.x, z:p.z, color:p.kind === "atm" ? "#59d6a2" : "#eab308" })),
+    ...(job ? [{name:job.title+" target",type:"Job target",x:job.targets[job.stage]?.[0] ?? px,z:job.targets[job.stage]?.[1] ?? pz,color:"#ff5c5c"}] : []),
+    ...(waypoint ? [{name:waypoint.label,type:"Destination",x:waypoint.x,z:waypoint.z,color:"#62d7f2"}] : []),
+  ].map(p=>({...p,distance:Math.hypot(p.x-px,p.z-pz)})).filter(p=>p.distance<=100).sort((a,b)=>a.distance-b.distance);
+  return <div className="flex flex-col gap-3 p-3 text-white">
+    <div className="text-xs font-bold text-slate-100">Nearby within 100 metres <span className="text-slate-400">({contacts.length})</span></div>
+    <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-full border border-cyan-300/50 bg-[#071a24] shadow-[inset_0_0_28px_rgba(34,211,238,.12)]"><div className="relative h-40 w-40 rounded-full border border-cyan-900 bg-[radial-gradient(circle,#102d37_1px,transparent_1.5px)] [background-size:12px_12px]">
+      {[0,45,90,135].map(a=><div key={a} className="absolute left-1/2 top-0 h-full w-px bg-cyan-900/80" style={{transform:"translateX(-50%) rotate("+a+"deg)"}} />)}
+      {contacts.map((p,i)=>{const angle=Math.atan2(p.x-px,p.z-pz),radius=Math.min(72,p.distance/100*72);return <button key={p.name+i} title={p.name} onClick={()=>setWaypoint({x:p.x,z:p.z,label:p.name,kind:p.type})} className="absolute h-2.5 w-2.5 rounded-full border border-white/70" style={{left:"50%",top:"50%",background:p.color,transform:"translate(-50%,-50%) translate("+Math.sin(angle)*radius+"px,"+Math.cos(angle)*radius+"px)"}} />})}
+      <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-2 border-white bg-sky-400" />
+    </div></div>
+    {contacts.length===0 && <div className="rounded-xl border border-white/10 p-3 text-xs text-slate-300">No mapped contacts nearby. Explore to discover locations.</div>}
+    <div className="flex flex-col gap-1.5">{contacts.map((p,i)=><button key={p.name+i} onClick={()=>setWaypoint({x:p.x,z:p.z,label:p.name,kind:p.type})} className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2.5 text-left active:scale-[.99]"><span className="min-w-0"><span className="block truncate text-xs font-semibold text-white">{p.name}</span><span className="text-[11px] text-slate-300">{p.type}</span></span><span className="shrink-0 text-xs font-bold" style={{color:p.color}}>{Math.round(p.distance)} m</span></button>)}</div>
+  </div>;
+}
+
 function WardrobeApp() {
   const outfit = useGame((s) => s.outfit);
   const setOutfit = useGame((s) => s.setOutfit);
@@ -882,13 +907,8 @@ export default function Phone() {
   const [app, setApp] = useState<App>("home");
   const openPhone = useGame((s) => s.openPhone);
   const closePhone = useGame((s) => s.closePhone);
-
-  useEffect(() => {
-    if (open) setApp(useGame.getState().phoneApp);
-  }, [open]);
-
+  useEffect(() => { if (open) setApp(useGame.getState().phoneApp); }, [open]);
   if (!open) return null;
-
   const Screen =
     app === "bank" ? <BankApp /> :
     app === "jobs" ? <JobsApp /> :
@@ -903,52 +923,24 @@ export default function Phone() {
     app === "travel" ? <TravelApp /> :
     app === "districts" ? <DistrictsApp /> :
     app === "fuel" ? <FuelApp /> :
+    app === "radar" ? <RadarApp /> :
     <HomeApp />;
-
+  const bottomTabs: App[] = ["home", "bank", "jobs", "garage", "inventory", "map", "radar"];
   return (
-    <div className="pointer-events-auto absolute inset-0 z-20 bg-black/35 backdrop-blur-[2px]" onPointerDown={(e) => e.stopPropagation()} onClick={closePhone}>
-      <div
-      className="phone-shell absolute bottom-5 right-4 flex h-[68vh] max-h-[620px] w-[min(88vw,360px)] flex-col overflow-hidden rounded-[2rem] border-4 border-[#d8e0e8] bg-[#0b111b]/[0.98] text-white shadow-2xl shadow-black/70 backdrop-blur-xl md:h-[72vh]"
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Notch bar */}
-      <div className="flex items-center justify-between px-5 pt-2">
-        <span className="text-[10px] text-hud-muted">VibeOS</span>
-        <div className="h-4 w-16 rounded-full bg-black/60" />
-        <button className="text-[10px] text-hud-muted" onClick={closePhone}>close ✕</button>
-      </div>
-
-      <div className="mt-1 flex items-center gap-2 px-4 pb-1">
-        {app !== "home" && (
-          <button onClick={() => setApp("home")} className="rounded-lg bg-white/5 p-1 text-hud-muted active:scale-90" aria-label="Back">
-            <ArrowLeft className="h-3.5 w-3.5" />
-          </button>
-        )}
-        <span className="text-sm font-bold text-hud-bright">{APP_ICONS[app].label}</span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">{Screen}</div>
-
-      {/* App dock */}
-      <div className="grid grid-cols-4 gap-1 border-t border-hud-line bg-black/40 px-2 py-2">
-        {(Object.keys(APP_ICONS) as App[]).map((a) => {
-          const I = APP_ICONS[a].icon;
-          return (
-            <button
-              key={a}
-              className={`flex flex-col items-center gap-0.5 rounded-lg p-1 ${app === a ? "bg-white/10" : ""}`}
-              onClick={() => {
-                setApp(a);
-                openPhone(a);
-              }}
-            >
-              <I className="h-4 w-4" style={{ color: APP_ICONS[a].tint }} />
-              <span className="text-[8px] text-hud-muted">{APP_ICONS[a].label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-black/45 p-2 pt-[max(8px,env(safe-area-inset-top))] pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-[2px]" onPointerDown={e=>e.stopPropagation()} onClick={closePhone}>
+      <div className="phone-shell relative flex h-[min(94dvh,820px)] max-h-[calc(100dvh-16px)] w-[min(96vw,430px)] flex-col overflow-hidden rounded-[2rem] border-[3px] border-[#b9c7d2] bg-[#07111b]/[0.99] text-white shadow-2xl shadow-black/80 md:h-[min(88vh,820px)] md:w-[390px]" onPointerDown={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()}>
+        <div className="flex min-h-10 items-center justify-between border-b border-white/10 bg-black/40 px-4 py-2">
+          <span className="text-xs font-bold tracking-wider text-slate-100">VibeOS <span className="text-slate-400">· Lagos Life</span></span>
+          <div className="flex items-center gap-2"><span className="text-[11px] text-emerald-300">● Online</span><button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white active:scale-95" onClick={closePhone} aria-label="Close phone"><X className="h-5 w-5" /></button></div>
+        </div>
+        <div className="flex min-h-11 items-center gap-2 border-b border-white/10 px-3 py-2">
+          {app!=="home" && <button onClick={()=>setApp("home")} className="rounded-lg bg-white/10 p-2 text-white active:scale-90" aria-label="Back to profile"><ArrowLeft className="h-4 w-4" /></button>}
+          <span className="text-sm font-bold text-white">{APP_ICONS[app].label}</span><span className="ml-auto text-[11px] text-slate-300">LAGOS · VibeOS</span>
+        </div>
+        <div key={app} className="min-h-0 flex-1 overflow-y-auto overscroll-contain text-white animate-in fade-in duration-150">{Screen}</div>
+        <nav aria-label="Phone apps" className="grid grid-cols-7 gap-0 border-t border-white/15 bg-[#03080e] px-1 pb-[max(7px,env(safe-area-inset-bottom))] pt-2">
+          {bottomTabs.map(a=>{const I=APP_ICONS[a].icon,active=app===a;return <button key={a} aria-current={active?"page":undefined} onClick={()=>{setApp(a);openPhone(a);}} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 py-2 transition-all active:scale-95 ${active?"bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-300/50":"text-slate-300 hover:bg-white/5"}`}><I className="h-4 w-4 shrink-0" style={{color:active?"#8cf0c2":APP_ICONS[a].tint}}/><span className="max-w-full truncate text-[10px] font-semibold leading-tight text-current">{APP_ICONS[a].label}</span></button>;})}
+        </nav>
       </div>
     </div>
   );
