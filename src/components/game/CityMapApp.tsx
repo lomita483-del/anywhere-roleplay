@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Banknote, Building2, Car, ChevronDown, Compass, Footprints, Home, MapPin, Minus, Plus, Radio, RotateCcw, ShoppingBag, Users, Briefcase, Fuel, Settings, Hospital, Shield, Plane, Ship, School, Trees, Store, Landmark, Building, X, Navigation, Flag, Clock3 } from "lucide-react";
 import { useGame } from "@/game/store";
 import { g } from "@/game/state";
@@ -56,7 +56,7 @@ export default function CityMapApp() {
   const [tick,setTick] = useState(0);
   const [now,setNow] = useState(()=>new Date());
   const [routeToEnter,setRouteToEnter] = useState(false);
-  const places = getMapPlaces(city);
+  const places = useMemo(() => getMapPlaces(city), [city]);
   const playerDistance = selected ? Math.hypot(selected.doorX-g.playerPos.x,selected.doorZ-g.playerPos.z) : 0;
   const etaWalk = Math.max(1,Math.ceil(playerDistance/1.4));
 
@@ -79,7 +79,6 @@ export default function CityMapApp() {
     const ctx=base.getContext("2d");if(!ctx)return;
     const S=base.width;ctx.fillStyle="#0b1b20";ctx.fillRect(0,0,S,S);
     const xy=(x:number,z:number)=>screen(x,z,S);
-    ctx.save();ctx.translate(0,S/2);ctx.scale(1,.72);ctx.translate(0,-S/2);
     ctx.fillStyle="#102923";ctx.fillRect(0,0,S,S);
     if(city==="newmap"){
       for(const d of NEW_MAP_DISTRICTS){const a=xy(d.x-d.w/2,d.z-d.d/2),b=xy(d.x+d.w/2,d.z+d.d/2);ctx.fillStyle=d.color;ctx.globalAlpha=.20;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}ctx.globalAlpha=1;
@@ -105,7 +104,6 @@ export default function CityMapApp() {
       ctx.fillStyle="#d1e2d2";ctx.globalAlpha=.55;ctx.fillRect(a.x+1,a.y+1,Math.max(1,ww-2),Math.max(1,dd*.14));ctx.globalAlpha=1;
       ctx.strokeStyle="rgba(185,222,204,.4)";ctx.lineWidth=1;ctx.strokeRect(a.x,a.y,ww,dd);
     }
-    ctx.restore();
     baseRef.current=base;
   },[city,places,screen]);
 
