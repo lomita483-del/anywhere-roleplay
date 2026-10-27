@@ -812,6 +812,8 @@ export default function GameWorld() {
     const dt = Math.min(rawDelta, 0.05);
     const k = keys.current;
     const st = useGame.getState();
+    const controlsBlocked = st.phoneOpen;
+    if (controlsBlocked) { g.joy.x = 0; g.joy.y = 0; }
     const camera = state.camera as THREE.PerspectiveCamera;
 
     if (g.ridingPassenger) {
@@ -826,8 +828,8 @@ export default function GameWorld() {
         const baseCat = VEHICLE_CATALOG[v.model] ?? VEHICLE_CATALOG["sedan"]!;
         const tuned = (st.inventory["engine-tune"] ?? 0) > 0;
         const cat = tuned ? { ...baseCat, maxSpeed: baseCat.maxSpeed * 1.2, accel: baseCat.accel * 1.15 } : baseCat;
-        const kf = (k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0);
-        const ks = (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0);
+        const kf = !controlsBlocked ? ((k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0)) : 0;
+        const ks = !controlsBlocked ? ((k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0)) : 0;
         const forward = Math.max(-1, Math.min(1, kf - g.joy.y));
         const steer = Math.max(-1, Math.min(1, ks - g.joy.x));
         const brake = k.has("Space");
@@ -867,8 +869,8 @@ export default function GameWorld() {
         st.setSpeed(v.speed * 3.6);
       }
     } else {
-      const kf = (k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0);
-      const ks = (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0);
+      const kf = !controlsBlocked ? ((k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0)) : 0;
+      const ks = !controlsBlocked ? ((k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0)) : 0;
       const ix = ks - g.joy.x;
       const iz = kf - g.joy.y;
       const fx = -Math.sin(g.camYaw), fz = -Math.cos(g.camYaw);
