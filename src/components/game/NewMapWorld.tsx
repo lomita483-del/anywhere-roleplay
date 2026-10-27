@@ -754,7 +754,7 @@ function AnimatedWatercraft() {
     <group ref={cargo}>
       <mesh position={[0,.35,0]}><boxGeometry args={[16,.8,4.4]}/><meshStandardMaterial color="#263d49" roughness={.8}/></mesh>
       <mesh position={[5,.95,0]}><boxGeometry args={[3,1.4,3.8]}/><meshStandardMaterial color="#e3e0d4" roughness={.8}/></mesh>
-      {Array.from({length:6},(_,i)=><mesh key={i} position={[-5+(i%3)*3,1.35,Math.floor(i/3)*1.4-.7]}><boxGeometry args={[2.7,1.1,1.25]}/><meshStandardMaterial color=["#d04e3e","#d5ad45","#367a9c","#47784f"][i%4]! roughness={.85}/></mesh>)}
+      {Array.from({length:6},(_,i)=><mesh key={i} position={[-5+(i%3)*3,1.35,Math.floor(i/3)*1.4-.7]}><boxGeometry args={[2.7,1.1,1.25]}/><meshStandardMaterial color={["#d04e3e","#d5ad45","#367a9c","#47784f"][i%4]!} roughness={.85}/></mesh>)}
     </group>
     {[0,1,2].map(i=><group key={i} ref={el=>{boats.current[i]=el;}}><mesh><boxGeometry args={[3,.28,1.1]}/><meshStandardMaterial color="#6b4d34" roughness={.9}/></mesh><mesh position={[0,.35,0]}><boxGeometry args={[.8,.35,.65]}/><meshStandardMaterial color="#e6d8b8" roughness={.8}/></mesh></group>)}
   </>;
