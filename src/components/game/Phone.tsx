@@ -928,7 +928,7 @@ export default function Phone() {
         </div>
         <div key={app} className="min-h-0 flex-1 overflow-y-auto overscroll-contain text-white animate-in fade-in duration-150">{Screen}</div>
         <nav aria-label="Phone apps" className="grid grid-cols-7 gap-0 border-t border-white/15 bg-[#03080e] px-1 pb-[max(7px,env(safe-area-inset-bottom))] pt-2">
-          {bottomTabs.map(a=>{const I=APP_ICONS[a].icon,active=app===a;return <button key={a} aria-current={active?"page":undefined} onClick={()=>{setApp(a);openPhone(a);}} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 py-2 transition-all active:scale-95 ${active?"bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-300/50":"text-slate-300 hover:bg-white/5"}`}><I className="h-4 w-4 shrink-0" style={{color:active?"#8cf0c2":APP_ICONS[a].tint}}/><span className="max-w-full truncate text-[10px] font-semibold leading-tight text-current">{APP_ICONS[a].label}</span></button>;})}
+          {bottomTabs.map(a=>{const I=APP_ICONS[a].icon,active=app===a;return <button key={a} aria-current={active?"page":undefined} onClick={()=>{setApp(a);if(a!=="radar")openPhone(a);}} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 py-2 transition-all active:scale-95 ${active?"bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-300/50":"text-slate-300 hover:bg-white/5"}`}><I className="h-4 w-4 shrink-0" style={{color:active?"#8cf0c2":APP_ICONS[a].tint}}/><span className="max-w-full truncate text-[10px] font-semibold leading-tight text-current">{APP_ICONS[a].label}</span></button>;})}
         </nav>
       </div>
     </div>
