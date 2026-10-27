@@ -218,7 +218,7 @@ function MapApp() {
       if (!c) return;
       const ctx = c.getContext("2d")!;
       const S = c.width;
-      const to = (x: number, z: number) => [((x + 120) / 240) * S, ((z + 120) / 240) * S];
+      const to = (x: number, z: number): [number, number] => [((x + 120) / 240) * S, ((z + 120) / 240) * S];
       ctx.clearRect(0, 0, S, S);
       ctx.fillStyle = "#252b36";
       ctx.fillRect(0, 0, S, S);
