@@ -13,6 +13,7 @@ const roadEdges: NewMapRoadEdge[] = [
  {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},
  {id:"airport-terminal-access",from:"airport-avenue",to:"airport-terminal",type:"street",width:5,points:[[0,-106],[17,-106],[34,-106]]},
  {id:"port-avenue",from:"boulevard-south-east",to:"perimeter-south-east",type:"avenue",width:8,points:[[55,55],[78,78],[104,104],[132,132],[178,178]]},
+ {id:"port-terminal-access",from:"port-avenue",to:"port-terminal",type:"street",width:5,points:[[124,124],[124,140],[124,158]]},
  {id:"university-avenue",from:"boulevard-west",to:"perimeter-west",type:"avenue",width:8,points:[[-78,0],[-104,0],[-132,0],[-178,0]]},
  {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[178,0]]},
  {id:"corporate-street-n",from:"corporate-west",to:"corporate-east",type:"street",width:5,points:[[-154,-137],[-125,-137],[-96,-137]]},
@@ -52,12 +53,12 @@ export const NEW_MAP_ROAD_ENDPOINTS = roadEdges.flatMap(e=>{const first=e.points
 export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.type==="street");
 
 export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
- {id:"corporate",label:"CORPORATE DISTRICT",x:-126,z:-124,w:70,d:42,color:"#819b83"},
- {id:"industrial",label:"INDUSTRIAL DISTRICT",x:-126,z:-70,w:70,d:40,color:"#a29a7b"},
- {id:"market",label:"CENTRAL MARKET & DEPOT",x:-34,z:-104,w:42,d:25,color:"#bda16f"},
+ {id:"corporate",label:"CORPORATE DISTRICT",x:-126,z:-120,w:70,d:56,color:"#819b83"},
+ {id:"industrial",label:"INDUSTRIAL DISTRICT",x:-126,z:-64,w:70,d:60,color:"#a29a7b"},
+ {id:"market",label:"CENTRAL MARKET & DEPOT",x:-60,z:-111,w:76,d:46,color:"#bda16f"},
  {id:"university",label:"UNIVERSITY DISTRICT",x:-126,z:70,w:70,d:70,color:"#a98f7b"},
  {id:"residential",label:"RESIDENTIAL GRID",x:135,z:0,w:78,d:145,color:"#bdb79c"},
- {id:"civic",label:"CIVIC & OFFICE STRIP",x:112,z:52,w:52,d:34,color:"#b3a895"},
+ {id:"civic",label:"CIVIC & OFFICE STRIP",x:112,z:98,w:72,d:72,color:"#b3a895"},
  {id:"port",label:"PORT & LOGISTICS",x:132,z:126,w:55,d:42,color:"#9c9e91"},
  {id:"lake-park",label:"LAKE PARK & RESORT",x:-112,z:126,w:62,d:54,color:"#789b76"},
  {id:"airport",label:"INTERNATIONAL AIRPORT",x:34,z:-112,w:68,d:100,color:"#9ba9a5"}
@@ -82,10 +83,10 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
  {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
  {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:138,z:110,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
- {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:82,z:132,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"south"},
- {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:140,z:160,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
+ {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:82,z:110,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"east"},
+ {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:82,z:132,w:12,d:9,h:7,color:"#c7b89c",doorSide:"east"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-132,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
- {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
+ {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"east"},
  ...Array.from({length:18},(_,i)=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-70,-42,-14,14,42,70][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
 ];
 export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
