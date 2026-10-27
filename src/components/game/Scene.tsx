@@ -3,12 +3,15 @@ import { Sky, Environment, Lightformer } from "@react-three/drei";
 import DayNight from "./DayNight";
 import World from "./World";
 import GameWorld from "./GameWorld";
+import UmuahiaWorld from "./UmuahiaWorld";
+import { useGame } from "@/game/store";
 
 export default function Scene() {
+  const city = useGame((s) => s.city);
   return (
     <>
       <DayNight />
-      <World />
+      {city === "umuahia" ? <UmuahiaWorld /> : <World />}
       <Suspense fallback={null}>
         <GameWorld />
       </Suspense>
