@@ -59,6 +59,7 @@ export const VEHICLE_CATALOG: Record<
   { model: string; name: string; price: number; maxSpeed: number; accel: number; turn: number }
 > = {
   keke: { model: "keke", name: "Keke Napep", price: 25000, maxSpeed: 12, accel: 14, turn: 2.6 },
+  bike: { model: "bike", name: "Okada Motorcycle", price: 18000, maxSpeed: 24, accel: 19, turn: 3.1 },
   danfo: { model: "danfo", name: "Danfo Bus", price: 120000, maxSpeed: 15, accel: 10, turn: 1.9 },
   taxi: { model: "taxi", name: "City Taxi", price: 80000, maxSpeed: 18, accel: 14, turn: 2.3 },
   sedan: { model: "sedan", name: "Executive Sedan", price: 250000, maxSpeed: 20, accel: 15, turn: 2.2 },
