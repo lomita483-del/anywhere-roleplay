@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
-import { NEW_MAP_LOCAL_ROAD_START_INDEX, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -675,7 +675,7 @@ function MarketStreetLife() {
   const billboards=useRef<THREE.InstancedMesh>(null);
   const poles=useRef<THREE.InstancedMesh>(null);
   const stalls=useMemo(()=>NEW_MAP_MARKET_STALLS,[]);
-  const vendorSpots=useMemo(()=>[[-83,-132],[-75,-132],[-67,-132],[-83,-140],[-75,-140],[-67,-140]].map(([x,z])=>({x,z})),[]);
+  const vendorSpots=useMemo(()=> ([[-83,-132],[-75,-132],[-67,-132],[-83,-140],[-75,-140],[-67,-140]] as [number,number][]).map(([x,z])=>({x,z})),[]);
   const poleSpots=useMemo(()=>Array.from({length:18},(_,i)=>({x:-150+(i%9)*34,z:-20+Math.floor(i/9)*44})),[]);
   useEffect(()=>{
     const dummy=new THREE.Object3D();
