@@ -6,7 +6,7 @@ import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS } from "@/game/city";
+import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
 
 type App = "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe";
 
@@ -269,7 +269,7 @@ function MapApp() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
   const [, setPositionTick] = useState(0);
-  const to = (x: number, z: number, size = 280): [number, number] => [((x + 120) / 240) * size, ((z + 120) / 240) * size];
+  const to = (x: number, z: number, size = 280): [number, number] => [((x + WORLD / 2) / WORLD) * size, ((z + WORLD / 2) / WORLD) * size];
 
   useEffect(() => {
     const draw = () => {
@@ -279,19 +279,72 @@ function MapApp() {
       if (!ctx) return;
       const S = c.width;
       ctx.clearRect(0, 0, S, S);
-      ctx.fillStyle = "#17232b";
+      // Draw the same world bounds, road widths and building footprints used by the 3D scene.
+      ctx.fillStyle = "#9da78a";
       ctx.fillRect(0, 0, S, S);
-      // Subtle city-block grid
-      ctx.strokeStyle = "rgba(177,203,195,.08)";
-      ctx.lineWidth = 1;
-      for (let n = 0; n <= S; n += 14) {
-        ctx.beginPath(); ctx.moveTo(n, 0); ctx.lineTo(n, S); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, n); ctx.lineTo(S, n); ctx.stroke();
+      // City blocks / undeveloped plots
+      ctx.fillStyle = "#b9bba6";
+      for (let bx = -40; bx <= 40; bx += 80) {
+        for (let bz = -40; bz <= 40; bz += 80) {
+          const [x1, z1] = to(bx - 33, bz - 33, S);
+          const [x2, z2] = to(bx + 33, bz + 33, S);
+          ctx.fillRect(x1, z1, x2 - x1, z2 - z1);
+        }
       }
-      ctx.strokeStyle = "#53616b";
-      ctx.lineWidth = ROAD_HALF * (S / 120) * 1.6;
-      for (const rx of ROADS_X) { const [px] = to(rx, 0, S); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke(); }
-      for (const rz of ROADS_Z) { const [, pz] = to(0, rz, S); ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(S, pz); ctx.stroke(); }
+      // Sidewalk strips and asphalt roads exactly follow the world road centerlines.
+      ctx.fillStyle = "#d0cfc4";
+      const sidewalkWidth = 6 * S / WORLD;
+      const roadWidth = ROAD_HALF * 2 * S / WORLD;
+      for (const rx of ROADS_X) {
+        const [px] = to(rx, 0, S);
+        ctx.fillRect(px - (roadWidth + sidewalkWidth) / 2, 0, roadWidth + sidewalkWidth, S);
+      }
+      for (const rz of ROADS_Z) {
+        const [, pz] = to(0, rz, S);
+        ctx.fillRect(0, pz - (roadWidth + sidewalkWidth) / 2, S, roadWidth + sidewalkWidth);
+      }
+      ctx.fillStyle = "#4b5058";
+      for (const rx of ROADS_X) {
+        const [px] = to(rx, 0, S);
+        ctx.fillRect(px - roadWidth / 2, 0, roadWidth, S);
+      }
+      for (const rz of ROADS_Z) {
+        const [, pz] = to(0, rz, S);
+        ctx.fillRect(0, pz - roadWidth / 2, S, roadWidth);
+      }
+      // Dashed centre lines and white road-edge lines.
+      ctx.strokeStyle = "#e8c95c";
+      ctx.lineWidth = 1.3;
+      ctx.setLineDash([5, 5]);
+      for (const rx of ROADS_X) {
+        const [px] = to(rx, 0, S);
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, S); ctx.stroke();
+      }
+      for (const rz of ROADS_Z) {
+        const [, pz] = to(0, rz, S);
+        ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(S, pz); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.strokeStyle = "rgba(255,255,255,.78)";
+      ctx.lineWidth = 1;
+      for (const rx of ROADS_X) {
+        const [px] = to(rx, 0, S);
+        for (const edge of [-1, 1]) { ctx.beginPath(); ctx.moveTo(px + edge * roadWidth / 2, 0); ctx.lineTo(px + edge * roadWidth / 2, S); ctx.stroke(); }
+      }
+      for (const rz of ROADS_Z) {
+        const [, pz] = to(0, rz, S);
+        for (const edge of [-1, 1]) { ctx.beginPath(); ctx.moveTo(0, pz + edge * roadWidth / 2); ctx.lineTo(S, pz + edge * roadWidth / 2); ctx.stroke(); }
+      }
+      // Real building footprints, using the same coordinates as the 3D scene.
+      for (const b of BUILDINGS) {
+        const [x1, z1] = to(b.x - b.w / 2, b.z - b.d / 2, S);
+        const [x2, z2] = to(b.x + b.w / 2, b.z + b.d / 2, S);
+        ctx.fillStyle = b.kind === "bank" ? "#c8b78c" : b.kind === "police" ? "#6686a5" : b.kind === "market" ? "#c7864b" : b.kind === "apartments" ? "#8c83a1" : "#777f7d";
+        ctx.fillRect(x1, z1, x2 - x1, z2 - z1);
+        ctx.strokeStyle = "rgba(18,27,31,.65)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x1, z1, x2 - x1, z2 - z1);
+      }
       // Landmark pins
       for (const p of POIS) {
         const [px, pz] = to(p.x, p.z, S);
