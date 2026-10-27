@@ -4,6 +4,7 @@ import DayNight from "./DayNight";
 import World from "./World";
 import GameWorld from "./GameWorld";
 import UmuahiaWorld from "./UmuahiaWorld";
+import NewMapWorld from "./NewMapWorld";
 import { useGame } from "@/game/store";
 
 export default function Scene() {
@@ -11,7 +12,7 @@ export default function Scene() {
   return (
     <>
       <DayNight />
-      {city === "umuahia" ? <UmuahiaWorld /> : <World />}
+      {city === "newmap" ? <NewMapWorld /> : city === "umuahia" ? <UmuahiaWorld /> : <World />}
       <Suspense fallback={null}>
         <GameWorld key={city} />
       </Suspense>
