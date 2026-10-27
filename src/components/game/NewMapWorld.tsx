@@ -3,6 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
+import { NEW_MAP_ROADS, NEW_MAP_SCALE } from "@/game/newMap";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
 type MatchPlayerData = { x: number; z: number; team: number; index: number };
@@ -336,19 +337,10 @@ function CityTrees() {
 
 // Curved arterial routes replace the old oversized rectangular road grid.
 // The S-bends and U-shaped stadium loop are designed to read clearly from the isometric camera.
-const CITY_ROAD_PATHS: [number, number][][] = [
-  [[-168, 94], [-137, 74], [-116, 47], [-112, 16], [-91, -8], [-62, -22], [-36, -19], [-13, -3], [11, 12], [38, 16], [65, 4], [91, -18], [116, -47], [145, -61], [169, -54]],
-  [[-165, -25], [-133, -18], [-108, -30], [-92, -56], [-76, -86], [-52, -109], [-23, -119], [9, -112], [36, -94], [55, -70], [72, -49], [99, -39], [130, -42], [164, -28]],
-  [[-78, 164], [-64, 130], [-71, 100], [-54, 73], [-40, 49], [-43, 28], [-61, 10]],
-  [[62, 163], [75, 133], [71, 108], [90, 83], [112, 66], [128, 39], [126, 12], [111, -7]],
-  [[-165, 125], [-132, 119], [-111, 133], [-94, 153], [-68, 166]],
-  [[-150, -137], [-118, -119], [-95, -96], [-78, -74]],
-  // Broad U-shaped boulevard around the stadium plaza.
-  [[-9, -70], [22, -68], [49, -52], [67, -27], [72, 3], [63, 33], [43, 55], [14, 67], [-17, 67], [-45, 53], [-64, 30], [-72, 1], [-66, -29], [-47, -52], [-21, -67], [-9, -70]],
-];
+const CITY_ROAD_PATHS = NEW_MAP_ROADS;
 
-function createRoadGeometry(path: [number, number][], width: number) {
-  const curve = new THREE.CatmullRomCurve3(path.map(([x, z]) => new THREE.Vector3(x, 0.045, z)), false, "catmullrom", 0.22);
+function createRoadGeometry(path: [number, number][], width: number, y: number) {
+  const curve = new THREE.CatmullRomCurve3(path.map(([x, z]) => new THREE.Vector3(x, y, z)), false, "catmullrom", 0.22);
   const samples = curve.getPoints(Math.max(80, path.length * 18));
   const positions: number[] = [];
   const indices: number[] = [];
@@ -372,7 +364,7 @@ function createRoadGeometry(path: [number, number][], width: number) {
 function CurvedRoadNetwork() {
   const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
     const width = index === 6 ? 8.8 : index < 2 ? 8.2 : 6.4;
-    return { index, ...createRoadGeometry(path, width), sidewalk: createRoadGeometry(path, width + 2.8) };
+    return { index, ...createRoadGeometry(path, width, 0.05), sidewalk: createRoadGeometry(path, width + 2.8, 0.03) };
   }), []);
   const dashData = useMemo(() => {
     const out: { x: number; z: number; yaw: number; width: number }[] = [];
@@ -394,7 +386,7 @@ function CurvedRoadNetwork() {
     if (!mesh) return;
     const dummy = new THREE.Object3D();
     dashData.forEach((d, i) => {
-      dummy.position.set(d.x, 0.075, d.z);
+      dummy.position.set(d.x, 0.07, d.z);
       dummy.rotation.set(0, d.yaw, 0);
       dummy.scale.set(d.width, 1, 1);
       dummy.updateMatrix();
@@ -406,14 +398,14 @@ function CurvedRoadNetwork() {
   return (
     <>
       {roadData.map((road) => <mesh key={"sidewalk-"+road.index} geometry={road.sidewalk.geometry} receiveShadow>
-        <meshStandardMaterial color="#aeb1ab" roughness={0.98} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#aeb1ab" roughness={0.98} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>)}
       {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
-        <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>)}
       <instancedMesh ref={marksRef} args={[undefined, undefined, dashData.length]} frustumCulled={false}>
         <boxGeometry args={[1, 0.035, 0.16]} />
-        <meshBasicMaterial color="#f4f0df" />
+        <meshBasicMaterial color="#f4f0df" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
       </instancedMesh>
     </>
   );
@@ -450,8 +442,7 @@ function CityEcosystem() {
     // Industrial and corporate skyline, north-west.
     for (let i = 0; i < 10; i++) out.push({ x: -145 + (i % 5) * 14, z: -88 + Math.floor(i / 5) * 17, w: 9 + (i % 3) * 2, d: 9, h: 18 + ((i * 7) % 28), color: ["#8daab5", "#b3b9b7", "#d0c4ad", "#728d9b"][i % 4]!, ...(i === 2 ? { label: "CORPORATE DISTRICT" } : {}) });
     for (let i = 0; i < 8; i++) out.push({ x: -151 + (i % 4) * 12, z: -55 + Math.floor(i / 4) * 13, w: 8, d: 8, h: 6 + (i % 3), color: ["#a8a69a", "#b5a18b", "#c8bca5"][i % 3]! });
-    // Residential streets, north-east.
-    for (let row = 0; row < 4; row++) for (let col = 0; col < 5; col++) out.push({ x: 64 + col * 16, z: -77 + row * 14, w: 10, d: 8, h: 4.2 + ((row + col) % 2) * 0.7, color: ["#dfd3bb", "#d9c8a7", "#bfc9bb", "#d7b6a0"][(row + col) % 4]!, ...(row === 0 && col === 2 ? { label: "RESIDENTIAL DISTRICT" } : {}) });
+    // Dense Lagos residential grid is rendered by instanced meshes below (64 varied low-rise buildings).
     // Commercial blocks around the centre, leaving a clear stadium ring.
     for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4]! });
     // University district and civic campus, west.
@@ -522,7 +513,7 @@ function CityEcosystem() {
     </group>
     {/* District labels and premium map title. */}
     <Html position={[-25, 8, -166]} center distanceFactor={48} style={{ pointerEvents: "none" }}>
-      <div style={{ whiteSpace: "nowrap", textAlign: "center", padding: "12px 22px", borderRadius: 9, color: "#f8e4ac", background: "linear-gradient(135deg,rgba(7,19,29,.97),rgba(19,46,48,.94))", border: "2px solid rgba(224,188,105,.9)", boxShadow: "0 8px 28px #0008", fontWeight: 1000, letterSpacing: 5, fontSize: 25 }}>LAGOS METROPLEX<div style={{ marginTop: 4, fontSize: 10, letterSpacing: 3, color: "#d8e3d9" }}>A LIVING OPEN-WORLD CITY · ALWAYS ROLEPLAY</div></div>
+      <div style={{ whiteSpace: "nowrap", textAlign: "center", padding: "12px 22px", borderRadius: 9, color: "#f8e4ac", background: "linear-gradient(135deg,rgba(7,19,29,.97),rgba(19,46,48,.94))", border: "2px solid rgba(224,188,105,.9)", boxShadow: "0 8px 28px #0008", fontWeight: 1000, letterSpacing: 5, fontSize: 25 }}>NEW MAP<div style={{ marginTop: 4, fontSize: 10, letterSpacing: 3, color: "#d8e3d9" }}>A LIVING LAGOS-INSPIRED CITY · ALWAYS ROLEPLAY</div></div>
     </Html>
     <CityTrees />
     {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
@@ -547,14 +538,15 @@ export default function NewMapWorld() {
   return (
     <group>
       {/* The entire city is intentionally compact so destinations are close together. */}
-      <group scale={[0.48, 0.48, 0.48]}>
+      <group scale={[NEW_MAP_SCALE, NEW_MAP_SCALE, NEW_MAP_SCALE]}>
         {/* Named, connected districts with S-curves and a U-shaped stadium boulevard. */}
         <CityEcosystem />
+         <LagosResidentialDistrict />
       </group>
       {/* Plain world beyond the stadium */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[220, 220]} />
-        <meshStandardMaterial color="#668553" roughness={1} metalness={0} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.04, 0]} receiveShadow>
+        <planeGeometry args={[220, 220, 1, 1]} />
+        <meshStandardMaterial color="#89935e" roughness={1} metalness={0} />
       </mesh>
 
       {/* Stadium bowl: reduced exterior footprint, deep layered seating and a completely open centre */}
