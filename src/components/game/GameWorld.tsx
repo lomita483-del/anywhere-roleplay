@@ -8,9 +8,9 @@ import { getInteriorDefinition } from "@/game/interiors";
 import InteriorWorld from "@/components/game/InteriorWorld";
 import { NEW_MAP_SCALE } from "@/game/newMap";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
-import { interact } from "@/game/actions";
+import { enterBuilding, interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
-import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, STALLS, ROADS_X, ROADS_Z, isBlocked, clampWorld, districtAt } from "@/game/city";
+import { VEHICLE_SPAWNS, TRAFFIC, PED_WALKS, BUILDINGS, STALLS, ROADS_X, ROADS_Z, isBlocked, clampWorld, districtAt, getMapPlaces } from "@/game/city";
 
 // Kenney GLB vehicles face -Z; our physics forward is +Z at yaw 0.
 const MODEL_FLIP = Math.PI;
@@ -1105,6 +1105,15 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     return;
   }
 
+  if (s2.waypoint?.kind === "enter-building" && Math.hypot(x - s2.waypoint.x, z - s2.waypoint.z) < 2.4) {
+    const target = getMapPlaces(s2.city).find(place => place.label === s2.waypoint?.label);
+    const label = s2.waypoint.label;
+    const kind = target?.kind ?? s2.waypoint.kind;
+    s2.setWaypoint(null);
+    enterBuilding(label, kind);
+    s2.closePhone();
+    return;
+  }
   if (s2.interior) {
     const def = getInteriorDefinition(s2.interiorLabel, s2.interiorKind);
     const hotspot = def.hotspots.find(h => Math.hypot(x - (104 + h.x), z - (104 + h.z)) < 1.8);
