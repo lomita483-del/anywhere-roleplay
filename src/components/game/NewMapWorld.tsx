@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { WORLD } from "@/game/city";
 import { useGame } from "@/game/store";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -175,22 +174,66 @@ function BigScreen({ z, rotate = false }: { z: number; rotate?: boolean }) {
 type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string };
 
 function CityBuilding({ b }: { b: CityBlock }) {
+  const windowRows = Math.max(1, Math.floor(b.h / 3.2));
+  const windowCols = Math.max(2, Math.floor(b.w / 2.8));
+  const windows = useMemo(() => {
+    const out: { x: number; y: number }[] = [];
+    for (let row = 0; row < windowRows; row++) {
+      for (let col = 0; col < windowCols; col++) {
+        out.push({
+          x: -b.w * 0.38 + col * ((b.w * 0.76) / Math.max(1, windowCols - 1)),
+          y: 1.7 + row * ((Math.max(0.8, b.h - 3.1)) / Math.max(1, windowRows - 1)),
+        });
+      }
+    }
+    return out;
+  }, [b.h, b.w, windowCols, windowRows]);
+  const isHouse = b.h < 6;
   return (
     <group position={[b.x, 0, b.z]}>
-      <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
+      {/* Raised foundation and pavement apron give each building a believable footprint. */}
+      <mesh position={[0, 0.18, 0]} receiveShadow>
+        <boxGeometry args={[b.w + 2.2, 0.36, b.d + 2.2]} />
+        <meshStandardMaterial color="#b8b8ad" roughness={0.96} />
+      </mesh>
+      <mesh position={[0, b.h / 2 + 0.35, 0]} castShadow receiveShadow>
         <boxGeometry args={[b.w, b.h, b.d]} />
-        <meshStandardMaterial color={b.color} roughness={0.72} metalness={b.h > 18 ? 0.24 : 0.04} />
+        <meshStandardMaterial color={b.color} roughness={isHouse ? 0.88 : 0.66} metalness={b.h > 18 ? 0.2 : 0.03} />
       </mesh>
-      <mesh position={[0, b.h + 0.18, 0]} castShadow>
-        <boxGeometry args={[b.w + 0.8, 0.36, b.d + 0.8]} />
-        <meshStandardMaterial color={b.h > 18 ? "#253847" : "#c5b99e"} roughness={0.7} metalness={0.2} />
+      {/* Flat roof parapet for commercial blocks; pitched roof for residential homes. */}
+      {isHouse ? (
+        <group position={[0, b.h + 0.32, 0]}>
+          <mesh rotation-x={Math.PI / 4} position={[0, 0.35, 0]} castShadow>
+            <boxGeometry args={[b.w + 0.7, 0.55, b.d + 0.7]} />
+            <meshStandardMaterial color={["#8c5945", "#59666a", "#a26e48", "#6d7774"][Math.abs(Math.round(b.x + b.z)) % 4]!} roughness={0.9} />
+          </mesh>
+        </group>
+      ) : (
+        <>
+          <mesh position={[0, b.h + 0.55, 0]} castShadow>
+            <boxGeometry args={[b.w + 0.9, 0.42, b.d + 0.9]} />
+            <meshStandardMaterial color={b.h > 18 ? "#253847" : "#c5b99e"} roughness={0.7} metalness={0.18} />
+          </mesh>
+          <mesh position={[0, b.h + 0.86, 0]} castShadow>
+            <boxGeometry args={[b.w * 0.58, 0.24, b.d * 0.54]} />
+            <meshStandardMaterial color="#a9b3b4" roughness={0.76} metalness={0.12} />
+          </mesh>
+        </>
+      )}
+      {/* Repeated inset windows create visible façades instead of plain solid boxes. */}
+      {windows.map((w, i) => (
+        <mesh key={i} position={[w.x, w.y + 0.35, b.d / 2 + 0.012]}>
+          <boxGeometry args={[Math.min(1.35, b.w / (windowCols + 1)), isHouse ? 0.72 : Math.min(1.7, b.h / (windowRows + 1)), 0.035]} />
+          <meshStandardMaterial color={isHouse ? "#8caeb4" : "#6f9aa9"} emissive={isHouse ? "#172d32" : "#1d3942"} emissiveIntensity={0.18} metalness={0.35} roughness={0.32} />
+        </mesh>
+      ))}
+      {/* A clear entrance on the street-facing side. */}
+      <mesh position={[b.w * 0.22, 1.25, b.d / 2 + 0.04]}>
+        <boxGeometry args={[Math.min(1.7, b.w * 0.16), 2.5, 0.08]} />
+        <meshStandardMaterial color="#263943" metalness={0.22} roughness={0.4} />
       </mesh>
-      {b.h > 14 && <mesh position={[0, b.h * 0.56, b.d / 2 + 0.015]}>
-        <boxGeometry args={[b.w * 0.82, b.h * 0.58, 0.04]} />
-        <meshStandardMaterial color="#7ea7b6" metalness={0.35} roughness={0.32} />
-      </mesh>}
-      {b.label && <Html position={[0, b.h + 1.3, 0]} center distanceFactor={30} style={{ pointerEvents: "none" }}>
-        <div style={{ whiteSpace: "nowrap", padding: "4px 8px", borderRadius: 5, background: "rgba(7,19,28,.88)", border: "1px solid rgba(230,199,127,.75)", color: "#f8e8bd", fontSize: 10, fontWeight: 900, letterSpacing: 1.3 }}>{b.label}</div>
+      {b.label && <Html position={[0, b.h + 1.8, 0]} center distanceFactor={25} style={{ pointerEvents: "none" }}>
+        <div style={{ whiteSpace: "nowrap", padding: "4px 8px", borderRadius: 5, background: "rgba(7,19,28,.9)", border: "1px solid rgba(230,199,127,.82)", color: "#f8e8bd", fontSize: 10, fontWeight: 900, letterSpacing: 1.3 }}>{b.label}</div>
       </Html>}
     </group>
   );
@@ -230,31 +273,85 @@ function CityTrees() {
   </>;
 }
 
-function RoadMarkings() {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  const marks = useMemo(() => {
-    const out: { x: number; z: number; horizontal: boolean }[] = [];
-    const roads = [-140, -100, -42, 42, 82, 122, 150];
-    for (const x of roads) for (let i = 0; i < 16; i++) out.push({ x, z: -150 + i * 20, horizontal: false });
-    for (const z of roads) for (let i = 0; i < 16; i++) out.push({ x: -150 + i * 20, z, horizontal: true });
+// Curved arterial routes replace the old oversized rectangular road grid.
+// The S-bends and U-shaped stadium loop are designed to read clearly from the isometric camera.
+const CITY_ROAD_PATHS: [number, number][][] = [
+  [[-168, 94], [-137, 74], [-116, 47], [-112, 16], [-91, -8], [-62, -22], [-36, -19], [-13, -3], [11, 12], [38, 16], [65, 4], [91, -18], [116, -47], [145, -61], [169, -54]],
+  [[-165, -25], [-133, -18], [-108, -30], [-92, -56], [-76, -86], [-52, -109], [-23, -119], [9, -112], [36, -94], [55, -70], [72, -49], [99, -39], [130, -42], [164, -28]],
+  [[-78, 164], [-64, 130], [-71, 100], [-54, 73], [-40, 49], [-43, 28], [-61, 10]],
+  [[62, 163], [75, 133], [71, 108], [90, 83], [112, 66], [128, 39], [126, 12], [111, -7]],
+  [[-165, 125], [-132, 119], [-111, 133], [-94, 153], [-68, 166]],
+  [[-150, -137], [-118, -119], [-95, -96], [-78, -74]],
+  // Broad U-shaped boulevard around the stadium plaza.
+  [[-9, -70], [22, -68], [49, -52], [67, -27], [72, 3], [63, 33], [43, 55], [14, 67], [-17, 67], [-45, 53], [-64, 30], [-72, 1], [-66, -29], [-47, -52], [-21, -67], [-9, -70]],
+];
+
+function createRoadGeometry(path: [number, number][], width: number) {
+  const curve = new THREE.CatmullRomCurve3(path.map(([x, z]) => new THREE.Vector3(x, 0.035, z)), false, "catmullrom", 0.22);
+  const samples = curve.getPoints(Math.max(80, path.length * 18));
+  const positions: number[] = [];
+  const indices: number[] = [];
+  samples.forEach((p, i) => {
+    const tangent = curve.getTangent(i / (samples.length - 1));
+    const halfX = tangent.z * width * 0.5;
+    const halfZ = -tangent.x * width * 0.5;
+    positions.push(p.x - halfX, p.y, p.z - halfZ, p.x + halfX, p.y, p.z + halfZ);
+    if (i < samples.length - 1) {
+      const a = i * 2;
+      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return { geometry, curve };
+}
+
+function CurvedRoadNetwork() {
+  const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => ({
+    index, ...createRoadGeometry(path, index === 6 ? 8.8 : index < 2 ? 8.2 : 6.4),
+  })), []);
+  const dashData = useMemo(() => {
+    const out: { x: number; z: number; yaw: number; width: number }[] = [];
+    roadData.forEach((road, roadIndex) => {
+      const length = road.curve.getLength();
+      const spacing = roadIndex === 6 ? 9.2 : 10.5;
+      for (let d = 4; d < length - 4; d += spacing) {
+        const t = road.curve.getUtoTmapping(0, d);
+        const p = road.curve.getPointAt(t);
+        const tangent = road.curve.getTangentAt(t);
+        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === 6 ? 3.7 : 3.2 });
+      }
+    });
     return out;
-  }, []);
+  }, [roadData]);
+  const marksRef = useRef<THREE.InstancedMesh>(null);
   useEffect(() => {
-    const mesh = ref.current;
+    const mesh = marksRef.current;
     if (!mesh) return;
     const dummy = new THREE.Object3D();
-    marks.forEach((m, i) => {
-      dummy.position.set(m.x, 0.048, m.z);
-      dummy.rotation.set(-Math.PI / 2, 0, 0);
-      dummy.scale.set(m.horizontal ? 1 : 0.025, m.horizontal ? 1 : 42, 1);
-      dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
+    dashData.forEach((d, i) => {
+      dummy.position.set(d.x, 0.075, d.z);
+      dummy.rotation.set(0, d.yaw, 0);
+      dummy.scale.set(d.width, 1, 1);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
     });
-    mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere();
-  }, [marks]);
-  return <instancedMesh ref={ref} args={[undefined, undefined, marks.length]} frustumCulled={false}>
-    <planeGeometry args={[5.5, 0.13]} />
-    <meshBasicMaterial color="#f0eee4" />
-  </instancedMesh>;
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }, [dashData]);
+  return (
+    <>
+      {roadData.map((road) => <mesh key={road.index} geometry={road.geometry} receiveShadow>
+        <meshStandardMaterial color="#3d454b" roughness={0.96} side={THREE.DoubleSide} />
+      </mesh>)}
+      <instancedMesh ref={marksRef} args={[undefined, undefined, dashData.length]} frustumCulled={false}>
+        <boxGeometry args={[1, 0.035, 0.16]} />
+        <meshBasicMaterial color="#f4f0df" />
+      </instancedMesh>
+    </>
+  );
 }
 
 function CityTraffic() {
@@ -298,14 +395,8 @@ function CityEcosystem() {
     return out;
   }, []);
   return <>
-    {/* Interconnected asphalt roads and white dashed lane markings */}
-    {[-140, -100, -42, 42, 82, 122, 150].map((x) => <group key={"rx"+x}>
-      <mesh rotation-x={-Math.PI / 2} position={[x, 0.025, 0]}><planeGeometry args={[5.2, 330]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
-    </group>)}
-    {[-140, -100, -42, 42, 82, 122, 150].map((z) => <group key={"rz"+z}>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.026, z]}><planeGeometry args={[330, 5.2]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
-    </group>)}
-    <RoadMarkings />
+    {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
+    <CurvedRoadNetwork />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
@@ -385,11 +476,14 @@ export default function NewMapWorld() {
 
   return (
     <group>
-      {/* Named, connected open-world districts surrounding the central stadium. */}
-      <CityEcosystem />
+      {/* The entire city is intentionally compact so destinations are close together. */}
+      <group scale={[0.48, 0.48, 0.48]}>
+        {/* Named, connected districts with S-curves and a U-shaped stadium boulevard. */}
+        <CityEcosystem />
+      </group>
       {/* Plain world beyond the stadium */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[WORLD * 3, WORLD * 3]} />
+        <planeGeometry args={[220, 220]} />
         <meshStandardMaterial color="#668553" roughness={1} metalness={0} />
       </mesh>
 
