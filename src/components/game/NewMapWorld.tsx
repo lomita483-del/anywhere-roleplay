@@ -418,7 +418,7 @@ function LagosResidentialDistrict() {
     <instancedMesh ref={rollerDoors} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.2} roughness={.68} /></instancedMesh>
     <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.7} /></instancedMesh>
     <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.8} /></instancedMesh>
-    <Html position={[residentialDistrict.x, 22, residentialDistrict.z-18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
+    <Html position={[NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!.x, 22, NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!.z-18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
   </>;
 }
 
@@ -820,7 +820,6 @@ function CityEcosystem() {
   const industrialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="industrial")!;
   const civicDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="civic")!;
   const lakeDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="lake-park")!;
-  const residentialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!;
   const portDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="port")!;
   const craneRefs=useRef<(THREE.Group|null)[]>([]);
   const quality=useGame(s=>s.graphicsQuality);
