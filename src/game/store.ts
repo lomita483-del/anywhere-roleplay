@@ -157,6 +157,8 @@ interface GameStore {
   phoneOpen: boolean;
   outfit: PlayerOutfit;
   needs: PlayerNeeds;
+  unlockedDistricts: string[];
+  unlockDistrict: (district: string) => boolean;
   tickNeeds: (seconds: number) => void;
   eatFood: (kind: "mama-put" | "snack" | "water") => boolean;
   rentals: Record<string, number>;
@@ -171,7 +173,7 @@ interface GameStore {
   setRideRequest: (rideRequest: RideRequest | null) => void;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
-  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel";
+  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts";
   prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
