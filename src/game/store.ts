@@ -270,7 +270,7 @@ function loadSave(): SaveData | null {
 
 const DEFAULTS = {
   started: false,
-  city: "lagos" as CityId,
+  city: "newmap" as CityId,
   onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
@@ -307,7 +307,7 @@ const DEFAULTS = {
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
-  setCity: (city) => { setCityWorld(city); g.playerPos.set(-14, 0, -14); g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
+  setCity: (city) => { setCityWorld(city); g.playerPos.set(city === "newmap" ? 0 : -14, 0, city === "newmap" ? 0 : -14); g.drivingId = null; g.vehicles.clear(); g.ridingPassenger = false; g.sirenOn = false; set({ city, driving: false, speedKph: 0, waypoint: null, activeJob: null, interior: false, interiorLabel: "", phoneOpen: false }); get().save(); },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -331,7 +331,7 @@ export const useGame = create<GameStore>((set, get) => ({
   start: (fresh) => {
     const saved = fresh ? null : loadSave();
     if (saved) {
-      const savedCity = saved.city ?? "lagos";
+      const savedCity: CityId = saved.city === "lagos" || !saved.city ? "newmap" : saved.city;
       setCityWorld(savedCity);
       g.playerPos.set(saved.x, 0, saved.z);
       g.time = saved.time;
@@ -353,7 +353,7 @@ export const useGame = create<GameStore>((set, get) => ({
       });
     } else {
       setCityWorld(get().city);
-      g.playerPos.set(-14, 0, -14);
+      g.playerPos.set(0, 0, 0);
       g.time = 8;
       localStorage.removeItem(SAVE_KEY);
       set({ ...DEFAULTS, started: true, name: get().name || "Hustler" });
