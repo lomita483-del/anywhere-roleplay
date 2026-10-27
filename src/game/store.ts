@@ -319,7 +319,7 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
 
-  acceptJob: (type) => set({ activeJob: makeJob(type), phoneOpen: false }),
+  acceptJob: (type) => { const job = makeJob(type); const target = job.targets[0]; set({ activeJob: job, phoneOpen: false, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · pickup", kind: "job" } : null }); },
   advanceJob: () => {
     const job = get().activeJob;
     if (!job) return;
@@ -331,13 +331,14 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "trader") stats.trades++;
       if (job.type === "security") stats.patrols++;
       get().earn(job.payout, "bank");
-      set({ activeJob: null, jobStats: stats });
+      set({ activeJob: null, jobStats: stats, waypoint: null });
       get().radio(`✅ Job complete — ${N(job.payout)} paid into your bank account.`);
     } else {
-      set({ activeJob: { ...job, stage: next } });
+      const target = job.targets[next];
+      set({ activeJob: { ...job, stage: next }, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · " + (next + 1), kind: "job" } : null });
     }
   },
-  cancelJob: () => set({ activeJob: null }),
+  cancelJob: () => set({ activeJob: null, waypoint: null }),
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
   rentMarketItem: (key) => {
