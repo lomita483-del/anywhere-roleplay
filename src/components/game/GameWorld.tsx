@@ -535,6 +535,18 @@ function JobPickupVisual({ job }: { job: ActiveJob | null }) {
   );
   return null;
 }
+function buildRoadRoute(startX: number, startZ: number, destX: number, destZ: number): [number, number][] {
+  const nearest = (value: number, roads: readonly number[]) => roads.reduce((best, road) => Math.abs(road - value) < Math.abs(best - value) ? road : best, roads[0] ?? 0);
+  const startRoadX = nearest(startX, ROADS_X);
+  const targetRoadX = nearest(destX, ROADS_X);
+  const targetRoadZ = nearest(destZ, ROADS_Z);
+  const raw: [number, number][] = [
+    [startX, startZ], [startRoadX, startZ], [startRoadX, targetRoadZ],
+    [targetRoadX, targetRoadZ], [targetRoadX, destZ], [destX, destZ],
+  ];
+  return raw.filter((point, index) => index === 0 || Math.hypot(point[0] - raw[index - 1]![0], point[1] - raw[index - 1]![1]) > 1);
+}
+
 function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
   const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#eab308", transparent: true, opacity: 0.2 })), []);
   const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#ffe38a", transparent: true, opacity: 0.95 })), []);
@@ -545,7 +557,7 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   }, [glow, route]);
   useFrame((state) => {
     if (!waypoint) return;
-    const points = [new THREE.Vector3(g.playerPos.x, 0.16, g.playerPos.z), new THREE.Vector3(waypoint.x, 0.16, waypoint.z)];
+    const points = buildRoadRoute(g.playerPos.x, g.playerPos.z, waypoint.x, waypoint.z).map(([x, z]) => new THREE.Vector3(x, 0.16, z));
     glow.geometry.setFromPoints(points);
     route.geometry.setFromPoints(points);
     if (beacon.current) {
@@ -598,7 +610,7 @@ function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: nu
 function RideDriver() {
   const ride = useGame((s) => s.rideRequest);
   const ref = useRef<THREE.Group>(null);
-  const runtime = useRef<{ id: string; x: number; z: number; yaw: number; status: "approaching" | "travelling" } | null>(null);
+  const runtime = useRef<{ id: string; x: number; z: number; yaw: number; status: "approaching" | "travelling"; route: [number, number][]; routeIndex: number } | null>(null);
 
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
@@ -609,11 +621,12 @@ function RideDriver() {
       return;
     }
     if (!runtime.current || runtime.current.id !== ride.id) {
-      runtime.current = { id: ride.id, x: ride.x, z: ride.z, yaw: ride.yaw, status: "approaching" };
+      runtime.current = { id: ride.id, x: ride.x, z: ride.z, yaw: ride.yaw, status: "approaching", route: [], routeIndex: 0 };
     }
     const r = runtime.current;
-    const targetX = r.status === "approaching" ? g.playerPos.x : ride.destination.x;
-    const targetZ = r.status === "approaching" ? g.playerPos.z : ride.destination.z;
+    const routeTarget = r.status === "travelling" ? (r.route[r.routeIndex] ?? [ride.destination.x, ride.destination.z]) : null;
+    const targetX = r.status === "approaching" ? g.playerPos.x : (routeTarget?.[0] ?? ride.destination.x);
+    const targetZ = r.status === "approaching" ? g.playerPos.z : (routeTarget?.[1] ?? ride.destination.z);
     const dx = targetX - r.x;
     const dz = targetZ - r.z;
     const distance = Math.hypot(dx, dz);
@@ -625,16 +638,20 @@ function RideDriver() {
       r.yaw = Math.atan2(dx, dz);
     } else if (r.status === "approaching") {
       r.status = "travelling";
+      r.route = buildRoadRoute(r.x, r.z, ride.destination.x, ride.destination.z);
+      r.routeIndex = Math.min(1, Math.max(0, r.route.length - 1));
       g.ridingPassenger = true;
       g.playerPos.set(r.x, 0, r.z);
       useGame.getState().setRideRequest({ ...ride, status: "travelling", x: r.x, z: r.z, yaw: r.yaw });
       useGame.getState().radio(ride.service === "bike" ? "🏍️ Okada arrived. Oya, your trip has started!" : "🚘 Your driver has arrived. Trip started.");
+    } else if (r.routeIndex < r.route.length - 1) {
+      r.routeIndex += 1;
     } else {
       g.playerPos.set(ride.destination.x, 0, ride.destination.z);
       g.ridingPassenger = false;
       useGame.getState().setWaypoint(null);
       useGame.getState().setRideRequest(null);
-      useGame.getState().radio("📍 Arrived at " + ride.destination.label + ". Safe journey — fare paid: " + "₦" + ride.fare.toLocaleString("en-NG") + ".");
+      useGame.getState().radio("📍 Arrived at " + ride.destination.label + ". Safe journey — fare paid: ₦" + ride.fare.toLocaleString("en-NG") + ".");
       return;
     }
     group.position.set(r.x, 0, r.z);
