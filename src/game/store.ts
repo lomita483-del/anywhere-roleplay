@@ -332,7 +332,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const saved = fresh ? null : loadSave();
     if (saved) {
       const migratedToNewMap = saved.city === "lagos" || !saved.city;
-      const savedCity: CityId = migratedToNewMap ? "newmap" : saved.city;
+      const savedCity: CityId = migratedToNewMap ? "newmap" : (saved.city ?? "newmap");
       setCityWorld(savedCity);
       g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 0 : saved.z);
       g.time = saved.time;
