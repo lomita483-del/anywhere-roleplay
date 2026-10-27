@@ -407,6 +407,7 @@ export default function GameWorld() {
   const timers = useRef({ prox: 0, clock: 0, save: 0, radio: 20 });
   const spawned = useGame((s) => s.spawnedVehicles);
   const waypoint = useGame((s) => s.waypoint);
+  const outfit = useGame((s) => s.outfit);
   const [remotePlayers, setRemotePlayers] = useState<Record<string, { name: string; x: number; z: number; yaw: number; vehicle: string | null }>>({});
 
   const register = (id: string, grp: THREE.Group | null) => {
@@ -680,6 +681,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
     else if (poi.kind === "jobboard") st.setPrompt({ kind: "jobboard", label: "Browse City Job Board" });
+    else if (poi.kind === "police") st.setPrompt({ kind: "police", label: "Clock in at Police HQ" });
     else {
       st.setPrompt(null);
       return;
