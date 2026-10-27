@@ -19,7 +19,8 @@ function Joystick() {
 
   const down = (e: React.PointerEvent) => {
     e.stopPropagation();
-    origin.current = { x: e.clientX, y: e.clientY };
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    origin.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
   const move = (e: React.PointerEvent) => {
