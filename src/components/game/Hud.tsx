@@ -149,20 +149,26 @@ export default function Hud() {
   // Show the in-game Admin Center shortcut only to accounts with an explicit admin grant.
   useEffect(() => {
     let active = true;
-    const checkAdmin = async () => {
+    const checkAdmin = async (userId?: string | null) => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const user = data.session?.user;
-        if (!user) { if (active) setAdminAccess(false); return; }
+        let id = userId;
+        if (id === undefined) {
+          const { data } = await supabase.auth.getSession();
+          id = data.session?.user?.id ?? null;
+        }
+        if (!id) { if (active) setAdminAccess(false); return; }
         const { data: grant, error } = await (supabase as any)
-          .from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle();
+          .from("admin_users").select("user_id").eq("user_id", id).maybeSingle();
         if (active) setAdminAccess(!error && Boolean(grant?.user_id));
       } catch {
         if (active) setAdminAccess(false);
       }
     };
     void checkAdmin();
-    const { data: listener } = supabase.auth.onAuthStateChange(() => { void checkAdmin(); });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Use the session supplied by the auth event; don't call getSession inside this callback.
+      void checkAdmin(session?.user?.id ?? null);
+    });
     const timer = window.setInterval(() => { void checkAdmin(); }, 15000);
     return () => {
       active = false;
