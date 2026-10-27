@@ -144,7 +144,8 @@ interface GameStore {
   rentMarketItem: (key: string) => boolean;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
   interior: boolean;
-  setInterior: (inside: boolean) => void;
+  interiorLabel: string;
+  setInterior: (inside: boolean, label?: string) => void;
   waypoint: GpsWaypoint | null;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
@@ -209,6 +210,7 @@ const DEFAULTS = {
   outfit: { skinTone: "#a86f48", hair: "short", top: "streetwear", bottom: "jeans", accessory: "none" } as PlayerOutfit,
   rentals: {} as Record<string, number>,
   interior: false,
+  interiorLabel: "Ikoyi Apartment",
   waypoint: null as GpsWaypoint | null,
   phoneApp: "home" as const,
   prompt: null as GameStore["prompt"],
