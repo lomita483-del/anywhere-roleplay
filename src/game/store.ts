@@ -32,6 +32,8 @@ export interface SaveData {
   time: number;
   x: number;
   z: number;
+  activeJob?: ActiveJob | null;
+  spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number }[];
 }
 
 export const SAVE_KEY = "lagos-hustle-save-v1";
@@ -203,7 +205,11 @@ export const useGame = create<GameStore>((set, get) => ({
       set({
         started: true, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank,
         inventory: saved.inventory || {}, owned: saved.owned || [],
-        jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats }, clock: saved.time, hasSave: true,
+        jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
+        activeJob: saved.activeJob ?? null,
+        spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
+        clock: Number.isFinite(saved.time) ? saved.time : 8,
+        hasSave: true,
       });
     } else {
       g.playerPos.set(-14, 0, -14);
@@ -221,11 +227,13 @@ export const useGame = create<GameStore>((set, get) => ({
     const data: SaveData = {
       name: s.name, cash: s.cash, bank: s.bank, inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, x: g.playerPos.x, z: g.playerPos.z,
+      activeJob: s.activeJob, spawnedVehicles: s.spawnedVehicles,
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
   },
 
   spend: (amount, from) => {
+    if (!Number.isFinite(amount) || amount <= 0) return false;
     const s = get();
     const bal = from === "cash" ? s.cash : s.bank;
     if (bal < amount) return false;
@@ -233,10 +241,12 @@ export const useGame = create<GameStore>((set, get) => ({
     return true;
   },
   earn: (amount, to) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
     const s = get();
     set(to === "cash" ? { cash: s.cash + amount } : { bank: s.bank + amount });
   },
   transfer: (amount, dir) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
     const s = get();
     if (dir === "deposit") {
       if (s.cash < amount) return;
@@ -247,11 +257,13 @@ export const useGame = create<GameStore>((set, get) => ({
     }
   },
   addItem: (item, count = 1) => {
+    if (!Number.isFinite(count) || count <= 0) return;
     const inv = { ...get().inventory };
     inv[item] = (inv[item] || 0) + count;
     set({ inventory: inv });
   },
   removeItem: (item, count = 1) => {
+    if (!Number.isFinite(count) || count <= 0) return;
     const inv = { ...get().inventory };
     const left = (inv[item] || 0) - count;
     if (left > 0) inv[item] = left; else delete inv[item];
