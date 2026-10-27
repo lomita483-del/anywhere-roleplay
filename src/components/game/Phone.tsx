@@ -3,7 +3,7 @@ import {
   ArrowLeft, Banknote, Briefcase, Car, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt,
 } from "lucide-react";
 import { g } from "@/game/state";
-import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType } from "@/game/store";
+import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, type JobType, type PlayerOutfit } from "@/game/store";
 import { deliverOwnedVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD } from "@/game/city";
@@ -445,6 +445,22 @@ function WardrobeApp() {
   const outfit = useGame((s) => s.outfit);
   const setOutfit = useGame((s) => s.setOutfit);
   const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase.from("profiles").select("outfit").eq("id", user.id).maybeSingle();
+      if (!active) return;
+      if (!error && data?.outfit && typeof data.outfit === "object" && !Array.isArray(data.outfit) && Object.keys(data.outfit).length > 0) {
+        setOutfit(data.outfit as unknown as Partial<PlayerOutfit>);
+        setNotice("Saved wardrobe loaded from your online profile.");
+      }
+    })();
+    return () => { active = false; };
+  }, [setOutfit]);
   const choices = {
     skinTone: [{label:"Warm brown",value:"#a86f48"},{label:"Deep brown",value:"#69402d"},{label:"Light brown",value:"#c58b61"},{label:"Dark",value:"#3e2b24"}],
     hair: [{label:"Short fade",value:"short"},{label:"Locs",value:"locs"},{label:"Braids",value:"braids"},{label:"Low cut",value:"lowcut"}],
@@ -470,7 +486,27 @@ function WardrobeApp() {
     </div>
     {notice && <div role="status" className="rounded-lg bg-[#eab308]/10 p-2 text-[10px] text-[#f4d16a]">{notice}</div>}
     <div className="grid grid-cols-1 gap-2">{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("hairColor","Hair colour")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
-    <button className="rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a]" onClick={() => setNotice("Wardrobe saved to this character.")}>Save outfit</button>
+    <button
+      disabled={saving}
+      className="rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a] disabled:opacity-60"
+      onClick={async () => {
+        setSaving(true);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            setNotice("Outfit saved on this device. Sign in to sync it to your online profile.");
+            return;
+          }
+          const { error } = await supabase.from("profiles").update({ outfit: outfit as unknown as import("@/integrations/supabase/types").Json }).eq("id", user.id);
+          if (error) throw error;
+          setNotice("Outfit saved to your Supabase profile.");
+        } catch {
+          setNotice("Could not sync online right now. Your local outfit is still saved.");
+        } finally {
+          setSaving(false);
+        }
+      }}
+    >{saving ? "Saving outfit…" : "Save outfit to profile"}</button>
   </div>;
 }
 
