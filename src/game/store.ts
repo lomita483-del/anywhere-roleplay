@@ -213,7 +213,7 @@ interface GameStore {
   setRideRequest: (rideRequest: RideRequest | null) => void;
   setWaypoint: (waypoint: GpsWaypoint | null) => void;
   clearWaypoint: () => void;
-  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings";
+  phoneApp: "home" | "bank" | "jobs" | "garage" | "inventory" | "map" | "radio" | "market" | "wardrobe" | "rides" | "food" | "travel" | "districts" | "fuel" | "radar" | "settings" | "friends";
   prompt: { kind: PromptKind; label: string; vehicleId?: string; buildingLabel?: string } | null;
   modal: "atm" | "dealer" | "home" | "bank" | null;
   clock: number; // HUD-facing in-game hour, synced at ~1Hz
