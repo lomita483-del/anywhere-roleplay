@@ -6,24 +6,25 @@ export const NEW_MAP_SCALE = 0.48;
 export type NewMapPoiKind = "airport" | "port" | "stadium" | "university" | "lake" | "bank" | "atm" | "shop" | "market" | "hospital" | "police" | "fuel" | "pharmacy" | "mama-put" | "dealership" | "real-estate" | "residential";
 export interface NewMapPoi { id: string; label: string; kind: NewMapPoiKind; x: number; z: number; }
 export const NEW_MAP_ROADS: [number, number][][] = [
-  // West-side city spine: lake -> university -> industrial -> downtown -> market.
-  [[-112, 126], [-108, 105], [-111, 82], [-110, 61], [-110, 43], [-112, 21], [-123, -1], [-135, -24], [-143, -46], [-145, -64], [-145, -82], [-126, -84], [-104, -84], [-82, -81], [-61, -78], [-38, -76]],
-  // Airport access road links the terminal to the market and stadium boulevard.
-  [[6, -142], [-10, -126], [-24, -109], [-34, -92], [-38, -76], [-30, -70], [-18, -69], [-9, -70]],
-  // Main east arterial: airport -> stadium east junction -> civic edge -> port gate.
-  [[6, -142], [20, -122], [34, -98], [49, -75], [60, -59], [67, -50], [67, -27], [72, 3], [84, 8], [96, 27], [101, 48], [108, 64], [103, 75], [90, 84], [76, 92], [72, 103], [72, 114]],
-  // University access road joins the west spine directly to the stadium loop.
-  [[-110, 43], [-96, 35], [-85, 22], [-78, 10], [-72, 1]],
-  // Market-to-boulevard connector, with the junction placed beside the market entrance.
+  // West-side distributor follows the outside edge of the lake, university and industrial plots,
+  // then skirts the south edge of downtown before joining the market.
+  [[-72, 150], [-72, 126], [-74, 105], [-82, 84], [-92, 64], [-100, 43], [-103, 21], [-114, 0], [-125, -24], [-130, -46], [-130, -67], [-130, -91], [-112, -99], [-90, -99], [-70, -91], [-53, -82], [-38, -76]],
+  // Airport terminal access: approaches the terminal apron from the south without crossing runways.
+  [[6, -94], [-10, -91], [-24, -86], [-34, -81], [-38, -76], [-30, -70], [-18, -69], [-9, -70]],
+  // East arterial links the terminal apron, stadium's east junction, civic edge and port approach.
+  [[6, -94], [20, -94], [34, -90], [49, -75], [60, -59], [67, -50], [67, -27], [72, 3], [84, 8], [96, 27], [101, 48], [108, 64], [103, 75], [90, 84], [76, 92], [70, 103], [70, 114]],
+  // University access road joins the west distributor directly to the stadium loop.
+  [[-100, 43], [-96, 35], [-85, 22], [-78, 10], [-72, 1]],
+  // Market-to-boulevard connector, aligned with the market's south-east entrance.
   [[-38, -76], [-42, -66], [-47, -52]],
   // Residential access street stays along the west edge of the housing grid.
   [[67, -27], [72, -40], [74, -52], [72, -64], [60, -72], [49, -75]],
-  // Bank and civic access spur off the eastern stadium junction.
+  // Bank access spur runs beside the stadium plaza and terminates outside the bank frontage.
   [[72, 3], [65, 12], [54, 19], [44, 23], [38, 24]],
-  // Hospital and civic offices access spur.
-  [[84, 8], [83, 16], [80, 22], [78, 24]],
-  // A short port approach follows the dry western edge of the waterfront.
-  [[72, 103], [76, 108], [76, 116], [76, 124]],
+  // Hospital access spur stops beside the building instead of running through its footprint.
+  [[84, 8], [91, 12], [94, 18], [92, 24]],
+  // Port approach follows the dry western edge of the waterfront and reaches the cargo-yard gate.
+  [[70, 103], [70, 108], [70, 116], [70, 124]],
   // U-shaped boulevard around the central stadium plaza; kept as the final route.
   [[-9, -70], [22, -68], [49, -52], [67, -27], [72, 3], [63, 33], [43, 55], [14, 67], [-17, 67], [-45, 53], [-64, 30], [-72, 1], [-66, -29], [-47, -52], [-21, -67], [-9, -70]],
 ];
