@@ -466,7 +466,7 @@ export default function GameWorld() {
           .on("broadcast", { event: "player_state" }, ({ payload }) => {
             const p = payload as { id?: string; name?: string; x?: number; y?: number; z?: number; yaw?: number; vehicle?: string | null; outfit?: { skinTone: string; top: string } };
             if (!p.id || p.id === playerId || typeof p.x !== "number" || typeof p.z !== "number") return;
-            setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, y: p.y ?? 0, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null, outfit: p.outfit } }));
+            setRemotePlayers((current) => ({ ...current, [p.id!]: { name: p.name || "Hustler", x: p.x!, y: p.y ?? 0, z: p.z!, yaw: p.yaw || 0, vehicle: p.vehicle ?? null, ...(p.outfit ? { outfit: p.outfit } : {}) } }));
           })
           .on("presence", { event: "sync" }, () => {
             const state = channel?.presenceState() ?? {};
