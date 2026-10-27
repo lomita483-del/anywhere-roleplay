@@ -96,7 +96,7 @@ function JobsApp() {
     return (
       <div className="flex flex-col gap-3 p-3 text-sm">
         <div className="rounded-2xl border border-hud-line bg-white/5 p-4">
-          <div className="text-[10px] uppercase tracking-widest text-hud-muted">Active job</div>
+          <div className="text-xs uppercase tracking-widest text-slate-300">Active job</div>
           <div className="mt-1 text-lg font-bold text-hud-bright">{active.title}</div>
           <div className="mt-1 text-xs text-hud-muted">{active.hint}</div>
           <div className="mt-3 flex items-center justify-between text-xs">
@@ -116,7 +116,7 @@ function JobsApp() {
   }
   return (
     <div className="flex flex-col gap-2 p-3 text-sm">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">Job board — Lagos hustle</div>
+      <div className="text-xs uppercase tracking-widest text-slate-300">Job board — Lagos hustle</div>
       {(Object.keys(JOB_INFO) as JobType[]).map((t) => (
         <div key={t} className="rounded-2xl border border-hud-line bg-white/5 p-3">
           <div className="flex items-center justify-between">
@@ -242,7 +242,7 @@ function HomeApp() {
         </div>
       </div>
       <div className="rounded-xl border border-hud-line bg-white/[0.035] p-3">
-        <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-hud-muted">Character identity & backstory</div>
+        <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Character identity & backstory</div>
         <label className="mb-2 block text-[10px] text-hud-muted">Alias / name
           <input value={aliasDraft} maxLength={16} onChange={(e) => setAliasDraft(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-[#111b20] px-3 py-2 text-xs text-white" placeholder="Enter your character name" />
         </label>
@@ -261,7 +261,7 @@ function HomeApp() {
             {["Yaba / Surulere", "Oshodi / Mushin", "Ikeja / Airport", "Lekki / Victoria Island", "Ajegunle / Makoko"].map((v) => <option key={v}>{v}</option>)}
           </select>
         </label>
-        <div className="mb-1 mt-3 text-[10px] font-bold uppercase tracking-wider text-hud-muted">Starting traits · choose up to 3</div>
+        <div className="mb-1 mt-3 text-xs font-bold uppercase tracking-wider text-slate-300">Starting traits · choose up to 3</div>
         <div className="flex flex-wrap gap-1.5">{traitOptions.map((trait) => <button key={trait} onClick={() => toggleTrait(trait)} className={traits.includes(trait) ? "rounded-full border border-emerald-300/40 bg-emerald-300/15 px-2.5 py-1.5 text-[9px] font-bold text-emerald-100" : "rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 text-[9px] text-hud-muted"}>{trait}</button>)}</div>
         <button disabled={saving} onClick={() => void saveProfile()} className="mt-3 w-full rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a] disabled:opacity-50">{saving ? "Saving…" : "Save Character Profile"}</button>
         {notice && <div role="status" className="mt-2 rounded-lg bg-white/5 p-2 text-[10px] text-hud-muted">{notice}</div>}
@@ -282,14 +282,14 @@ function MarketplaceApp() {
   return (
     <div className="flex flex-col gap-3 p-3 text-sm">
       <div className="rounded-2xl border border-[#59d6a2]/30 bg-gradient-to-br from-[#17392f] to-[#111c20] p-3">
-        <div className="text-[10px] uppercase tracking-[0.2em] text-[#8de3bf]">Lagos luxury market</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[#8de3bf]">Lagos luxury market</div>
         <div className="mt-1 text-lg font-bold text-hud-bright">Style your life.</div>
         <div className="mt-1 text-[11px] text-hud-muted">Bank: {naira(bank)} · Cash: {naira(cash)}</div>
       </div>
       {notice && <div role="status" className="rounded-xl border border-[#59d6a2]/30 bg-[#59d6a2]/10 p-2 text-xs text-[#a6f0d0]">{notice}</div>}
       {(["Clothing", "Car upgrade", "Property"] as const).map((category) => (
         <section key={category} className="space-y-2">
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-hud-accent">{category}</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-hud-accent">{category}</div>
           {MARKET_ITEMS.filter((item) => item.category === category).map((item) => {
             const owned = (inventory[item.id] ?? 0) > 0;
             return (
@@ -629,7 +629,7 @@ function MapApp() {
       )}
       {waypoint ? (
         <div className="flex items-center justify-between gap-2 rounded-xl border border-red-400/25 bg-red-500/10 p-2">
-          <div className="min-w-0"><div className="text-[10px] uppercase tracking-wider text-red-200">GPS destination</div><div className="truncate text-xs font-semibold text-white">{waypoint.label}</div></div>
+          <div className="min-w-0"><div className="text-xs uppercase tracking-wider text-red-200">GPS destination</div><div className="truncate text-xs font-semibold text-white">{waypoint.label}</div></div>
           <button className="shrink-0 rounded-lg border border-white/10 px-2 py-1.5 text-[10px] font-semibold text-white" onClick={clearWaypoint}>Clear route</button>
         </div>
       ) : <div className="text-[10px] text-hud-muted">Tap a landmark for details, or tap any map location to set a waypoint.</div>}
@@ -694,7 +694,7 @@ function WardrobeApp() {
   };
   const field = (key: keyof typeof choices, title: string) => (
     <label key={key} className="flex flex-col gap-1.5 rounded-xl border border-white/10 bg-white/[0.035] p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-hud-muted">{title}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{title}</span>
       <select value={outfit[key]} onChange={(e) => { setOutfit({[key]:e.target.value}); setNotice(title + " updated and saved."); }} className="rounded-lg border border-white/10 bg-[#111b20] px-2 py-2 text-xs text-white">
         {choices[key].map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -702,7 +702,7 @@ function WardrobeApp() {
   );
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-[#eab308]/30 bg-gradient-to-br from-[#332911] to-[#111b20] p-4">
-      <div className="text-[10px] uppercase tracking-[0.2em] text-[#f4d16a]">Lagos Boutique</div>
+      <div className="text-xs uppercase tracking-[0.2em] text-[#f4d16a]">Lagos Boutique</div>
       <div className="mt-1 text-lg font-bold text-white">Character wardrobe</div>
       <div className="mt-1 text-[11px] text-hud-muted">Choose your look. Outfit preferences save to your game profile.</div>
       <div className="mt-3 flex items-center gap-3"><div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/20 text-xl" style={{backgroundColor:outfit.skinTone}}>{outfit.gender === "female" ? "♀" : "♂"}</div><div><div className="text-xs font-semibold text-white">{outfit.gender === "female" ? "Female character" : "Male character"} · {outfit.top === "agbada" ? "Traditional Agbada" : outfit.top.charAt(0).toUpperCase()+outfit.top.slice(1)}</div><div className="text-[10px] text-hud-muted">{outfit.hair} hair · {outfit.accessory}</div></div></div>
@@ -769,7 +769,7 @@ function RadioApp() {
   };
   return (
     <div className="flex h-full flex-col p-3">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">City radio · live player chat</div>
+      <div className="text-xs uppercase tracking-widest text-slate-300">City radio · live player chat</div>
       <div ref={feedRef} className="mt-2 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {msgs.map((m, i) => <div key={i} className="rounded-xl bg-white/5 px-2.5 py-1.5 text-xs text-hud-bright">{m}</div>)}
       </div>
@@ -807,7 +807,7 @@ function FuelApp() {
   };
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-orange-300/20 bg-gradient-to-br from-[#4a2b13] to-[#111923] p-4">
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-orange-200"><Fuel className="h-4 w-4" /> Lagos fuel services</div>
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-200"><Fuel className="h-4 w-4" /> Lagos fuel services</div>
       <div className="mt-1 text-lg font-bold text-white">Fuel station</div>
       <div className="mt-3 flex items-end justify-between"><span className="text-[10px] text-slate-300">Current tank</span><span className="text-xl font-black text-white">{Math.round(fuel)}%</span></div>
       <div className="mt-1 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-orange-400 transition-all" style={{ width: fuel + "%" }} /></div>
@@ -834,7 +834,7 @@ function DistrictsApp() {
   const [notice, setNotice] = useState("");
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-lime-300/20 bg-gradient-to-br from-[#23381c] to-[#111923] p-4">
-      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-lime-200">Lagos city network</div>
+      <div className="text-xs font-bold uppercase tracking-[0.2em] text-lime-200">Lagos city network</div>
       <div className="mt-1 text-lg font-bold text-white">District access</div>
       <div className="mt-1 text-[11px] text-slate-300">Unlock neighbourhoods as your hustle grows. Each district opens new streets, jobs and opportunities.</div>
       <div className="mt-3 text-[10px] text-lime-100/80">{unlocked.length} / {DISTRICT_INFO.length} districts unlocked</div>
@@ -883,7 +883,7 @@ function TravelApp() {
   };
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-sky-200/20 bg-gradient-to-br from-[#15374d] to-[#101722] p-4">
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200"><PlaneTakeoff className="h-4 w-4" /> Murtala Muhammed International</div>
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-200"><PlaneTakeoff className="h-4 w-4" /> Murtala Muhammed International</div>
       <div className="mt-1 text-lg font-bold text-white">Airline check-in</div>
       <div className="mt-1 text-[11px] text-slate-300">Choose a flight and receive a ticket in your inventory.</div>
     </div>
@@ -908,7 +908,7 @@ function FoodApp() {
   };
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-amber-300/20 bg-gradient-to-br from-[#4b2b13] to-[#17130e] p-4">
-      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">Yaba roadside food</div>
+      <div className="text-xs font-bold uppercase tracking-[0.2em] text-amber-200">Yaba roadside food</div>
       <div className="mt-1 text-lg font-bold text-white">Buka & Mama Put</div>
       <div className="mt-1 text-[11px] text-amber-50/70">Chop well, recover energy and continue your Lagos hustle.</div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: needs.hunger + "%" }} /></div>
@@ -948,7 +948,7 @@ function RideApp() {
 
   return <div className="flex flex-col gap-3 p-3 text-sm">
     <div className="rounded-2xl border border-sky-300/20 bg-gradient-to-br from-[#123346] to-[#111923] p-4">
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200"><MapPin className="h-3.5 w-3.5" /> Lagos Ride</div>
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-200"><MapPin className="h-3.5 w-3.5" /> Lagos Ride</div>
       <div className="mt-1 text-lg font-bold text-white">Where to?</div>
       <div className="mt-1 text-[11px] text-slate-300">Choose how you want to travel around the city.</div>
       <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
