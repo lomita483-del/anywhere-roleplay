@@ -222,7 +222,7 @@ export default function Hud() {
         <button aria-label="Toggle satellite view" title={satelliteMode ? "Return to street view" : "Satellite view"} className={`flex h-8 min-w-[58px] items-center justify-center gap-1 whitespace-nowrap rounded-xl px-2 text-[9px] font-bold ${satelliteMode ? "bg-[#eab308]/25 text-[#ffe38a]" : "text-white/85"}`} onClick={() => {
           if (!g.camSatellite) {
             g.camBeforeSatellite = { pitch: g.camPitch, distance: g.camDistance };
-            g.camSatellite = true; setSatelliteMode(true); g.camPitch = 1.38; g.camDistance = 72;
+            g.camSatellite = true; setSatelliteMode(true); g.camPitch = 1.38; g.camDistance = 168;
           } else {
             g.camSatellite = false; setSatelliteMode(false); g.camPitch = g.camBeforeSatellite.pitch; g.camDistance = g.camBeforeSatellite.distance;
           }
