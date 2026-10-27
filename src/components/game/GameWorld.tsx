@@ -777,9 +777,15 @@ export default function GameWorld() {
         if (!isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
         const nz = g.playerPos.z + dz * step;
         if (!isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
-        const cw = clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
-        g.playerPos.x = cw[0];
-        g.playerPos.z = cw[1];
+        if (st.interior) {
+          // Keep the avatar inside the room boundaries while exploring an interior.
+          g.playerPos.x = THREE.MathUtils.clamp(g.playerPos.x, 98.8, 109.2);
+          g.playerPos.z = THREE.MathUtils.clamp(g.playerPos.z, 99.2, 108.5);
+        } else {
+          const cw = clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
+          g.playerPos.x = cw[0];
+          g.playerPos.z = cw[1];
+        }
         g.playerSpeed = mag * speed;
         g.playerYaw = Math.atan2(dx, dz);
       } else {
