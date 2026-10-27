@@ -4,6 +4,7 @@ import { useGLTF, useAnimations, Html } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
 import { g } from "@/game/state";
+import { NEW_MAP_SCALE } from "@/game/newMap";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
@@ -1116,7 +1117,7 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   const poi = nearestPoi(x, z, 3.0);
   if (poi) {
     if (poi.kind === "atm") st.setPrompt({ kind: "atm", label: "Use ATM" });
-    else if (poi.kind === "bank") st.setPrompt(isNewMap ? { kind: "building", label: "Enter Community Bank", buildingLabel: poi.label } : { kind: "atm", label: "Enter Bank / Use ATM" });
+    else if (poi.kind === "bank") st.setPrompt(useGame.getState().city === "newmap" ? { kind: "building", label: "Enter Community Bank", buildingLabel: poi.label } : { kind: "atm", label: "Enter Bank / Use ATM" });
     else if (poi.kind === "dealership") st.setPrompt({ kind: "dealer", label: "Browse Ojoto Motors" });
     else if (poi.kind === "apartments") st.setPrompt({ kind: "home", label: "Enter home" });
     else if (poi.kind === "clothing") st.setPrompt({ kind: "wardrobe", label: "Open Lagos Boutique" });
