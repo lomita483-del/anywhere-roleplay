@@ -265,7 +265,7 @@ function MapApp() {
   const clearWaypoint = useGame((s) => s.clearWaypoint);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedPoi, setSelectedPoi] = useState<(typeof POIS)[number] | null>(null);
-  const [positionTick, setPositionTick] = useState(0);
+  const [, setPositionTick] = useState(0);
   const to = (x: number, z: number, size = 280): [number, number] => [((x + 120) / 240) * size, ((z + 120) / 240) * size];
 
   useEffect(() => {
