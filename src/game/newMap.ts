@@ -23,8 +23,8 @@ const roadEdges: NewMapRoadEdge[] = [
  {id:"university-street-s",from:"university-west-s",to:"university-east-s",type:"street",width:5,points:[[-154,98],[-125,98],[-96,98]]},
  ...[96,124,152].map((x,i)=>({id:"residential-ns-"+i,from:"res-ns-"+i,to:"res-ns-"+i,type:"street" as const,width:5,points:[[x,-70],[x,-42],[x,-14],[x,14],[x,42],[x,70]] as [number,number][]})),
  ...[-56,-28,28,56].map((z,i)=>({id:"residential-ew-"+i,from:"res-ew-"+i,to:"res-ew-"+i,type:"street" as const,width:5,points:[[82,z],[96,z],[124,z],[152,z],[174,z]] as [number,number][]})),
- {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[70,35],[82,42],[94,42],[104,42]]},
- {id:"market-link",from:"market-west",to:"airport-avenue",type:"street",width:5,points:[[-58,-104],[-32,-104],[0,-104]]},
+ {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[82,84],[110,84],[138,84],[160,84]]},
+ {id:"market-link",from:"market-west",to:"airport-avenue",type:"street",width:5,points:[[-58,-88],[-32,-88],[0,-88]]},
 ];
 export const NEW_MAP_ROAD_GRAPH = {
  nodes: [
@@ -66,13 +66,13 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
  {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-125,z:126,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-140,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"south"},
- {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:91,z:49,w:12,d:10,h:5,color:"#d7bd65",doorSide:"west"},
- {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:112,z:49,w:12,d:10,h:9,color:"#c8b78c",doorSide:"west"},
- {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:133,z:49,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"west"},
- {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:91,z:70,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"west"},
- {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:115,z:70,w:12,d:9,h:7,color:"#c7b89c",doorSide:"west"},
+ {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
+ {id:"bank",label:"COMMUNITY BANK & ATM",kind:"bank",district:"civic",x:138,z:84,w:12,d:10,h:9,color:"#c8b78c",doorSide:"south"},
+ {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:110,z:108,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
+ {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:138,z:108,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"south"},
+ {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:110,z:132,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-8,z:-104,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
- {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:132,z:126,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
+ {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
  ...[0,1,2,3,4,5,6,7,8].map(i=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-42,-14,42][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
 ];
 export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
