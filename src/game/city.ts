@@ -1,4 +1,5 @@
 // City layout data — single source of truth for geometry, collision, and POIs.
+import { UMUAHIA_BUILDINGS, UMUAHIA_POIS } from "./umuahia";
 
 export interface Box {
   x: number;
@@ -23,7 +24,7 @@ export const ROADS_Z = [-140, -80, 0, 80, 140];
 export const ROAD_HALF = 7;
 export const SIDEWALK = 3; // sidewalk band on each side of the road
 
-export const BUILDINGS: BuildingDef[] = [
+const LAGOS_BUILDINGS: BuildingDef[] = [
   // North-west block
   { x: -38, z: -46, w: 26, d: 20, h: 15, color: "#c9b08a", kind: "bank", label: "ZENITH  /  KUDA BANK" },
   { x: -56, z: -60, w: 24, d: 16, h: 9, color: "#7f9ec4", kind: "police", label: "LAGOS POLICE STATION" },
@@ -148,6 +149,8 @@ export const BUILDINGS: BuildingDef[] = [
   { x: 2, z: 104, w: 17, d: 13, h: 11, color: "#c9b4a0", label: "COMMERCIAL COURT" },
 ];
 
+export let BUILDINGS: BuildingDef[] = LAGOS_BUILDINGS;
+
 export interface Poi {
   id: string;
   kind: "atm" | "bank" | "police" | "dealership" | "apartments" | "market" | "depot" | "clothing" | "jobboard" | "food" | "airport" | "fuel";
@@ -157,7 +160,7 @@ export interface Poi {
 }
 
 // Interaction points — placed on sidewalks / plazas next to their building fronts
-export const POIS: Poi[] = [
+const LAGOS_POIS: Poi[] = [
   { id: "atm-bank", kind: "atm", x: -19, z: -40, label: "ATM" },
   { id: "atm-market", kind: "atm", x: 30, z: 9, label: "ATM" },
   { id: "atm-se", kind: "atm", x: 62, z: 10, label: "ATM" },
@@ -177,6 +180,8 @@ export const POIS: Poi[] = [
   { id: "lekki-fuel", kind: "fuel", x: 126, z: 22, label: "Lekki Fuel Station" },
 ];
 
+export let POIS: Poi[] = LAGOS_POIS;
+
 // Collision boxes for every building (slightly padded)
 export function buildingBoxes(): { minX: number; maxX: number; minZ: number; maxZ: number }[] {
   return BUILDINGS.map((b) => ({
@@ -186,7 +191,7 @@ export function buildingBoxes(): { minX: number; maxX: number; minZ: number; max
     maxZ: b.z + b.d / 2 + 0.2,
   }));
 }
-export const COLLIDERS = buildingBoxes();
+export let COLLIDERS = buildingBoxes();
 
 export function isBlocked(x: number, z: number, r: number): boolean {
   for (const b of COLLIDERS) {
@@ -204,6 +209,7 @@ export function clampWorld(x: number, z: number, r = 0.5): [number, number] {
 }
 
 export function districtAt(x: number, z: number): string | null {
+  if (currentCity === "umuahia") return null;
   if (x > 110 && z > 110) return "Eko Atlantic";
   if (x > 110 && z >= -20) return "Lekki / Victoria Island";
   if (x > 110 && z < -20) return "Ikeja / Airport";
@@ -362,4 +368,17 @@ export function treePositions(): [number, number][] {
     trees.push([bx + (bx > 0 ? -3 : 3), bz + (bz > 0 ? -3 : 3)]);
   }
   return trees;
+}
+
+
+// Current world is switched by the in-game city selector. Existing Lagos data
+// stays intact and is restored when players return to Lagos.
+export type CityId = "lagos" | "umuahia";
+export let currentCity: CityId = "lagos";
+
+export function setCityWorld(city: CityId) {
+  currentCity = city;
+  BUILDINGS = city === "umuahia" ? UMUAHIA_BUILDINGS : LAGOS_BUILDINGS;
+  POIS = city === "umuahia" ? UMUAHIA_POIS : LAGOS_POIS;
+  COLLIDERS = buildingBoxes();
 }
