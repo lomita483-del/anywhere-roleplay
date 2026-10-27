@@ -860,9 +860,9 @@ export default function GameWorld() {
         const tuned = (st.inventory["engine-tune"] ?? 0) > 0;
         const cat = tuned ? { ...baseCat, maxSpeed: baseCat.maxSpeed * 1.2, accel: baseCat.accel * 1.15 } : baseCat;
         const kf = !controlsBlocked ? ((k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0)) : 0;
-        const ks = !controlsBlocked ? ((k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0)) : 0;
+        const ks = !controlsBlocked ? ((k.has("KeyD") || k.has("ArrowRight") ? 1 : 0) - (k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0)) : 0;
         const forward = Math.max(-1, Math.min(1, kf - g.joy.y));
-        const steer = Math.max(-1, Math.min(1, ks - g.joy.x));
+        const steer = Math.max(-1, Math.min(1, ks + g.joy.x));
         const brake = k.has("Space");
 
         const fdx = Math.sin(v.yaw), fdz = Math.cos(v.yaw);
