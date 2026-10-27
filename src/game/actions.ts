@@ -42,15 +42,23 @@ export function interact() {
   else if (p.kind === "atm") s.openPhone("bank");
   else if (p.kind === "dealer") s.setModal("dealer");
   else if (p.kind === "home") {
-    if ((s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0 || (s.rentals["mainland-studio"] ?? 0) > Date.now() || (s.rentals["ikoyi-apartment"] ?? 0) > Date.now()) {
+    if (s.city === "newmap" || (s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0 || (s.rentals["mainland-studio"] ?? 0) > Date.now() || (s.rentals["ikoyi-apartment"] ?? 0) > Date.now()) {
       g.interiorReturn.copy(g.playerPos);
       g.playerPos.set(104, 0, 104);
-      s.setInterior(true, "Ikoyi Apartment");
+      s.setInterior(true, s.city === "newmap" ? (p.label.replace("Enter ", "") || "Residential Apartment") : "Ikoyi Apartment");
       s.setWaypoint(null);
-      s.radio("🏠 Welcome home. Your apartment storage is safe here.");
+      s.radio("🏠 Welcome inside. Use Exit to return to the street.");
     } else s.setModal("home");
   }
-  else if (p.kind === "food") s.openPhone("food");
+  else if (p.kind === "food") {
+    if (s.city === "newmap" && /mama put|buka/i.test(p.label)) {
+      g.interiorReturn.copy(g.playerPos);
+      g.playerPos.set(104, 0, 104);
+      s.setInterior(true, "Mama Put Buka");
+      s.openPhone("food");
+      s.radio("🍲 Welcome to Mama Put. Order your meal from the food app, then exit back to the street.");
+    } else s.openPhone("food");
+  }
   else if (p.kind === "vendor") s.openPhone("market");
   else if (p.kind === "fuel") s.openPhone("fuel");
   else if (p.kind === "wardrobe") s.openPhone("wardrobe");
