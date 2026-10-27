@@ -398,26 +398,26 @@ function LagosResidentialDistrict() {
     write(dishes, homes.length, i => { const b=homes[i]!; return {x:b.x-1.5,y:b.h+0.75,z:b.z+1.2,sx:0.45,sy:0.22,sz:0.45,ry:i*0.4,color:"#e0e0d7"}; });
     write(walls, homes.length*3, i => { const b=homes[Math.floor(i/3)]!; const part=i%3; return {x:b.x+(part===0?0:part===1?-4.45:4.45),y:0.48,z:b.z+(part===0?4.4:0),sx:part===0?8.9:0.18,sy:0.82,sz:0.18,color:"#c5c0b0"}; });
     write(gates, homes.length, i => { const b=homes[i]!; return {x:b.x+2.4,y:0.58,z:b.z+4.43,sx:1.15,sy:1.05,sz:0.18,color:"#434b4b"}; });
-    const shopCount=homes.length/8;
+    const shopCount=Math.ceil(homes.length/8);
     write(shopFronts, shopCount, i => { const b=homes[i*8]!; return {x:b.x-0.8,y:1.45,z:b.z+b.d/2+0.08,sx:2.6,sy:1.5,sz:0.07,color:"#6c9eaa"}; });
     write(rollerDoors, shopCount, i => { const b=homes[i*8]!; return {x:b.x+2.0,y:1.25,z:b.z+b.d/2+0.09,sx:1.15,sy:1.8,sz:0.1,color:"#7c8585"}; });
     write(shopSigns, shopCount, i => { const b=homes[i*8]!; return {x:b.x,y:2.75,z:b.z+b.d/2+0.16,sx:5.2,sy:0.48,sz:0.16,color:["#1f5547","#8d3d32","#294e73","#b47a31"][i%4]!}; });
     write(laundry, Math.floor(homes.length/3), i => { const b=homes[(i*3)%homes.length]!; return {x:b.x-0.7,y:3.3+(i%2)*2.5,z:b.z+b.d/2+0.55,sx:0.8,sy:0.42,sz:0.08,color:["#d9d2bf","#bb7564","#8ea8ba","#e3c56f"][i%4]!}; });
   }, [homes, windowData, balconyData]);
   return <>
-    <instancedMesh ref={plots} args={[undefined, undefined, homes.length]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#a6ad81" roughness={1} /></instancedMesh>
-    <instancedMesh ref={body} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d5c7ae" roughness={0.9} /></instancedMesh>
-    <instancedMesh ref={roofs} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c8c7bc" roughness={0.82} /></instancedMesh>
-    <instancedMesh ref={windows} args={[undefined, undefined, windowData.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#6696a5" metalness={0.2} roughness={0.32} /></instancedMesh>
-    <instancedMesh ref={balconies} args={[undefined, undefined, balconyData.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c4c4b8" roughness={0.75} /></instancedMesh>
-    <instancedMesh ref={tanks} args={[undefined, undefined, homes.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,8]} /><meshStandardMaterial color="#65777a" roughness={0.72} /></instancedMesh>
-    <instancedMesh ref={dishes} args={[undefined, undefined, homes.length]}><coneGeometry args={[0.5,0.35,8]} /><meshStandardMaterial color="#e0e0d7" roughness={0.55} /></instancedMesh>
-    <instancedMesh ref={walls} args={[undefined, undefined, homes.length*3]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#c5c0b0" roughness={0.95} /></instancedMesh>
-    <instancedMesh ref={gates} args={[undefined, undefined, homes.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#434b4b" metalness={0.35} roughness={0.55} /></instancedMesh>
-    <instancedMesh ref={shopFronts} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#6c9eaa" metalness={.15} roughness={.32} /></instancedMesh>
-    <instancedMesh ref={rollerDoors} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#7c8585" metalness={.2} roughness={.68} /></instancedMesh>
-    <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#1f5547" roughness={.7} /></instancedMesh>
-    <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d9d2bf" roughness={0.8} /></instancedMesh>
+    <instancedMesh ref={plots} args={[undefined, undefined, homes.length]} receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={1} /></instancedMesh>
+    <instancedMesh ref={body} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.9} /></instancedMesh>
+    <instancedMesh ref={roofs} args={[undefined, undefined, homes.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.82} /></instancedMesh>
+    <instancedMesh ref={windows} args={[undefined, undefined, windowData.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={0.2} roughness={0.32} /></instancedMesh>
+    <instancedMesh ref={balconies} args={[undefined, undefined, balconyData.length]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.75} /></instancedMesh>
+    <instancedMesh ref={tanks} args={[undefined, undefined, homes.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,8]} /><meshStandardMaterial color="#ffffff" roughness={0.72} /></instancedMesh>
+    <instancedMesh ref={dishes} args={[undefined, undefined, homes.length]}><coneGeometry args={[0.5,0.35,8]} /><meshStandardMaterial color="#ffffff" roughness={0.55} /></instancedMesh>
+    <instancedMesh ref={walls} args={[undefined, undefined, homes.length*3]} castShadow><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.95} /></instancedMesh>
+    <instancedMesh ref={gates} args={[undefined, undefined, homes.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={0.35} roughness={0.55} /></instancedMesh>
+    <instancedMesh ref={shopFronts} args={[undefined, undefined, Math.ceil(homes.length/8)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.15} roughness={.32} /></instancedMesh>
+    <instancedMesh ref={rollerDoors} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.2} roughness={.68} /></instancedMesh>
+    <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.7} /></instancedMesh>
+    <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.8} /></instancedMesh>
     <Html position={[128, 22, -18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
   </>;
 }
@@ -432,10 +432,10 @@ function RoadFurniture() {
     const crossings: {x:number;z:number;yaw:number}[] = [];
     const signs: {x:number;z:number;yaw:number}[] = [];
     NEW_MAP_ROADS.forEach((path, r) => {
-      if(r>=NEW_MAP_LOCAL_ROAD_START_INDEX && r<NEW_MAP_ROADS.length-1) return;
+      if((NEW_MAP_ROAD_WIDTHS[r]??5)===5) return;
       const curve = new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",0.22);
       const length=curve.getLength();
-      for(let d=12;d<length;d+=r===NEW_MAP_ROADS.length-1?24:32){
+      for(let d=12;d<length;d+=32){
         const t=curve.getUtoTmapping(0,d),p=curve.getPointAt(t),tan=curve.getTangentAt(t);
         const yaw=Math.atan2(-tan.z,tan.x);
         lamps.push({x:p.x+tan.z*5.8,z:p.z-tan.x*5.8,yaw});
@@ -443,12 +443,7 @@ function RoadFurniture() {
       }
     });
     // Zebra crossings belong at real junctions, not at arbitrary road midpoints.
-    const junctionCrossings:{x:number;z:number;yaw:number}[]=[
-      {x:-105,z:-46,yaw:0},{x:-20,z:-96,yaw:Math.PI/2},{x:-70,z:43,yaw:0},
-      {x:-72,z:126,yaw:0},{x:-20,z:-82,yaw:0},{x:-47,z:-52,yaw:Math.PI/4},
-      {x:-72,z:1,yaw:0},{x:72,z:3,yaw:0},{x:38,z:24,yaw:Math.PI/2},
-      {x:92,z:24,yaw:Math.PI/2},{x:70,z:103,yaw:0},{x:36,z:-94,yaw:Math.PI/2}
-    ];
+    const junctionCrossings:{x:number;z:number;yaw:number}[]=NEW_MAP_JUNCTIONS.map(([x,z])=>({x,z,yaw:0}));
     junctionCrossings.forEach(({x,z,yaw})=>{for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:x+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:z+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});});
     return {lamps,crossings,signs};
   }, []);
@@ -654,7 +649,7 @@ function CityTraffic() {
     body.instanceMatrix.needsUpdate=true;glass.instanceMatrix.needsUpdate=true;wheels.instanceMatrix.needsUpdate=true;
   });
   return <>
-    <instancedMesh ref={bodyRef} args={[undefined,undefined,count]} frustumCulled={false} castShadow><boxGeometry args={[2.6,.75,1.25]}/><meshStandardMaterial color="#e2d9c8" roughness={.68}/></instancedMesh>
+    <instancedMesh ref={bodyRef} args={[undefined,undefined,count]} frustumCulled={false} castShadow><boxGeometry args={[2.6,.75,1.25]}/><meshStandardMaterial color="#ffffff" roughness={.68}/></instancedMesh>
     <instancedMesh ref={glassRef} args={[undefined,undefined,count]} frustumCulled={false}><boxGeometry args={[1.25,.42,1.05]}/><meshStandardMaterial color="#8eb0bb" metalness={.2} roughness={.25}/></instancedMesh>
     <instancedMesh ref={wheelRef} args={[undefined,undefined,count*4]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#24282a" roughness={.95}/></instancedMesh>
   </>;
@@ -731,8 +726,8 @@ function CityPedestrians() {
     body.instanceMatrix.needsUpdate=true;head.instanceMatrix.needsUpdate=true;
   });
   return <>
-    <instancedMesh ref={bodies} args={[undefined,undefined,count]} frustumCulled={false} castShadow><capsuleGeometry args={[.28,.52,3,5]}/><meshStandardMaterial color="#c94f3d" roughness={.9}/></instancedMesh>
-    <instancedMesh ref={heads} args={[undefined,undefined,count]} frustumCulled={false}><sphereGeometry args={[.23,7,6]}/><meshStandardMaterial color="#754a31" roughness={.9}/></instancedMesh>
+    <instancedMesh ref={bodies} args={[undefined,undefined,count]} frustumCulled={false} castShadow><capsuleGeometry args={[.28,.52,3,5]}/><meshStandardMaterial color="#ffffff" roughness={.9}/></instancedMesh>
+    <instancedMesh ref={heads} args={[undefined,undefined,count]} frustumCulled={false}><sphereGeometry args={[.23,7,6]}/><meshStandardMaterial color="#ffffff" roughness={.9}/></instancedMesh>
   </>;
 }
 
