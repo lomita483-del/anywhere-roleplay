@@ -45,6 +45,8 @@ export default function DayNight() {
   const hemiRef = useRef<THREE.HemisphereLight>(null);
   const { scene } = useThree();
   const [rainActive, setRainActive] = useState(false);
+  const city = useGame((s) => s.city);
+  useEffect(() => { if (city === "newmap") { g.raining = false; g.powerOutage = false; setRainActive(false); } }, [city]);
 
   useEffect(() => {
     let rainTimer: number | undefined;
