@@ -230,6 +230,33 @@ function CityTrees() {
   </>;
 }
 
+function RoadMarkings() {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const marks = useMemo(() => {
+    const out: { x: number; z: number; horizontal: boolean }[] = [];
+    const roads = [-140, -100, -42, 42, 82, 122, 150];
+    for (const x of roads) for (let i = 0; i < 16; i++) out.push({ x, z: -150 + i * 20, horizontal: false });
+    for (const z of roads) for (let i = 0; i < 16; i++) out.push({ x: -150 + i * 20, z, horizontal: true });
+    return out;
+  }, []);
+  useEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    const dummy = new THREE.Object3D();
+    marks.forEach((m, i) => {
+      dummy.position.set(m.x, 0.048, m.z);
+      dummy.rotation.set(-Math.PI / 2, 0, 0);
+      dummy.scale.set(m.horizontal ? 1 : 0.025, m.horizontal ? 0.025 : 1, 1);
+      dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere();
+  }, [marks]);
+  return <instancedMesh ref={ref} args={[undefined, undefined, marks.length]} frustumCulled={false}>
+    <planeGeometry args={[5.5, 0.13]} />
+    <meshBasicMaterial color="#f0eee4" />
+  </instancedMesh>;
+}
+
 function CityTraffic() {
   const refs = useRef<(THREE.Group | null)[]>([]);
   useFrame((state) => {
@@ -261,10 +288,10 @@ function CityEcosystem() {
     // Commercial blocks around the centre, leaving a clear stadium ring.
     for (let i = 0; i < 8; i++) out.push({ x: (i % 2 ? 1 : -1) * (48 + Math.floor(i / 2) * 7), z: (i % 4 < 2 ? -1 : 1) * 29, w: 9, d: 8, h: 5 + (i % 3) * 2, color: ["#d5c4a6", "#b8c5c4", "#caa16d", "#b8b2a4"][i % 4] });
     // University district and civic campus, west.
-    out.push({ x: -111, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
-    out.push({ x: -83, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
-    out.push({ x: -108, z: 42, w: 17, d: 12, h: 7, color: "#b4c4b7" });
-    out.push({ x: -85, z: 42, w: 16, d: 12, h: 6, color: "#d8c7a5" });
+    out.push({ x: -125, z: 17, w: 24, d: 17, h: 9, color: "#d8d0bd", label: "UNIVERSITY DISTRICT" });
+    out.push({ x: -95, z: 20, w: 18, d: 13, h: 12, color: "#c1b8a7" });
+    out.push({ x: -125, z: 45, w: 17, d: 12, h: 7, color: "#b4c4b7" });
+    out.push({ x: -95, z: 45, w: 16, d: 12, h: 6, color: "#d8c7a5" });
     // Port logistics buildings, east/south.
     out.push({ x: 124, z: 91, w: 23, d: 15, h: 8, color: "#b7a58a", label: "PORT OF LAGOS" });
     out.push({ x: 148, z: 75, w: 14, d: 12, h: 7, color: "#c8bca6" });
@@ -274,12 +301,11 @@ function CityEcosystem() {
     {/* Interconnected asphalt roads and white dashed lane markings */}
     {[-140, -100, -42, 42, 82, 122, 150].map((x) => <group key={"rx"+x}>
       <mesh rotation-x={-Math.PI / 2} position={[x, 0.025, 0]}><planeGeometry args={[5.2, 330]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
-      {Array.from({ length: 22 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[x, 0.04, -158 + i * 15]}><planeGeometry args={[0.12, 6]} /><meshBasicMaterial color="#f0eee4" /></mesh>)}
     </group>)}
     {[-140, -100, -42, 42, 82, 122, 150].map((z) => <group key={"rz"+z}>
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.026, z]}><planeGeometry args={[330, 5.2]} /><meshStandardMaterial color="#454b50" roughness={0.96} /></mesh>
-      {Array.from({ length: 22 }, (_, i) => <mesh key={i} rotation-x={-Math.PI / 2} position={[-158 + i * 15, 0.045, z]}><planeGeometry args={[6, 0.12]} /><meshBasicMaterial color="#f0eee4" /></mesh>)}
     </group>)}
+    <RoadMarkings />
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[6, 0, -142]}>
       {[-15, 15].map((x) => <group key={x} position={[x, 0.04, 0]}>
@@ -296,6 +322,20 @@ function CityEcosystem() {
         <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
       </group>)}
       <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>LAGOS INTERNATIONAL AIRPORT</div></Html>
+    </group>
+    {/* University sports court and landscaped quad. */}
+    <group position={[-110, 0, 32]}>
+      <mesh rotation-x={-Math.PI/2} position={[0, 0.035, 0]}><planeGeometry args={[22, 13]} /><meshStandardMaterial color="#2d7a43" roughness={1} /></mesh>
+      <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><planeGeometry args={[0.12, 12]} /><meshBasicMaterial color="#f3f0dc" /></mesh>
+      <mesh rotation-x={-Math.PI/2} position={[0, 0.05, 0]}><ringGeometry args={[3.1, 3.2, 24]} /><meshBasicMaterial color="#f3f0dc" side={THREE.DoubleSide} /></mesh>
+    </group>
+    {/* Industrial stacks and restrained exhaust plumes. */}
+    <group position={[-143, 0, -46]}>
+      {[-10, 0, 10].map((x, i) => <group key={i} position={[x, 0, 0]}>
+        <mesh position={[0, 5, 0]}><cylinderGeometry args={[1.3, 1.8, 10, 8]} /><meshStandardMaterial color="#7c8587" roughness={0.8} /></mesh>
+        <mesh position={[0, 10.2, 0]}><cylinderGeometry args={[1.45, 1.35, 0.7, 8]} /><meshStandardMaterial color="#bd6651" roughness={0.8} /></mesh>
+        <mesh position={[0.8, 12 + i, 0]}><sphereGeometry args={[1.4, 7, 6]} /><meshStandardMaterial color="#b9b9b1" transparent opacity={0.34} roughness={1} /></mesh>
+      </group>)}
     </group>
     {/* Port and waterfront with container stacks, crane frames and ships. */}
     <group position={[116, 0, 120]}>
