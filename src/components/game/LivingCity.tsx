@@ -145,11 +145,20 @@ export default function LivingCity() {
     { x: -36, z: 27, color: "#a64e49", label: "LOCAL GOODS" },
     { x: 20, z: 21, color: "#d7a63b", label: "ROADSIDE KIOSK" },
     { x: 28, z: 21, color: "#c85042", label: "COLD DRINKS" },
+    { x: -160, z: -73, color: "#e1b13c", label: "OSHODI BUKA" },
+    { x: -151, z: -73, color: "#3f8c5e", label: "MOTOR PARK SNACKS" },
+    { x: -133, z: -57, color: "#cc493a", label: "SPARE PARTS" },
+    { x: -159, z: 50, color: "#3c86b5", label: "FISH & SEAFOOD" },
+    { x: -150, z: 76, color: "#d3a73c", label: "MAKOKO MARKET" },
+    { x: 126, z: 53, color: "#b8a36a", label: "LEKKI COFFEE" },
+    { x: 132, z: 84, color: "#447e62", label: "ESTATE GROCERY" },
   ];
   const crowd = useMemo(() => [
     [-67, 16], [-64, 24], [-58, 16], [-55, 25], [-49, 16], [-46, 24], [-40, 16], [-34, 24], [-29, 17],
     [14, 25], [19, 26], [24, 25], [31, 26], [36, 24], [40, 28], [46, 25], [51, 28],
     [-28, -12], [-24, -10], [-18, -12], [16, -12], [22, -10], [29, -12], [36, -10],
+    [-162, -67], [-157, -58], [-149, -65], [-141, -56], [-134, -61],
+    [-160, 57], [-151, 66], [-143, 77], [-133, 82], [122, 45], [130, 58], [138, 73], [146, 84],
   ] as [number, number][], []);
   return <group>
     {vendors.map((v, i) => <MarketCanopy key={i} x={v.x} z={v.z} color={v.color} label={v.label} phase={i % 3 * 0.15} />)}
@@ -175,6 +184,22 @@ export default function LivingCity() {
       <mesh position={[0, 0.85, 3.56]}><boxGeometry args={[1.1, 1.7, 0.08]} /><meshStandardMaterial color="#473426" /></mesh>
     </group>)}
     <Html position={[97, 5.5, 80]} center distanceFactor={32}><div className="rounded-md border border-amber-300/30 bg-[#21180e]/90 px-3 py-1 text-[10px] font-bold tracking-wider text-amber-100">OUTSKIRTS VILLAGE · FAMILY COMPOUNDS</div></Html>
-    <InteriorLife />
+
+    {/* Makoko-inspired waterfront homes raised on timber stilts. */}
+    <group>
+      <mesh position={[-145, -0.12, 116]} receiveShadow><boxGeometry args={[48, 0.08, 28]} /><meshStandardMaterial color="#315d60" roughness={0.3} metalness={0.08} /></mesh>
+      {[
+        { x: -160, z: 108, c: "#b98d61" }, { x: -148, z: 111, c: "#c9a16f" },
+        { x: -136, z: 108, c: "#b7865a" }, { x: -158, z: 122, c: "#c7a273" },
+        { x: -144, z: 124, c: "#d2b487" }, { x: -131, z: 120, c: "#b99269" },
+      ].map((h, i) => <group key={"waterhome" + i} position={[h.x, 0, h.z]}>
+        {[-2, 2].map((px) => [-1.5, 1.5].map((pz) => <mesh key={px + ":" + pz} position={[px, 0.9, pz]}><cylinderGeometry args={[0.08, 0.1, 1.8, 5]} /><meshStandardMaterial color="#6d5035" roughness={1} /></mesh>))}
+        <mesh position={[0, 2.1, 0]} castShadow><boxGeometry args={[6.8, 2.4, 5.8]} /><meshStandardMaterial color={h.c} roughness={0.95} /></mesh>
+        <mesh position={[0, 3.55, 0]} rotation-y={Math.PI / 4} castShadow><coneGeometry args={[5, 1.2, 4]} /><meshStandardMaterial color={i % 2 ? "#59665e" : "#79563c"} roughness={1} /></mesh>
+        <mesh position={[0, 1.95, 2.94]}><boxGeometry args={[1, 1.5, 0.08]} /><meshStandardMaterial color="#48352a" /></mesh>
+      </group>)}
+      <Html position={[-145, 5.8, 133]} center distanceFactor={38}><div className="rounded border border-cyan-200/30 bg-[#102326]/90 px-3 py-1.5 text-[10px] font-black tracking-widest text-cyan-100">MAKOKO WATERFRONT COMMUNITY</div></Html>
+    </group>
+\n        <InteriorLife />
   </group>;
 }
