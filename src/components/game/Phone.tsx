@@ -93,10 +93,12 @@ function JobsApp() {
           <div className="mt-1 text-lg font-bold text-hud-bright">{active.title}</div>
           <div className="mt-1 text-xs text-hud-muted">{active.hint}</div>
           <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-hud-muted">Stage {active.stage + 1} / {active.targets.length}</span>
-            <span className="font-semibold text-hud-accent">{Math.round(nearTarget)}m to target</span>
+            <span className="text-slate-200">Stage {active.stage + 1} / {active.targets.length}</span>
+            <span className="font-semibold text-amber-200">{Math.round(nearTarget)}m to target</span>
           </div>
-          <div className="mt-1 text-xs text-hud-muted">Pays {naira(active.payout)} to bank</div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-emerald-400" style={{width:((active.stage+1)/active.targets.length*100)+"%"}} /></div>
+          <div className="mt-2 flex items-center justify-between text-xs"><span className="text-slate-200">Reward</span><span className="font-bold text-emerald-200">{naira(active.payout)}</span></div>
+          <div className="mt-1 text-xs text-slate-300">Time limit: 8 minutes · Keep moving to the red job marker.</div>
         </div>
         <button className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive" onClick={cancel}>
           Abandon job
@@ -113,9 +115,10 @@ function JobsApp() {
             <span className="font-semibold text-hud-bright">{JOB_INFO[t].title}</span>
             <span className="text-xs font-semibold text-hud-accent">{naira(JOB_INFO[t].payout)}</span>
           </div>
-          <div className="mt-0.5 text-xs text-hud-muted">{JOB_INFO[t].desc}</div>
+          <div className="mt-1 text-xs text-slate-200">{JOB_INFO[t].desc}</div>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-300"><span className="rounded-full bg-white/5 px-2 py-1">📍 {t==="airport"?"2.8–5.4 km":t==="estate-agent"?"1.5–4.8 km":t==="construction"?"0.8–2.2 km":t==="retail"?"0.6–2.6 km":t==="trader"?"1.0–3.5 km":"1.2–4.0 km"}</span><span className="rounded-full bg-white/5 px-2 py-1">⏱ 8 min limit</span></div>
           <button
-            className="mt-2 w-full rounded-xl bg-hud-accent/20 py-1.5 text-xs font-semibold text-hud-accent active:scale-[0.98]"
+            className="mt-2 min-h-11 w-full rounded-xl bg-amber-300/15 py-2 text-sm font-bold text-amber-100 active:scale-[0.98]"
             onClick={() => accept(t)}
           >
             Accept job
