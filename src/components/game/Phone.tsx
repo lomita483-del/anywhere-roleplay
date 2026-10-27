@@ -34,49 +34,38 @@ function atAtm() {
 }
 
 function BankApp() {
-  const cash = useGame((s) => s.cash);
-  const bank = useGame((s) => s.bank);
-  const transfer = useGame((s) => s.transfer);
-  const [near, setNear] = useState(false);
-  useEffect(() => {
-    const t = setInterval(() => setNear(atAtm()), 500);
-    return () => clearInterval(t);
-  }, []);
-
-  const Row = ({ label, dir, amount }: { label: string; dir: "deposit" | "withdraw"; amount: number | "all" }) => (
-    <button
-      disabled={!near}
-      className="rounded-xl border border-hud-line bg-white/5 px-3 py-2 text-xs font-semibold text-hud-bright disabled:opacity-40"
-      onClick={() => transfer(amount === "all" ? (dir === "deposit" ? cash : bank) : amount, dir)}
-    >
-      {label}
-    </button>
-  );
-
-  return (
-    <div className="flex flex-col gap-3 p-3 text-sm">
-      <div className="rounded-2xl bg-gradient-to-br from-[#1f6b4a] to-[#14503a] p-4 text-white">
-        <div className="text-[10px] uppercase tracking-widest opacity-70">Zenith / Kuda Bank</div>
-        <div className="mt-1 text-2xl font-bold">{naira(bank)}</div>
-        <div className="mt-1 text-xs opacity-80">Wallet cash: {naira(cash)}</div>
-      </div>
-      {near ? (
-        <div className="text-xs font-semibold text-hud-accent">You are at an ATM.</div>
-      ) : (
-        <div className="rounded-xl border border-hud-line bg-white/5 p-2 text-xs text-hud-muted">
-          Walk to an ATM (yellow ring on the map) to deposit or withdraw.
-        </div>
-      )}
-      <div className="grid grid-cols-3 gap-2">
-        <Row label="+ ₦1k" dir="deposit" amount={1000} />
-        <Row label="+ ₦5k" dir="deposit" amount={5000} />
-        <Row label="Deposit all" dir="deposit" amount="all" />
-        <Row label="- ₦1k" dir="withdraw" amount={1000} />
-        <Row label="- ₦5k" dir="withdraw" amount={5000} />
-        <Row label="Withdraw all" dir="withdraw" amount="all" />
-      </div>
+  const cash=useGame(s=>s.cash), bank=useGame(s=>s.bank), transfer=useGame(s=>s.transfer);
+  const [near,setNear]=useState(false),[amount,setAmount]=useState("1000"),[notice,setNotice]=useState("");
+  const [history,setHistory]=useState<{date:string;type:string;amount:number}[]>(()=>{
+    try{return JSON.parse(localStorage.getItem("lagos-bank-history")||"[]");}catch{return [];}
+  });
+  useEffect(()=>{const t=setInterval(()=>setNear(atAtm()),500);return()=>clearInterval(t);},[]);
+  const transact=(dir:"deposit"|"withdraw",value=Number(amount))=>{
+    if(!Number.isFinite(value)||value<=0||!Number.isInteger(value)){setNotice("Enter a valid whole Naira amount.");return;}
+    if(!near){setNotice("Visit a bank counter or ATM to complete this transaction.");return;}
+    if(dir==="deposit"&&value>cash){setNotice("Not enough cash in your wallet.");return;}
+    if(dir==="withdraw"&&value>bank){setNotice("Insufficient bank balance.");return;}
+    transfer(value,dir);
+    const item={date:new Date().toLocaleString(),type:dir==="deposit"?"Cash deposit":"Cash withdrawal",amount:value};
+    const next=[item,...history].slice(0,30);setHistory(next);localStorage.setItem("lagos-bank-history",JSON.stringify(next));setNotice(item.type+" successful: "+naira(value));
+  };
+  return <div className="flex flex-col gap-3 p-3 text-sm text-white">
+    <div className="rounded-2xl border border-emerald-300/20 bg-gradient-to-br from-[#1f6b4a] to-[#102d27] p-4">
+      <div className="text-xs font-bold uppercase tracking-wider text-emerald-100">Bank balance</div><div className="mt-1 text-2xl font-extrabold">{naira(bank)}</div>
+      <div className="mt-3 flex items-center justify-between border-t border-white/15 pt-2 text-xs"><span className="text-emerald-50/80">Wallet cash</span><b>{naira(cash)}</b></div>
     </div>
-  );
+    <div className={`rounded-xl border p-2.5 text-xs ${near?"border-emerald-300/30 bg-emerald-400/10 text-emerald-100":"border-amber-300/20 bg-amber-400/5 text-amber-100"}`}>{near?"ATM connection active. Transactions update your HUD immediately.":"Walk within 8 metres of a bank or ATM to transact."}</div>
+    <label className="flex flex-col gap-1 text-xs font-semibold text-slate-200">Amount (₦)<input value={amount} onChange={e=>setAmount(e.target.value.replace(/[^0-9]/g,""))} inputMode="numeric" className="rounded-xl border border-white/15 bg-[#101b27] px-3 py-3 text-base text-white outline-none focus:border-emerald-300" placeholder="Enter amount"/></label>
+    <div className="grid grid-cols-3 gap-2">{[500,1000,5000].map(n=><button key={n} onClick={()=>setAmount(String(n))} className="rounded-lg border border-white/15 bg-white/5 py-2 text-xs font-bold text-white active:scale-95">{naira(n)}</button>)}</div>
+    <div className="grid grid-cols-2 gap-2">
+      <button disabled={!near||Number(amount)<=0||Number(amount)>cash} onClick={()=>transact("deposit")} className="rounded-xl bg-emerald-500/20 px-3 py-3 text-xs font-bold text-emerald-100 disabled:opacity-35">Deposit</button>
+      <button disabled={!near||Number(amount)<=0||Number(amount)>bank} onClick={()=>transact("withdraw")} className="rounded-xl bg-sky-500/20 px-3 py-3 text-xs font-bold text-sky-100 disabled:opacity-35">Withdraw</button>
+    </div>
+    {notice&&<div role="status" className="rounded-lg border border-white/10 bg-white/5 p-2 text-xs text-slate-100">{notice}</div>}
+    <div className="mt-1"><div className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-200">Recent transactions</div>
+      {history.length===0?<p className="rounded-xl border border-white/10 p-3 text-xs text-slate-400">Your recent deposits and withdrawals will appear here.</p>:<div className="flex flex-col gap-1.5">{history.slice(0,10).map((h,i)=><div key={i} className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.035] p-2"><span className="min-w-0"><span className="block text-xs font-semibold text-slate-100">{h.type}</span><span className="text-[10px] text-slate-400">{h.date}</span></span><b className="shrink-0 text-xs text-emerald-200">{naira(h.amount)}</b></div>)}</div>}
+    </div>
+  </div>;
 }
 
 function JobsApp() {
