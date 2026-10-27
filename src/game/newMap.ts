@@ -9,11 +9,11 @@ const ring: [number, number][] = Array.from({length: 24}, (_,i) => { const a=(i/
 const ringPoints: [number,number][] = [...ring, ring[0]!];
 const roadEdges: NewMapRoadEdge[] = [
  {id:"stadium-boulevard",from:"boulevard-west",to:"boulevard-west",type:"boulevard",width:8,points:ringPoints},
- {id:"outer-perimeter",from:"perimeter-nw",to:"perimeter-nw",type:"perimeter",width:8,points:[[-160,-160],[160,-160],[160,160],[-160,160],[-160,-160]]},
- {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-160]]},
- {id:"port-avenue",from:"boulevard-south-east",to:"perimeter-south-east",type:"avenue",width:8,points:[[55,55],[78,78],[104,104],[132,132],[160,160]]},
- {id:"university-avenue",from:"boulevard-west",to:"perimeter-west",type:"avenue",width:8,points:[[-78,0],[-104,0],[-132,0],[-160,0]]},
- {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[160,0]]},
+ {id:"outer-perimeter",from:"perimeter-nw",to:"perimeter-nw",type:"perimeter",width:8,points:[[-178,-178],[178,-178],[178,178],[-178,178],[-178,-178]]},
+ {id:"airport-avenue",from:"boulevard-north",to:"perimeter-north",type:"avenue",width:8,points:[[0,-78],[0,-105],[0,-132],[0,-178]]},
+ {id:"port-avenue",from:"boulevard-south-east",to:"perimeter-south-east",type:"avenue",width:8,points:[[55,55],[78,78],[104,104],[132,132],[178,178]]},
+ {id:"university-avenue",from:"boulevard-west",to:"perimeter-west",type:"avenue",width:8,points:[[-78,0],[-104,0],[-132,0],[-178,0]]},
+ {id:"residential-avenue",from:"boulevard-east",to:"perimeter-east",type:"avenue",width:8,points:[[78,0],[104,0],[132,0],[178,0]]},
  {id:"corporate-street-n",from:"corporate-west",to:"corporate-east",type:"street",width:5,points:[[-154,-137],[-125,-137],[-96,-137]]},
  {id:"corporate-street-s",from:"corporate-west-s",to:"corporate-east-s",type:"street",width:5,points:[[-154,-111],[-125,-111],[-96,-111]]},
  {id:"industrial-street-n",from:"industrial-west",to:"industrial-east",type:"street",width:5,points:[[-154,-83],[-125,-83],[-96,-83]]},
@@ -23,7 +23,7 @@ const roadEdges: NewMapRoadEdge[] = [
  {id:"university-street-s",from:"university-west-s",to:"university-east-s",type:"street",width:5,points:[[-154,98],[-125,98],[-96,98]]},
  ...[96,124,152].map((x,i)=>({id:"residential-ns-"+i,from:"res-ns-"+i,to:"res-ns-"+i,type:"street" as const,width:5,points:[[x,-70],[x,-42],[x,-14],[x,14],[x,42],[x,70]] as [number,number][]})),
  ...[-56,-28,28,56].map((z,i)=>({id:"residential-ew-"+i,from:"res-ew-"+i,to:"res-ew-"+i,type:"street" as const,width:5,points:[[82,z],[96,z],[124,z],[152,z],[174,z]] as [number,number][]})),
- {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[82,84],[110,84],[138,84],[160,84]]},
+ {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[82,96],[110,96],[138,96],[160,96]]},
  {id:"market-link",from:"market-west",to:"airport-avenue",type:"street",width:5,points:[[-58,-88],[-32,-88],[0,-88]]},
 ];
 export const NEW_MAP_ROAD_GRAPH = {
@@ -71,7 +71,7 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"hospital",label:"CITY HOSPITAL",kind:"hospital",district:"civic",x:110,z:108,w:16,d:12,h:10,color:"#d9d2bd",doorSide:"south"},
  {id:"dealership",label:"CAR DEALERSHIP",kind:"dealership",district:"civic",x:138,z:108,w:14,d:10,h:7,color:"#b5b6a7",doorSide:"south"},
  {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:110,z:132,w:12,d:9,h:7,color:"#c7b89c",doorSide:"south"},
- {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-8,z:-104,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
+ {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-132,w:9,d:7,h:4,color:"#d7b37a",doorSide:"south"},
  {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"west"},
  ...[0,1,2,3,4,5,6,7,8].map(i=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-42,-14,42][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
 ];
