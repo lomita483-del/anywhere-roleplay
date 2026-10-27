@@ -640,10 +640,12 @@ function MapApp() {
     const rect = canvas.getBoundingClientRect();
     const cx = ((e.clientX - rect.left) / rect.width) * canvas.width;
     const cy = ((e.clientY - rect.top) / rect.height) * canvas.height;
-    const pins = [
-      ...POIS.map((p) => ({ x:p.x, z:p.z, label:p.label, kind:p.kind })),
-      ...BUILDINGS.filter((b) => !!b.label).map((b) => ({ x:b.x, z:b.z, label:b.label ?? "City building", kind:b.kind ?? "landmark" })),
-    ];
+    const pins = city === "newmap"
+      ? NEW_MAP_POIS.map((p) => ({ x:p.x, z:p.z, label:p.label, kind:p.kind }))
+      : [
+          ...POIS.map((p) => ({ x:p.x, z:p.z, label:p.label, kind:p.kind })),
+          ...BUILDINGS.filter((b) => !!b.label).map((b) => ({ x:b.x, z:b.z, label:b.label ?? "City building", kind:b.kind ?? "landmark" })),
+        ];
     const nearest = pins.map((p) => ({ p, xy: to(p.x, p.z, canvas.width) })).map(({p,xy}) => ({p,d:Math.hypot(xy[0]-cx,xy[1]-cy)})).sort((a,b)=>a.d-b.d)[0];
     if (nearest && nearest.d < 13) {
       setSelectedPoi(nearest.p);
@@ -660,7 +662,7 @@ function MapApp() {
   return (
     <div className="flex flex-col gap-2 p-3">
       <div className="flex items-center justify-between gap-2">
-        <div><div className="text-xs font-bold text-white">Lagos city map</div><div className="text-xs text-slate-300">Live GPS · drag to pan</div></div>
+        <div><div className="text-xs font-bold text-white">{city === "newmap" ? "NEW MAP · CITY MAP" : city === "umuahia" ? "UMUAHIA CITY MAP" : "LAGOS CITY MAP"}</div><div className="text-xs text-slate-300">Live GPS · drag to pan</div></div>
         <div className="flex items-center gap-2"><button onClick={()=>setSatellite(v=>!v)} className="min-h-10 rounded-lg border border-white/15 bg-white/5 px-3 text-xs font-bold text-white">{satellite?"Satellite ✓":"Street view"}</button><span className="text-xs font-bold text-sky-200">● LIVE</span></div>
       </div>
       <div className="relative">
@@ -669,7 +671,7 @@ function MapApp() {
           onPointerMove={(e) => { if(!dragRef.current) return; const rect=e.currentTarget.getBoundingClientRect(); const dx=e.clientX*280/rect.width-dragRef.current.x,dy=e.clientY*280/rect.height-dragRef.current.y; if(Math.hypot(dx,dy)>4) dragRef.current.moved=true; if(dragRef.current.moved)setPan({x:Math.max(-140,Math.min(140,dragRef.current.panX+dx)),y:Math.max(-140,Math.min(140,dragRef.current.panY+dy))}); }}
           onPointerUp={(e) => { const drag=dragRef.current; dragRef.current=null; if(drag && !drag.moved) handleMapTap(e); }}
           onPointerCancel={() => {dragRef.current=null;}}
-          className="block w-full touch-none rounded-xl border border-[#eab308]/25 shadow-[0_0_22px_rgba(234,179,8,.08)]" aria-label="Interactive Lagos map; drag to pan, tap a landmark to select" />
+          className="block w-full touch-none rounded-xl border border-[#eab308]/25 shadow-[0_0_22px_rgba(234,179,8,.08)]" aria-label={"Interactive " + (city === "newmap" ? "NEW MAP" : city === "umuahia" ? "Umuahia" : "Lagos") + " map; drag to pan, tap a landmark to select"} />
         <div className="absolute right-2 top-2 flex flex-col gap-1">
           <button type="button" aria-label="Zoom in" onClick={()=>setZoom(v=>Math.min(2.8,Number((v+0.25).toFixed(2))))} className="h-9 w-9 rounded-lg border border-white/20 bg-[#07111b]/95 text-xl font-bold text-white">+</button>
           <button type="button" aria-label="Zoom out" onClick={()=>setZoom(v=>Math.max(1,Number((v-0.25).toFixed(2))))} className="h-9 w-9 rounded-lg border border-white/20 bg-[#07111b]/95 text-xl font-bold text-white">−</button>
@@ -679,7 +681,7 @@ function MapApp() {
       {selectedPoi && (
         <div className="rounded-xl border border-[#eab308]/30 bg-[#eab308]/[0.08] p-3">
           <div className="text-sm font-bold text-white">{selectedPoi.label}</div>
-          <div className="mt-1 text-xs capitalize text-slate-200">{selectedPoi.kind} · Lagos Life landmark</div>
+          <div className="mt-1 text-xs capitalize text-slate-200">{selectedPoi.kind} · {city === "newmap" ? "NEW MAP landmark" : city === "umuahia" ? "Umuahia landmark" : "Lagos Life landmark"}</div>
           <div className="mt-1 text-xs text-slate-300">{Math.round(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z))} m away · about {Math.max(1,Math.ceil(Math.hypot(selectedPoi.x-g.playerPos.x,selectedPoi.z-g.playerPos.z)/1.4))} min walk</div>
           <button className="mt-2 min-h-11 w-full rounded-lg bg-emerald-400/20 px-3 py-2 text-sm font-bold text-emerald-100" onClick={() => { setWaypoint({x:selectedPoi.x,z:selectedPoi.z,label:selectedPoi.label,kind:selectedPoi.kind ?? "landmark"}); setSelectedPoi(null); }}>
             Set Destination
