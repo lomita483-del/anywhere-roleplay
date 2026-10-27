@@ -522,7 +522,7 @@ function createRoadGeometry(path: [number, number][], width: number, y: number) 
 function CurvedRoadNetwork() {
   const roadData = useMemo(() => CITY_ROAD_PATHS.map((path, index) => {
     const isLocal = index >= NEW_MAP_LOCAL_ROAD_START_INDEX && index < NEW_MAP_ROADS.length-1;
-    const isAirportConnector = index === NEW_MAP_LOCAL_ROAD_START_INDEX-1;
+    const isAirportConnector = index === 1;
     const width = index === NEW_MAP_ROADS.length-1 ? 8.8 : (isLocal || isAirportConnector) ? 4.2 : index < 3 ? 8.2 : 6.4;
     const sidewalkWidth = (isLocal || isAirportConnector) ? width + 0.8 : width + 2.8;
     return { index, ...createRoadGeometry(path, width, 0.05), sidewalk: createRoadGeometry(path, sidewalkWidth, 0.03) };
@@ -537,7 +537,7 @@ function CurvedRoadNetwork() {
         const t = road.curve.getUtoTmapping(0, d);
         const p = road.curve.getPointAt(t);
         const tangent = road.curve.getTangentAt(t);
-        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : (roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX || roadIndex === NEW_MAP_LOCAL_ROAD_START_INDEX-1) ? 1.8 : 3.2 });
+        out.push({ x: p.x, z: p.z, yaw: Math.atan2(-tangent.z, tangent.x), width: roadIndex === NEW_MAP_ROADS.length-1 ? 3.7 : (roadIndex >= NEW_MAP_LOCAL_ROAD_START_INDEX || roadIndex === 1) ? 1.8 : 3.2 });
       }
     });
     return out;
@@ -546,7 +546,7 @@ function CurvedRoadNetwork() {
   const edgeRef = useRef<THREE.InstancedMesh>(null);
   const edgeData = useMemo(() => {
     const out:{x:number;z:number;yaw:number}[]=[];
-    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:(road.index>=NEW_MAP_LOCAL_ROAD_START_INDEX||road.index===NEW_MAP_LOCAL_ROAD_START_INDEX-1)?4.2:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
+    roadData.forEach((road)=>{const length=road.curve.getLength(),half=(road.index===NEW_MAP_ROADS.length-1?8.8:(road.index>=NEW_MAP_LOCAL_ROAD_START_INDEX||road.index===1)?4.2:road.index<3?8.2:6.4)/2-.35;for(let d=2;d<length-2;d+=3.4){const t=road.curve.getUtoTmapping(0,d),p=road.curve.getPointAt(t),tan=road.curve.getTangentAt(t),yaw=Math.atan2(-tan.z,tan.x);for(const side of [-1,1])out.push({x:p.x+tan.z*half*side,z:p.z-tan.x*half*side,yaw});}});
     return out;
   },[roadData]);
   useEffect(() => {
