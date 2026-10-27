@@ -89,11 +89,13 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
   }, [waypoint, tick]);
   return <button type="button" onClick={onOpen} aria-label="Open full city map" className="pointer-events-auto absolute right-3 top-[7.8rem] rounded-full border border-amber-200/35 bg-[#07131b]/90 p-1 shadow-lg active:scale-95">
     <canvas ref={canvasRef} width={128} height={128} className="h-[104px] w-[104px] rounded-full sm:h-[118px] sm:w-[118px]" />
-    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">LAGOS · MAP</span>
+    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-2 py-0.5 text-xs font-bold text-white">{city === "umuahia" ? "UMUAHIA · MAP" : "LAGOS · MAP"}</span>
   </button>;
 }
 
 export default function Hud() {
+  const city = useGame((s) => s.city);
+  const setCity = useGame((s) => s.setCity);
   const cash = useGame((s) => s.cash);
   const bank = useGame((s) => s.bank);
   const needs = useGame((s) => s.needs);
@@ -170,6 +172,19 @@ export default function Hud() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* City switch: loads a separate playable city while preserving the existing Lagos world. */}
+      <div className="pointer-events-auto absolute left-1/2 top-3 -translate-x-1/2">
+        <button
+          type="button"
+          onClick={() => setCity(city === "lagos" ? "umuahia" : "lagos")}
+          className="flex items-center gap-2 rounded-xl border border-amber-200/40 bg-[#10231f]/95 px-3 py-2 text-[10px] font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95"
+          title="Switch playable city"
+        >
+          <MapPin className="h-3.5 w-3.5" />
+          {city === "lagos" ? "ENTER UMUAHIA" : "RETURN TO LAGOS"}
+        </button>
       </div>
 
       {/* Touch-friendly camera controls: drag the world to look around, pinch to zoom. */}
