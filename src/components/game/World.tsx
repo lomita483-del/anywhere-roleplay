@@ -9,6 +9,7 @@ import {
 import { asphaltTexture, sidewalkTexture, groundTexture, facadeTexture, signTexture } from "@/game/textures";
 import { g } from "@/game/state";
 import { useGame } from "@/game/store";
+import LivingCity from "./LivingCity";
 
 const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
   bank: { dx: 1, dz: 0, ry: Math.PI / 2 },
@@ -474,6 +475,7 @@ export default function World() {
       <LagosStreetProps />
       <AirportDistrict />
       <ConstructionSite />
+      <LivingCity />
       <ApartmentInterior />
       <Lamps />
       <Trees />
