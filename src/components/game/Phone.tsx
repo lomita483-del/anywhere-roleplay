@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import { g } from "@/game/state";
 import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
-import { deliverOwnedVehicle } from "@/game/actions";
+import { deliverOwnedVehicle, exitVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
 
@@ -134,35 +134,31 @@ function JobsApp() {
 
 function GarageApp() {
   const owned = useGame((s) => s.owned);
+  const driving = useGame((s) => s.driving);
+  const fuelLevel = useGame((s) => s.fuelLevel);
   const deliver = deliverOwnedVehicle;
-  return (
-    <div className="flex flex-col gap-2 p-3 text-sm">
-      <div className="text-[10px] uppercase tracking-widest text-hud-muted">Your vehicles ({owned.length})</div>
-      {owned.length === 0 && (
-        <div className="rounded-xl border border-hud-line bg-white/5 p-3 text-xs text-hud-muted">
-          No vehicles yet. Buy one at Ojoto Motors, or jump on any parked Keke Napep around town.
+  const activeVehicle = g.drivingId ? g.vehicles.get(g.drivingId) : null;
+  return <div className="flex flex-col gap-3 p-3 text-white">
+    <div className="flex items-center justify-between"><h3 className="text-sm font-bold text-white">My garage</h3><span className="text-xs text-slate-300">{owned.length} owned</span></div>
+    {owned.length===0 && <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] p-5 text-center"><Car className="mx-auto h-9 w-9 text-slate-300"/><div className="mt-2 text-sm font-bold text-white">No vehicles yet</div><div className="mt-1 text-xs leading-relaxed text-slate-300">Visit Ojoto Motors or the vehicle dealership to purchase a Keke, Okada, Danfo, car or SUV. Parked city vehicles can also be entered.</div><button onClick={()=>useGame.getState().openPhone("market")} className="mt-3 min-h-11 rounded-xl bg-amber-300/15 px-4 text-sm font-bold text-amber-100">Open Marketplace</button></div>}
+    {owned.map((key) => {
+      const v = VEHICLE_CATALOG[key];
+      if (!v) return null;
+      const active = activeVehicle?.model === key;
+      const fuel = active ? fuelLevel : (Array.from(g.vehicles.values()).find(vehicle=>vehicle.model===key && vehicle.id.startsWith("own-"))?.fuel ?? 100);
+      const condition = fuel <= 5 ? "Needs fuel" : "Ready to drive";
+      return <article key={key} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+        <div className="flex items-start justify-between gap-3"><div><div className="text-sm font-bold text-white">{v.name}</div><div className="mt-1 text-xs text-slate-300">Top speed · {Math.round(v.maxSpeed*3.6)} km/h</div></div><span className="rounded-full bg-emerald-400/10 px-2 py-1 text-xs font-bold text-emerald-200">{condition}</span></div>
+        <div className="mt-3 flex items-center justify-between text-xs"><span className="text-slate-200">Fuel</span><span className={fuel<15?"font-bold text-rose-300":"font-bold text-emerald-200"}>{Math.round(fuel)}%</span></div>
+        <div className="mt-1 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full" style={{width:Math.max(0,Math.min(100,fuel))+"%",background:fuel<15?"#fb7185":"#34d399"}}/></div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button className="min-h-11 rounded-xl border border-amber-300/25 bg-amber-300/10 px-2 text-xs font-bold text-amber-100 active:scale-95" onClick={()=>deliver(key)}>Spawn / Call over</button>
+          <button disabled={!driving||!active} className="min-h-11 rounded-xl border border-white/10 bg-white/5 px-2 text-xs font-bold text-white disabled:opacity-35 active:scale-95" onClick={()=>{exitVehicle();useGame.getState().save();}}>Park / Exit</button>
         </div>
-      )}
-      {owned.map((key, i) => {
-        const v = VEHICLE_CATALOG[key];
-        if (!v) return null;
-        return (
-          <div key={i} className="flex items-center justify-between rounded-2xl border border-hud-line bg-white/5 p-3">
-            <div>
-              <div className="font-semibold text-hud-bright">{v.name}</div>
-              <div className="text-[10px] text-hud-muted">top {Math.round(v.maxSpeed * 3.6)} km/h</div>
-            </div>
-            <button
-              className="rounded-xl bg-hud-accent/20 px-3 py-1.5 text-xs font-semibold text-hud-accent active:scale-95"
-              onClick={() => deliver(key)}
-            >
-              Call over
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  );
+      </article>;
+    })}
+    <div className="text-xs leading-relaxed text-slate-300">Vehicles spawn on a nearby road lane. Fuel is tracked while driving; refuel at a petrol station before it runs out.</div>
+  </div>;
 }
 
 function HomeApp() {
