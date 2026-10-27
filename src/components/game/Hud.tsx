@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Landmark, Moon, Sun, Wallet, Phone as PhoneIcon, ChevronsUp, MapPin, Satellite, ZoomIn, ZoomOut } from "lucide-react";
+import { Landmark, Moon, Sun, Wallet, Phone as PhoneIcon, ChevronsUp, MapPin, Satellite, ZoomIn, ZoomOut, ShieldCheck } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { g } from "@/game/state";
 import { useGame, naira } from "@/game/store";
 import { exitApartment, interact } from "@/game/actions";
@@ -118,6 +120,7 @@ function MiniMap({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function Hud() {
+  const [adminAccess, setAdminAccess] = useState(false);
   const city = useGame((s) => s.city);
   const setCity = useGame((s) => s.setCity);
   const stadiumMode = useGame((s) => s.stadiumMode);
@@ -142,6 +145,31 @@ export default function Hud() {
   const openPhone = useGame((s) => s.openPhone);
   const [night, setNight] = useState(false);
   const [weather, setWeather] = useState("CLEAR");
+
+  // Show the in-game Admin Center shortcut only to accounts with an explicit admin grant.
+  useEffect(() => {
+    let active = true;
+    const checkAdmin = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const user = data.session?.user;
+        if (!user) { if (active) setAdminAccess(false); return; }
+        const { data: grant, error } = await (supabase as any)
+          .from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle();
+        if (active) setAdminAccess(!error && Boolean(grant?.user_id));
+      } catch {
+        if (active) setAdminAccess(false);
+      }
+    };
+    void checkAdmin();
+    const { data: listener } = supabase.auth.onAuthStateChange(() => { void checkAdmin(); });
+    const timer = window.setInterval(() => { void checkAdmin(); }, 15000);
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+      window.clearInterval(timer);
+    };
+  }, []);
   const [run, setRun] = useState(false);
   const [sirenOn, setSirenOn] = useState(false);
   const [satelliteMode, setSatelliteMode] = useState(false);
@@ -228,6 +256,18 @@ export default function Hud() {
           }
         }}><Satellite className="h-4 w-4" /><span>{satelliteMode ? "STREET" : "SAT"}</span></button>
       </div>
+
+      {/* Admin-only shortcut so the control center is discoverable while playing. */}
+      {adminAccess && !phoneOpen && (
+        <Link
+          to="/admin"
+          className="pointer-events-auto absolute left-3 top-[4.1rem] z-30 flex min-h-10 items-center gap-2 rounded-xl border border-amber-300/45 bg-[#101820]/95 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-100 shadow-lg shadow-black/30 backdrop-blur-md active:scale-95"
+          aria-label="Open Admin Center"
+        >
+          <ShieldCheck className="h-4 w-4" />
+          Admin Center
+        </Link>
+      )}
 
       {/* Live circular minimap; tap to open the full map. */}
       {!phoneOpen && <MiniMap onOpen={() => openPhone("map")} />}
