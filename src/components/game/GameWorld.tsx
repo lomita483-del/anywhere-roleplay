@@ -839,7 +839,7 @@ export default function GameWorld() {
     const dt = Math.min(rawDelta, 0.05);
     const k = keys.current;
     const st = useGame.getState();
-    const controlsBlocked = st.phoneOpen || st.stadiumMode;
+    const controlsBlocked = st.phoneOpen || st.stadiumMode || g.adminFrozen;
     if (controlsBlocked) { g.joy.x = 0; g.joy.y = 0; }
     const active = st.activeJob;
     if (active?.startedAt && active.timeLimitSeconds && Date.now() - active.startedAt >= active.timeLimitSeconds * 1000) {
@@ -915,17 +915,24 @@ export default function GameWorld() {
         dz /= mag;
         const sprint = k.has("ShiftLeft") || k.has("ShiftRight");
         const exhausted = st.needs.hunger < 20 || st.needs.energy < 15;
-        const speed = (sprint ? 6.2 : 3.2) * (exhausted ? 0.6 : 1);
+        const speed = g.adminFlying ? g.adminFlySpeed : (sprint ? 6.2 : 3.2) * (exhausted ? 0.6 : 1);
         const step = speed * dt;
         const nx = g.playerPos.x + dx * step;
-        const xDistrict = districtAt(nx, g.playerPos.z);
-        const xOpen = !xDistrict || (st.unlockedDistricts.includes(xDistrict) && (xDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
-        if (xOpen && !isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
         const nz = g.playerPos.z + dz * step;
-        const zDistrict = districtAt(g.playerPos.x, nz);
-        const zOpen = !zDistrict || (st.unlockedDistricts.includes(zDistrict) && (zDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
-        if (zOpen && !isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
-        if (st.interior) {
+        if (g.adminFlying) {
+          g.playerPos.x = THREE.MathUtils.clamp(nx, -500, 500);
+          g.playerPos.z = THREE.MathUtils.clamp(nz, -500, 500);
+          if (k.has("Space")) g.adminFlyHeight = Math.min(180, g.adminFlyHeight + speed * dt);
+          if (k.has("ControlLeft") || k.has("ControlRight")) g.adminFlyHeight = Math.max(0, g.adminFlyHeight - speed * dt);
+        } else {
+          const xDistrict = districtAt(nx, g.playerPos.z);
+          const xOpen = !xDistrict || (st.unlockedDistricts.includes(xDistrict) && (xDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
+          if (xOpen && !isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
+          const zDistrict = districtAt(g.playerPos.x, nz);
+          const zOpen = !zDistrict || (st.unlockedDistricts.includes(zDistrict) && (zDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
+          if (zOpen && !isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
+        }
+        if (st.interior && !g.adminFlying) {
           // Keep the avatar inside the room boundaries while exploring an interior.
           g.playerPos.x = THREE.MathUtils.clamp(g.playerPos.x, 98.8, 109.2);
           g.playerPos.z = THREE.MathUtils.clamp(g.playerPos.z, 99.2, 108.5);
@@ -944,9 +951,10 @@ export default function GameWorld() {
 
     const pg = playerGroup.current;
     if (pg) {
-      pg.visible = !g.ridingPassenger && !st.stadiumMode;
+      pg.visible = !g.ridingPassenger && !st.stadiumMode && !g.adminInvisible;
       const renderScale = isNewMap && !st.stadiumMode ? NEW_MAP_SCALE : 1;
-      pg.position.set(g.playerPos.x * renderScale, 0, g.playerPos.z * renderScale);
+      const avatarHeight = g.adminFlying ? g.adminFlyHeight : g.adminLevitating ? 3.5 : 0;
+      pg.position.set(g.playerPos.x * renderScale, avatarHeight * renderScale, g.playerPos.z * renderScale);
       pg.rotation.y = g.playerYaw;
     }
 
