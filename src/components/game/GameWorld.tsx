@@ -73,8 +73,8 @@ function CharacterBody() {
         const standard = material as THREE.MeshStandardMaterial;
         if (!standard.color) continue;
         if (/skin|face|head|body/.test(name)) standard.color.set(outfit.skinTone);
-        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(topColors[outfit.top] ?? topColors.streetwear!);
-        else if (/pants|trouser|bottom|leg/.test(name)) standard.color.set(bottomColors[outfit.bottom] ?? bottomColors.jeans!);
+        else if (/shirt|top|jacket|torso|coat|dress/.test(name)) standard.color.set(topColors[outfit.top] ?? topColors["streetwear"]!);
+        else if (/pants|trouser|bottom|leg/.test(name)) standard.color.set(bottomColors[outfit.bottom] ?? bottomColors["jeans"]!);
         else if (/hair/.test(name)) standard.color.set(outfit.hair === "locs" ? "#171411" : outfit.hair === "braids" ? "#231a17" : "#2b211c");
         else if (/hat|cap|accessory/.test(name) && outfit.accessory === "cap") standard.color.set("#d4a72c");
       }
@@ -378,14 +378,18 @@ function RemotePlayer({ name, x, z, yaw, vehicle }: { name: string; x: number; z
 }
 
 function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
-  const route = useRef<THREE.Line>(null);
-  const glow = useRef<THREE.Line>(null);
+  const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#eab308", transparent: true, opacity: 0.2 })), []);
+  const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#ffe38a", transparent: true, opacity: 0.95 })), []);
   const beacon = useRef<THREE.Group>(null);
+  useEffect(() => () => {
+    glow.geometry.dispose(); (glow.material as THREE.Material).dispose();
+    route.geometry.dispose(); (route.material as THREE.Material).dispose();
+  }, [glow, route]);
   useFrame((state) => {
     if (!waypoint) return;
     const points = [new THREE.Vector3(g.playerPos.x, 0.16, g.playerPos.z), new THREE.Vector3(waypoint.x, 0.16, waypoint.z)];
-    route.current?.geometry.setFromPoints(points);
-    glow.current?.geometry.setFromPoints(points);
+    glow.geometry.setFromPoints(points);
+    route.geometry.setFromPoints(points);
     if (beacon.current) {
       beacon.current.position.set(waypoint.x, 0, waypoint.z);
       beacon.current.children[0]!.rotation.y = state.clock.elapsedTime * 0.8;
@@ -393,13 +397,10 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
     }
   });
   if (!waypoint) return null;
-  const start = new THREE.Vector3(g.playerPos.x, 0.16, g.playerPos.z);
-  const end = new THREE.Vector3(waypoint.x, 0.16, waypoint.z);
-  const distance = Math.round(start.distanceTo(end));
   return (
     <>
-      <line ref={glow}><bufferGeometry /><lineBasicMaterial color="#eab308" transparent opacity={0.2} linewidth={7} /></line>
-      <line ref={route}><bufferGeometry /><lineBasicMaterial color="#ffe38a" transparent opacity={0.95} linewidth={2} /></line>
+      <primitive object={glow} />
+      <primitive object={route} />
       <group ref={beacon} position={[waypoint.x, 0, waypoint.z]}>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.09, 0]}>
           <ringGeometry args={[1.2, 1.8, 32]} />
