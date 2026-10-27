@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
 import { NEW_MAP_ROADS, NEW_MAP_SCALE } from "@/game/newMap";
+import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
 type MatchPlayerData = { x: number; z: number; team: number; index: number };
@@ -591,6 +592,31 @@ function DrainCovers() {
   return <instancedMesh ref={ref} args={[undefined,undefined,points.length]} frustumCulled={false}><boxGeometry args={[1,1,1]}/><meshStandardMaterial color="#30383a" metalness={.35} roughness={.72} polygonOffset polygonOffsetFactor={-3} polygonOffsetUnits={-3}/></instancedMesh>;
 }
 
+function CityNamedTraffic() {
+  const refs=useRef<(THREE.Group|null)[]>([]);
+  const quality=useGame(s=>s.graphicsQuality);
+  const models=useMemo(()=>["danfo","taxi","sedan","suv","police","keke","danfo","taxi","sedan","suv"],[]);
+  const count=quality==="low"?3:quality==="high"?10:6;
+  const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
+  useFrame((state)=>{
+    const t=state.clock.elapsedTime;
+    for(let i=0;i<count;i++){
+      const group=refs.current[i];if(!group)continue;
+      const route=routes[(i*2+1)%routes.length]!,length=route.getLength();
+      const u=((t*(quality==="low"?0.018:0.022)+i*.137)%1);
+      const point=route.getPointAt(u),tangent=route.getTangentAt(u);
+      const jam=Math.hypot(point.x,point.z)<32||Math.hypot(point.x-116,point.z-120)<32;
+      group.position.set(point.x,0,point.z);
+      group.rotation.y=Math.atan2(tangent.x,tangent.z);
+      group.visible=true;
+      // Brief pauses near the stadium and cargo gate simulate junction queues.
+      if(jam&&Math.sin(t*.8+i*2)>0.78)group.visible=false;
+    }
+    for(let i=count;i<refs.current.length;i++){const group=refs.current[i];if(group)group.visible=false;}
+  });
+  return <>{models.map((model,i)=><group key={model+"-"+i} ref={el=>{refs.current[i]=el;}} scale={model==="danfo"?[.72,.72,.72]:model==="keke"?[.8,.8,.8]:[.78,.78,.78]}><VehicleBody model={model}/></group>)}</>;
+}
+
 function CityTraffic() {
   const bodyRef=useRef<THREE.InstancedMesh>(null);
   const glassRef=useRef<THREE.InstancedMesh>(null);
@@ -911,6 +937,7 @@ function CityEcosystem() {
     <CityTrees />
     {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
     <CityTraffic />
+    <CityNamedTraffic />
   </>;
 }
 
