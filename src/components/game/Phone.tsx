@@ -464,6 +464,7 @@ function WardrobeApp() {
     return () => { active = false; };
   }, [setOutfit]);
   const choices = {
+    gender: [{label:"Male",value:"male"},{label:"Female",value:"female"}],
     skinTone: [{label:"Warm brown",value:"#a86f48"},{label:"Deep brown",value:"#69402d"},{label:"Light brown",value:"#c58b61"},{label:"Dark",value:"#3e2b24"}],
     hair: [{label:"Short fade",value:"short"},{label:"Locs",value:"locs"},{label:"Braids",value:"braids"},{label:"Low cut",value:"lowcut"}],
     hairColor: [{label:"Deep purple",value:"#4b1877"},{label:"Natural black",value:"#171513"},{label:"Dark brown",value:"#35241c"},{label:"Blonde",value:"#d4b477"}],
@@ -484,10 +485,10 @@ function WardrobeApp() {
       <div className="text-[10px] uppercase tracking-[0.2em] text-[#f4d16a]">Lagos Boutique</div>
       <div className="mt-1 text-lg font-bold text-white">Character wardrobe</div>
       <div className="mt-1 text-[11px] text-hud-muted">Choose your look. Outfit preferences save to your game profile.</div>
-      <div className="mt-3 flex items-center gap-3"><div className="h-12 w-12 rounded-full border-2 border-white/20" style={{backgroundColor:outfit.skinTone}}/><div><div className="text-xs font-semibold text-white">{outfit.top === "agbada" ? "Traditional Agbada" : outfit.top.charAt(0).toUpperCase()+outfit.top.slice(1)}</div><div className="text-[10px] text-hud-muted">{outfit.hair} hair · {outfit.accessory}</div></div></div>
+      <div className="mt-3 flex items-center gap-3"><div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/20 text-xl" style={{backgroundColor:outfit.skinTone}}>{outfit.gender === "female" ? "♀" : "♂"}</div><div><div className="text-xs font-semibold text-white">{outfit.gender === "female" ? "Female character" : "Male character"} · {outfit.top === "agbada" ? "Traditional Agbada" : outfit.top.charAt(0).toUpperCase()+outfit.top.slice(1)}</div><div className="text-[10px] text-hud-muted">{outfit.hair} hair · {outfit.accessory}</div></div></div>
     </div>
     {notice && <div role="status" className="rounded-lg bg-[#eab308]/10 p-2 text-[10px] text-[#f4d16a]">{notice}</div>}
-    <div className="grid grid-cols-1 gap-2">{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("hairColor","Hair colour")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
+    <div className="grid grid-cols-1 gap-2">{field("gender","Character type")}{field("skinTone","Skin tone")}{field("hair","Hair style")}{field("hairColor","Hair colour")}{field("top","Top / outfit")}{field("bottom","Bottom outfit")}{field("accessory","Accessories")}</div>
     <button
       disabled={saving}
       className="rounded-xl bg-[#eab308]/20 py-2.5 text-xs font-bold text-[#f4d16a] disabled:opacity-60"
