@@ -121,7 +121,8 @@ export default function DayNight() {
     const t = Math.max(0, Math.min(1, elev * 2 + 0.3)); // 0 night → 1 day
     if (t < 0.5) _c.copy(NIGHT_COLOR).lerp(DUSK_COLOR, t * 2);
     else _c.copy(DUSK_COLOR).lerp(DAY_COLOR, (t - 0.5) * 2);
-    scene.background = _c.clone();
+    if (scene.background instanceof THREE.Color) scene.background.copy(_c);
+    else scene.background = _c.clone();
     if (scene.fog) (scene.fog as THREE.Fog).color.copy(_c);
   });
 
