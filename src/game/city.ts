@@ -430,7 +430,7 @@ export function getMapPlaces(city: CityId): MapPlace[] {
     const id = String((b as any).id ?? `${city}-building-${i}`);
     const kind = String(b.kind ?? "building");
     const door = mapDoor(b, pois);
-    return { id, label: b.label ?? kind.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+    return { id, label: b.label?.trim() || `${kind === "building" ? "Local Building" : kind.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())} ${String(i + 1).padStart(2, "0")}`,
       kind, district: districtName(b), x: b.x, z: b.z, w: b.w, d: b.d, h: b.h,
       color: b.color, ...door, icon: MAP_ICON_KIND[kind] ?? "tower" };
   });
