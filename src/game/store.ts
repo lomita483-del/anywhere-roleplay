@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt, setCityWorld, type CityId } from "./city";
 import { g } from "./state";
+import { STARTING_BANK, STARTING_CASH, computeJobReward, newlyCompletedGoals, type JobRewardBreakdown, type ProgressSnapshot } from "./progression";
 
 export type JobType = "courier" | "driver" | "trader" | "security" | "construction" | "retail" | "airport" | "estate-agent";
 
@@ -77,6 +78,10 @@ export interface SaveData {
   rentals?: Record<string, number>;
   spawnedVehicles?: { id: string; model: string; x: number; z: number; rotY: number; fuel?: number; condition?: number }[];
   transactions?: BankTransaction[];
+  jobsCompleted?: number;
+  jobStreak?: number;
+  bestStreak?: number;
+  completedGoals?: string[];
 }
 
 export const SAVE_KEY = "lagos-hustle-save-v1";
@@ -194,6 +199,14 @@ interface GameStore {
   inventory: Record<string, number>;
   owned: string[];
   jobStats: JobStats;
+  jobsCompleted: number;
+  jobStreak: number;
+  bestStreak: number;
+  completedGoals: string[];
+  lastJobReward: (JobRewardBreakdown & { title: string; at: number }) | null;
+  goalCelebration: { id: string; title: string; cash: number; xp: number; at: number } | null;
+  dismissGoalCelebration: () => void;
+  checkGoals: () => void;
   activeJob: ActiveJob | null;
   phoneOpen: boolean;
   outfit: PlayerOutfit;
@@ -304,8 +317,14 @@ const DEFAULTS = {
   level: 1,
   graphicsQuality: getInitialGraphicsQuality(),
   name: "",
-  cash: 100_000_000_000,
-  bank: 10000,
+  cash: STARTING_CASH,
+  bank: STARTING_BANK,
+  jobsCompleted: 0,
+  jobStreak: 0,
+  bestStreak: 0,
+  completedGoals: [] as string[],
+  lastJobReward: null as GameStore["lastJobReward"],
+  goalCelebration: null as GameStore["goalCelebration"],
   transactions: [] as BankTransaction[],
   inventory: {} as Record<string, number>,
   owned: [] as string[],
@@ -392,6 +411,12 @@ export const useGame = create<GameStore>((set, get) => ({
         started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
+        jobsCompleted: Math.max(saved.jobsCompleted ?? 0, Object.values({ ...DEFAULTS.jobStats, ...saved.jobStats }).reduce((a, b) => a + (Number(b) || 0), 0)),
+        jobStreak: Math.max(0, saved.jobStreak ?? 0),
+        bestStreak: Math.max(0, saved.bestStreak ?? 0, saved.jobStreak ?? 0),
+        completedGoals: Array.isArray(saved.completedGoals) ? saved.completedGoals : [],
+        lastJobReward: null,
+        goalCelebration: null,
         activeJob: saved.activeJob ?? null,
         waypoint: saved.waypoint ?? null,
         outfit: { ...DEFAULTS.outfit, ...(saved.outfit ?? {}) },
@@ -428,7 +453,7 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!s.started) return;
     const data: SaveData = {
       name: s.name, city: s.city, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
-      jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
+      jobStats: s.jobStats, jobsCompleted: s.jobsCompleted, jobStreak: s.jobStreak, bestStreak: s.bestStreak, completedGoals: s.completedGoals, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
@@ -530,19 +555,56 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "driver") stats.drives++;
       if (job.type === "trader") stats.trades++;
       if (job.type === "security") stats.patrols++;
-      get().earn(job.payout, "bank");
-      get().addXp(45);
-      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
-      set({ activeJob: null, jobStats: stats, waypoint: null });
+      const priorStreak = get().jobStreak;
+      const elapsed = job.startedAt ? (Date.now() - job.startedAt) / 1000 : null;
+      const reward = computeJobReward(job.payout, priorStreak, elapsed, job.timeLimitSeconds ?? null);
+      const jobStreak = priorStreak + 1;
+      set({
+        activeJob: null, jobStats: stats, waypoint: null,
+        jobsCompleted: get().jobsCompleted + 1,
+        jobStreak, bestStreak: Math.max(get().bestStreak, jobStreak),
+        lastJobReward: { ...reward, title: job.title, at: Date.now() },
+      });
+      get().earn(reward.total, "bank");
+      get().addXp(45 + Math.min(5, priorStreak) * 3);
+      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: reward.total, title: job.title } }));
+      const extras = [reward.streakBonus > 0 ? `+${N(reward.streakBonus)} streak` : "", reward.fastTip > 0 ? `+${N(reward.fastTip)} fast tip` : ""].filter(Boolean).join(", ");
+      get().radio(`✅ Job complete — ${N(reward.total)} paid into your bank${extras ? ` (${extras})` : ""}. Streak: ${jobStreak}.`);
+      get().checkGoals();
       get().save();
-      get().radio(`✅ Job complete — ${N(job.payout)} paid into your bank account.`);
     } else {
       const target = job.targets[next];
       set({ activeJob: { ...job, stage: next }, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · " + (next + 1), kind: "job" } : null });
       get().save();
     }
   },
-  cancelJob: () => { set({ activeJob: null, waypoint: null }); get().save(); },
+  cancelJob: () => {
+    const hadStreak = get().activeJob && get().jobStreak > 0;
+    set({ activeJob: null, waypoint: null, jobStreak: 0 });
+    if (hadStreak) get().radio("💔 Streak lost. Finish your next shift to start a new one.");
+    get().save();
+  },
+  dismissGoalCelebration: () => set({ goalCelebration: null }),
+  checkGoals: () => {
+    const s = get();
+    const snapshot: ProgressSnapshot = {
+      cash: s.cash, bank: s.bank, level: s.level, jobsCompleted: s.jobsCompleted, bestStreak: s.bestStreak,
+      ownedVehicles: s.owned.length, unlockedDistricts: s.unlockedDistricts.length,
+      ownsProperty: (s.inventory["mainland-studio"] ?? 0) > 0 || (s.inventory["ikoyi-apartment"] ?? 0) > 0,
+    };
+    const done = newlyCompletedGoals(s.completedGoals, snapshot);
+    if (!done.length) return;
+    const completedGoals = [...s.completedGoals, ...done.map((goal) => goal.id)];
+    set({ completedGoals });
+    const last = done[done.length - 1]!;
+    const cash = done.reduce((sum, goal) => sum + goal.reward.cash, 0);
+    const xp = done.reduce((sum, goal) => sum + goal.reward.xp, 0);
+    if (cash > 0) get().earn(cash, "bank");
+    if (xp > 0) get().addXp(xp);
+    set({ goalCelebration: { id: last.id, title: done.length > 1 ? `${done.length} story goals` : last.title, cash, xp, at: Date.now() } });
+    get().radio(`🏆 Story goal complete: ${last.title}. Reward ${N(cash)} + ${xp} XP.`);
+    get().save();
+  },
 
   bumpStat: (stat) => set({ jobStats: { ...get().jobStats, [stat]: get().jobStats[stat] + 1 } }),
   rentMarketItem: (key) => {

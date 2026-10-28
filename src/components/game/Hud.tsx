@@ -6,6 +6,7 @@ import { g } from "@/game/state";
 import { useGame, naira } from "@/game/store";
 import { exitApartment, interact } from "@/game/actions";
 import Phone from "./Phone";
+import StoryTracker from "./StoryTracker";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF } from "@/game/city";
 import { NEW_MAP_POIS, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_DISTRICTS, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES } from "@/game/newMap";
 
@@ -362,6 +363,7 @@ export default function Hud() {
 
       {!phoneOpen && !stadiumMode && <Joystick />}
       {stadiumMode && !phoneOpen && <div className="pointer-events-auto absolute bottom-7 left-1/2 z-30 -translate-x-1/2"><button type="button" onClick={exitStadium} className="rounded-full border border-amber-200/70 bg-[#101820]/95 px-6 py-3 text-sm font-black tracking-wide text-amber-100 shadow-2xl shadow-black/50 active:scale-95">↗ EXIT STADIUM</button><div className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Spectator mode · Free entry</div></div>}
+      {!stadiumMode && <StoryTracker />}
       <Phone />
       {interiorTransition && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[60] bg-black" style={{ animation: "lagosInteriorFade 520ms ease-in-out forwards" }}><style>{`@keyframes lagosInteriorFade { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }`}</style></div>}
     </div>
