@@ -68,8 +68,8 @@
 - [ ] Review measured renderer budgets on representative mobile and desktop hardware; do not infer draw-call or memory budgets from source alone.
 
 ## Verification status
-- Phase 0 source changes previously passed GitHub Actions typecheck, build and tests.
-- The latest changes are being re-verified by GitHub Actions. Use the workflow run attached to the latest `main` commit for the definitive result.
+- The latest source commit before this documentation update (`bd607d70cdba62ffc37a56ea1c01cd6f0bb88709`) passed GitHub Actions typecheck, production build and tests: https://github.com/lomita483-del/anywhere-roleplay/actions/runs/40715120091.
+- Repository-wide lint remains unresolved: a previous `bun run lint` run reported 3,218 Prettier errors and 7 warnings; unrelated files were not mass-formatted.
 - Manual browser/device tests cannot be truthfully marked complete from repository inspection alone.
 
 ## Persistence and security constraints
