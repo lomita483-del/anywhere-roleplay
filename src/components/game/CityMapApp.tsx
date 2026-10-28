@@ -47,7 +47,7 @@ export default function CityMapApp() {
   const baseRef = useRef<HTMLCanvasElement | null>(null);
   const pointerRef = useRef(new Map<number,{x:number;y:number}>());
   const gestureRef = useRef<{x:number;y:number;panX:number;panY:number;pinch:number;startZoom:number;dragged:boolean;lastTap:number}>({x:0,y:0,panX:0,panY:0,pinch:0,startZoom:1,dragged:false,lastTap:0});
-  const [zoom,setZoomState] = useState(()=>{try{return Math.max(.8,Math.min(3,Number(localStorage.getItem(ZOOM_KEY))||1.15))}catch{return 1.15}});
+  const [zoom,setZoomState] = useState(()=>{try{return Math.max(.8,Math.min(3,Number(localStorage.getItem(ZOOM_KEY))||1.4))}catch{return 1.4}});
   const [pan,setPan] = useState({x:0,y:0});
   const [names,setNames] = useState(()=>{try{return localStorage.getItem(NAME_KEY)!=="false"}catch{return true}});
   const [selected,setSelected] = useState<MapPlace|null>(null);
@@ -117,13 +117,17 @@ export default function CityMapApp() {
     ctx.save();ctx.translate(S/2+pan.x,S/2+pan.y);ctx.scale(zoom,zoom);ctx.translate(-S/2,-S/2);
     ctx.drawImage(base,0,0);
     const xy=(x:number,z:number)=>screen(x,z,S);
+    const labelBoxes:{left:number;top:number;right:number;bottom:number}[]=[];
     if(waypoint){const a=xy(g.playerPos.x,g.playerPos.z),b=xy(waypoint.x,waypoint.z);ctx.strokeStyle="#36ef9a";ctx.lineWidth=3/zoom;ctx.setLineDash([8/zoom,6/zoom]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#36ef9a";ctx.beginPath();ctx.moveTo(b.x,b.y-13/zoom);ctx.lineTo(b.x+10/zoom,b.y);ctx.lineTo(b.x,b.y+13/zoom);ctx.lineTo(b.x-10/zoom,b.y);ctx.closePath();ctx.fill()}
     if(names){
       for(const p of places){
-        if(zoom<1.08&&!IMPORTANT.has(p.icon))continue;
+        if(zoom<1.28&&!IMPORTANT.has(p.icon))continue;
         const a=xy(p.x,p.z);const label=p.label.length>25?p.label.slice(0,23)+"…":p.label;
         const compact=p.w<12||p.d<12;ctx.font=`bold ${compact?10:12}px system-ui,sans-serif`;const w=Math.min(230,ctx.measureText(label).width+(compact?22:32)),h=compact?21:25;
         if(a.x < -w || a.y < -h || a.x > S+w || a.y > S+h)continue;
+        const box={left:a.x-w/2,top:a.y-h-4,right:a.x+w/2,bottom:a.y-4};
+        if(zoom<1.55&&labelBoxes.some(b=>box.left<b.right+3&&box.right>b.left-3&&box.top<b.bottom+3&&box.bottom>b.top-3))continue;
+        labelBoxes.push(box);
         ctx.fillStyle="rgba(4,15,20,.94)";ctx.strokeStyle="rgba(115,205,176,.55)";ctx.lineWidth=1;
         ctx.beginPath();ctx.roundRect(a.x-w/2,a.y-h-4,w,h,12);ctx.fill();ctx.stroke();
         ctx.fillStyle="#78e3bd";ctx.beginPath();ctx.arc(a.x-w/2+(compact?9:13),a.y-h/2-4,compact?4.5:7,0,Math.PI*2);ctx.fill();
@@ -180,9 +184,9 @@ export default function CityMapApp() {
     {more&&<div className="relative z-20 grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-[#0b2225] p-2">{[{label:"Districts",icon:Compass,app:"districts" as const},{label:"Jobs",icon:Briefcase,app:"jobs" as const},{label:"Fuel",icon:Fuel,app:"fuel" as const},{label:"Friends",icon:Users,app:"friends" as const},{label:"Settings",icon:Settings,app:"settings" as const}].map(item=><button key={item.label} onClick={()=>openPhone(item.app)} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 text-xs font-semibold"><item.icon size={14}/>{item.label}</button>)}</div>}
     <div className="absolute inset-0 z-0 overflow-hidden border-0 bg-[#0a1c20] shadow-[0_0_28px_rgba(28,175,128,.09)]">
       <canvas ref={canvasRef} width={720} height={720} className="absolute inset-0 h-full w-full touch-none" style={{minHeight:0}} onPointerDown={e=>{const pts=pointerRef.current;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});e.currentTarget.setPointerCapture(e.pointerId);const g0=gestureRef.current;if(pts.size===1){g0.x=e.clientX;g0.y=e.clientY;g0.panX=pan.x;g0.panY=pan.y;g0.dragged=false;g0.lastTap=Date.now()}else if(pts.size===2){const a=[...pts.values()];g0.pinch=Math.hypot(a[0]!.x-a[1]!.x,a[0]!.y-a[1]!.y);g0.startZoom=zoom;}}} onPointerMove={e=>{const pts=pointerRef.current;if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const gg=gestureRef.current;if(pts.size===1){const dx=e.clientX-gg.x,dy=e.clientY-gg.y;if(Math.hypot(dx,dy)>5)gg.dragged=true;if(gg.dragged)setPan({x:Math.max(-280,Math.min(280,gg.panX+dx*720/e.currentTarget.getBoundingClientRect().width)),y:Math.max(-280,Math.min(280,gg.panY+dy*720/e.currentTarget.getBoundingClientRect().height))})}else if(pts.size===2){const a=[...pts.values()];const d=Math.hypot(a[0]!.x-a[1]!.x,a[0]!.y-a[1]!.y);if(gg.pinch>0)setZoom(gg.startZoom*d/gg.pinch)}}} onPointerUp={e=>{const gg=gestureRef.current;pointerRef.current.delete(e.pointerId);if(pointerRef.current.size===0&&!gg.dragged&&Date.now()-gg.lastTap>30)selectAt(e)}} onPointerCancel={e=>pointerRef.current.delete(e.pointerId)} onDoubleClick={()=>setZoom(zoom+0.35)}/>
-      <div className="pointer-events-none absolute left-2 top-2 rounded-lg border border-white/10 bg-[#071319]/90 px-2.5 py-1.5 text-xs font-bold text-emerald-100">● LIVE GPS <span className="ml-1 text-slate-300">{places.length} places</span></div>
-      <div className="absolute right-2 top-2 flex flex-col gap-1.5"><button onClick={()=>setZoom(zoom+.25)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95"><Plus size={18}/></button><button onClick={()=>setZoom(zoom-.25)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95"><Minus size={18}/></button><button onClick={()=>{setZoom(1.15);setPan({x:0,y:0})}} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95" aria-label="Recenter"><RotateCcw size={16}/></button></div>
-      <div className="pointer-events-none absolute bottom-2 left-2 rounded-lg border border-white/10 bg-[#071319]/90 px-2 py-1 text-xs text-slate-200">🔵 You　🟢 Destination</div>
+      <div className="pointer-events-none absolute left-2 top-[154px] rounded-lg border border-white/10 bg-[#071319]/90 px-2.5 py-1.5 text-xs font-bold text-emerald-100">● LIVE GPS <span className="ml-1 text-slate-300">{places.length} places</span></div>
+      <div className="absolute right-2 top-[154px] flex flex-col gap-1.5"><button onClick={()=>setZoom(zoom+.25)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95"><Plus size={18}/></button><button onClick={()=>setZoom(zoom-.25)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95"><Minus size={18}/></button><button onClick={()=>{setZoom(1.4);setPan({x:0,y:0})}} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-[#071319]/95" aria-label="Recenter"><RotateCcw size={16}/></button></div>
+      <div className="pointer-events-none absolute bottom-[74px] left-2 rounded-lg border border-white/10 bg-[#071319]/90 px-2 py-1 text-xs text-slate-200">🔵 You　🟢 Destination</div>
     </div>
     {waypoint&&<div className="relative z-20 flex items-center justify-between gap-2 rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-2.5"><div className="min-w-0"><div className="text-xs uppercase tracking-wide text-emerald-200">Active GPS route</div><div className="truncate text-sm font-bold">{waypoint.label}</div></div><button onClick={clearWaypoint} className="min-h-10 rounded-lg border border-white/10 px-3 text-xs font-bold">Clear</button></div>}
     {selected&&<div className="relative z-20 rounded-2xl border border-emerald-200/20 bg-[#0e2829] p-3 shadow-xl">
