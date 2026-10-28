@@ -725,8 +725,9 @@ function CityPedestrians() {
   const bodies=useRef<THREE.InstancedMesh>(null);
   const heads=useRef<THREE.InstancedMesh>(null);
   const quality=useGame(s=>s.graphicsQuality);
-  const count=quality==="low"?20:quality==="high"?80:45;
+  const count=getGraphicsProfile(quality).pedestrianCount;
   const anchors=useMemo(()=>[[-38,-76],[-28,-72],[-110,32],[-102,35],[0,0],[12,8],[78,10],[98,-40],[-112,118]] as [number,number][],[]);
+  const dummy=useMemo(()=>new THREE.Object3D(),[]);
   useEffect(()=>{
     const body=bodies.current,head=heads.current;if(!body||!head)return;
     for(let i=0;i<count;i++){body.setColorAt(i,new THREE.Color(["#c94f3d","#2c536f","#d6b75e","#e4d7bd","#42764c","#704e82"][i%6]!));head.setColorAt(i,new THREE.Color(["#754a31","#8c5b3d","#9b6947","#5b3a29"][i%4]!));}
@@ -734,7 +735,7 @@ function CityPedestrians() {
   },[count]);
   useFrame((state)=>{
     const body=bodies.current,head=heads.current;if(!body||!head)return;
-    const dummy=new THREE.Object3D(),t=state.clock.elapsedTime;
+    const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const a=anchors[i%anchors.length]!,phase=i*1.73;
       const x=a[0]+Math.sin(t*.32+phase)*2.8,z=a[1]+Math.cos(t*.27+phase)*2.2;
@@ -799,9 +800,10 @@ function AnimatedWatercraft() {
 
 function AnimatedSmoke() {
   const smoke=useRef<THREE.InstancedMesh>(null);
+  const dummy=useMemo(()=>new THREE.Object3D(),[]);
   useFrame((state)=>{
     const mesh=smoke.current;if(!mesh)return;
-    const dummy=new THREE.Object3D(),t=state.clock.elapsedTime;
+    const t=state.clock.elapsedTime;
     for(let i=0;i<18;i++){
       const stack=i%3,x=-153+stack*10,z=-46;
       const phase=(t*.35+i*.41)%5;
@@ -816,9 +818,10 @@ function AnimatedSmoke() {
 function CityBirdsAndFlags() {
   const birds=useRef<THREE.InstancedMesh>(null);
   const flags=useRef<(THREE.Group|null)[]>([]);
+  const dummy=useMemo(()=>new THREE.Object3D(),[]);
   useFrame((state)=>{
     const mesh=birds.current,t=state.clock.elapsedTime;
-    if(mesh){const dummy=new THREE.Object3D();for(let i=0;i<18;i++){const a=t*.12+i*2.4;dummy.position.set(Math.cos(a)*(38+(i%4)*13),18+(i%5)*1.6,Math.sin(a)*(32+(i%3)*15));dummy.rotation.y=-a;dummy.scale.set(1,.08,.32);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);}mesh.instanceMatrix.needsUpdate=true;}
+    if(mesh){for(let i=0;i<18;i++){const a=t*.12+i*2.4;dummy.position.set(Math.cos(a)*(38+(i%4)*13),18+(i%5)*1.6,Math.sin(a)*(32+(i%3)*15));dummy.rotation.y=-a;dummy.scale.set(1,.08,.32);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);}mesh.instanceMatrix.needsUpdate=true;}
     flags.current.forEach((flag,i)=>{if(flag)flag.rotation.z=Math.sin(t*2.2+i*1.7)*.09;});
   });
   return <>
