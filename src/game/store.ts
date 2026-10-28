@@ -272,6 +272,29 @@ function loadSave(): SaveData | null {
   }
 }
 
+function detectDefaultGraphicsQuality(): "low" | "medium" | "high" {
+  if (typeof window === "undefined") return "medium";
+  const nav = window.navigator as Navigator & { deviceMemory?: number };
+  const cores = nav.hardwareConcurrency || 4;
+  const memory = nav.deviceMemory || 4;
+  const screenWidth = Math.max(window.screen?.width ?? 0, window.innerWidth || 0);
+
+  if (memory <= 3 || cores <= 4 || screenWidth < 380) return "low";
+  if (memory >= 8 && cores >= 8 && screenWidth >= 1200) return "high";
+  return "medium";
+}
+
+function getInitialGraphicsQuality(): "low" | "medium" | "high" {
+  if (typeof window === "undefined") return "medium";
+  try {
+    const saved = localStorage.getItem("lagos-graphics-quality");
+    if (saved === "low" || saved === "medium" || saved === "high") return saved;
+  } catch {
+    // Storage may be disabled; fall back to device detection.
+  }
+  return detectDefaultGraphicsQuality();
+}
+
 const DEFAULTS = {
   started: false,
   city: "newmap" as CityId,
@@ -279,7 +302,7 @@ const DEFAULTS = {
   onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
-  graphicsQuality: (typeof window !== "undefined" && ["low","medium","high"].includes(localStorage.getItem("lagos-graphics-quality") ?? "") ? localStorage.getItem("lagos-graphics-quality") : "medium") as "low" | "medium" | "high",
+  graphicsQuality: getInitialGraphicsQuality(),
   name: "",
   cash: 100_000_000_000,
   bank: 10000,
