@@ -257,7 +257,7 @@ export default function Hud() {
         }}><Satellite className="h-4 w-4" /><span>{satelliteMode ? "STREET" : "SAT"}</span></button>
       </div>}
 
-      {/* Admin-only shortcut so the control center is discoverable while playing. */
+      {/* Admin-only shortcut so the control center is discoverable while playing. */}
       {adminAccess && !phoneOpen && (
         <Link
           to="/admin"
