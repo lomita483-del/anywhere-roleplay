@@ -615,6 +615,7 @@ function CityTraffic() {
   const glassRef=useRef<THREE.InstancedMesh>(null);
   const wheelRef=useRef<THREE.InstancedMesh>(null);
   const quality=useGame(s=>s.graphicsQuality);
+  const dummy=useMemo(()=>new THREE.Object3D(),[]);
   const count=quality==="low"?14:quality==="high"?40:26;
   const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
   useEffect(()=>{
@@ -625,7 +626,7 @@ function CityTraffic() {
   },[count]);
   useFrame((state)=>{
     const body=bodyRef.current,glass=glassRef.current,wheels=wheelRef.current;if(!body||!glass||!wheels)return;
-    const t=state.clock.elapsedTime,dummy=new THREE.Object3D();
+    const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const route=routes[i%routes.length]!,length=route.getLength();
       const startDistance=i*(length/count);
@@ -894,7 +895,7 @@ function CityEcosystem() {
     </Html>
     <CityTrees />
     {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
-    <CityNamedTraffic />
+    {quality === "high" ? <CityNamedTraffic /> : <CityTraffic />}
   </>;
 }
 
