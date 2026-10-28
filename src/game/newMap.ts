@@ -121,9 +121,9 @@ const treeCandidates: NewMapTree[] = [
 ];
 function pointSegmentDistance(px:number,pz:number,a:[number,number],b:[number,number]) { const dx=b[0]-a[0],dz=b[1]-a[1],den=dx*dx+dz*dz;const t=den?Math.max(0,Math.min(1,((px-a[0])*dx+(pz-a[1])*dz)/den)):0;return Math.hypot(px-(a[0]+t*dx),pz-(a[1]+t*dz)); }
 export function newMapPointOnRoad(x:number,z:number,margin=0) { return NEW_MAP_ROAD_GRAPH.edges.some(e=>e.points.slice(1).some((p,i)=>pointSegmentDistance(x,z,e.points[i]!,p)<e.width/2+margin)); }
-export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-78,z:160,w:13,d:8},{x:-75,z:148,w:12,d:10},{x:-151,z:112,w:10,d:9},{x:-88,z:112,w:11,d:9},{x:-80,z:166,w:9,d:8}];
+export const NEW_MAP_GROUND_PATCHES = [{x:-163,z:143,w:12,d:9},{x:-75,z:148,w:12,d:10},{x:-88,z:112,w:11,d:9},{x:-80,z:166,w:9,d:8}];
 export const NEW_MAP_HILLS: NewMapHill[] = [{x:-158,z:130,w:9,h:1.8,d:7},{x:-164,z:112,w:11,h:2.1,d:8},{x:-88,z:147,w:8,h:1.4,d:7}];
-export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter(t=>!newMapPointOnRoad(t.x,t.z,4.5)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&Math.hypot(t.x,t.z)>88&&Math.hypot(t.x+120,t.z-142)>36);
+export const NEW_MAP_TREES: NewMapTree[] = treeCandidates.filter((t,i,all)=>!newMapPointOnRoad(t.x,t.z,4.5)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(t.x-b.x)<b.w/2+2&&Math.abs(t.z-b.z)<b.d/2+2)&&!NEW_MAP_HILLS.some(h=>Math.abs(t.x-h.x)<h.w/2+2&&Math.abs(t.z-h.z)<h.d/2+2)&&!all.slice(0,i).some(q=>Math.hypot(t.x-q.x,t.z-q.z)<3.5)&&Math.hypot(t.x,t.z)>88&&Math.hypot(t.x+120,t.z-142)>36);
 export const NEW_MAP_MARKET_STALLS: NewMapStall[] = Array.from({length:12},(_,i)=>({id:"stall-"+i,x:-88+(i%6)*4.8,z:-124+Math.floor(i/6)*6,w:3.4,d:2.4,color:["#d84f3f","#e2b74f","#347c9d","#4e8052"][i%4]!})).filter(s=>!newMapPointOnRoad(s.x,s.z,2)&&!NEW_MAP_BUILDINGS.some(b=>Math.abs(s.x-b.x)<b.w/2+s.w/2+1&&Math.abs(s.z-b.z)<b.d/2+s.d/2+1));
 
 
