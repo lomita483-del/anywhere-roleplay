@@ -20,7 +20,12 @@ function PropBatch({items}:{items:Prop[]}) {
 function Npc({npc,index}:{npc:{role:string;x:number;z:number;lines:string[]};index:number}) {
   const group=useRef<THREE.Group>(null);const [line,setLine]=useState(0);
   useEffect(()=>{const id=window.setInterval(()=>setLine(v=>(v+1)%Math.max(1,npc.lines.length)),6500+index*350);return()=>window.clearInterval(id)},[npc.lines.length,index]);
-  useFrame(({clock})=>{if(group.current)group.current.position.y=.035+Math.sin(clock.elapsedTime*1.8+index)*.035});
+  useFrame(({clock})=>{
+    if(!group.current)return;
+    const t=clock.elapsedTime*.14+index*1.7;
+    group.current.position.set(npc.x+Math.sin(t)*.32,.035+Math.sin(clock.elapsedTime*1.8+index)*.035,npc.z+Math.cos(t*.8)*.22);
+    group.current.rotation.y=Math.atan2(Math.cos(t*.8)*-.18,Math.cos(t)*.32);
+  });
   return <group ref={group} position={[npc.x,0,npc.z]}>
     <mesh position={[0,.75,0]} castShadow><capsuleGeometry args={[.22,.65,4,8]}/><meshStandardMaterial color={index%2?"#3d9a86":"#c59a5a"} roughness={.8}/></mesh>
     <mesh position={[0,1.35,0]} castShadow><sphereGeometry args={[.19,12,12]}/><meshStandardMaterial color="#8b5c3c" roughness={.8}/></mesh>
