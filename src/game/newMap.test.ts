@@ -21,6 +21,14 @@ describe("NEW MAP layout", () => {
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "street").every(edge => edge.width === 5)).toBe(true);
   });
 
+  it("includes named inner-city shops and food landmarks in the discoverable POI list", () => {
+    const innerCity = NEW_MAP_BUILDINGS.filter(building => building.id.startsWith("inner-"));
+    expect(innerCity).toHaveLength(8);
+    for (const building of innerCity) {
+      expect(NEW_MAP_POIS.some(poi => poi.buildingId === building.id && poi.label === building.label)).toBe(true);
+    }
+  });
+
   it("derives service POIs from their canonical building doors", () => {
     for (const poi of NEW_MAP_POIS.filter(p => p.buildingId)) {
       const building = NEW_MAP_BUILDINGS.find(b => b.id === poi.buildingId);
