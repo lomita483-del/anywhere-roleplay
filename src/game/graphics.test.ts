@@ -9,6 +9,7 @@ describe("graphics quality profiles", () => {
     expect(profile.environmentResolution).toBe(16);
     expect(profile.rainfallCount).toBe(70);
     expect(profile.trafficCount).toBe(14);
+    expect(profile.pedestrianCount).toBe(20);
   });
 
   it("scales rendering features monotonically with quality", () => {
@@ -21,5 +22,7 @@ describe("graphics quality profiles", () => {
     expect(medium.buildingCullDistance).toBeLessThan(high.buildingCullDistance);
     expect(low.trafficCount).toBeLessThan(medium.trafficCount);
     expect(medium.trafficCount).toBeLessThan(high.trafficCount);
+    expect(low.pedestrianCount).toBeLessThan(medium.pedestrianCount);
+    expect(medium.pedestrianCount).toBeLessThan(high.pedestrianCount);
   });
 });
