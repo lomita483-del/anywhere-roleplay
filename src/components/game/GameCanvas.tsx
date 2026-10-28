@@ -1,5 +1,5 @@
-import { Canvas } from "@react-three/fiber";
-import { useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SAVE_KEY, useGame } from "@/game/store";
 import { g } from "@/game/state";
@@ -232,6 +232,53 @@ function AdminCommandSync() {
   return null;
 }
 
+function DevPerformanceOverlay() {
+  const { gl } = useThree();
+  const element = useRef<HTMLDivElement | null>(null);
+  const elapsed = useRef(0);
+  const frames = useRef(0);
+
+  useEffect(() => {
+    const node = document.createElement("div");
+    node.setAttribute("data-game-performance-overlay", "true");
+    Object.assign(node.style, {
+      position: "fixed",
+      left: "8px",
+      bottom: "8px",
+      zIndex: "99999",
+      padding: "6px 8px",
+      border: "1px solid rgba(255,255,255,.2)",
+      borderRadius: "6px",
+      background: "rgba(4,12,18,.82)",
+      color: "#d8f4e8",
+      font: "11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace",
+      pointerEvents: "none",
+      whiteSpace: "pre",
+    });
+    node.textContent = "Performance monitor starting…";
+    document.body.appendChild(node);
+    element.current = node;
+    return () => {
+      node.remove();
+      element.current = null;
+    };
+  }, []);
+
+  useFrame((_, delta) => {
+    elapsed.current += delta;
+    frames.current += 1;
+    if (elapsed.current < 0.5 || !element.current) return;
+    const fps = Math.round(frames.current / elapsed.current);
+    const { calls, triangles } = gl.info.render;
+    const textures = gl.info.memory.textures;
+    element.current.textContent = `FPS ${fps} | Draw calls ${calls} | Triangles ${triangles.toLocaleString()} | Textures ${textures}`;
+    elapsed.current = 0;
+    frames.current = 0;
+  });
+
+  return null;
+}
+
 export default function GameCanvas() {
   const phoneOpen = useGame((s) => s.phoneOpen);
 
@@ -254,6 +301,7 @@ export default function GameCanvas() {
         style={{ pointerEvents: phoneOpen ? "none" : "auto", touchAction: "none" }}
       >
         <Scene />
+        {import.meta.env.DEV && <DevPerformanceOverlay />}
       </Canvas>
       <Hud />
       {!phoneOpen && <FirstDayTutorial />}
