@@ -234,6 +234,39 @@ function AdminCommandSync() {
   return null;
 }
 
+function AdaptiveResolution() {
+  const { setDpr } = useThree();
+  const quality = useGame((s) => s.graphicsQuality);
+  const profile = getGraphicsProfile(quality);
+  const targetDpr = typeof profile.dpr === "number" ? profile.dpr : profile.dpr[1];
+  const currentDpr = useRef(targetDpr);
+  const elapsed = useRef(0);
+  const frames = useRef(0);
+
+  useEffect(() => {
+    currentDpr.current = targetDpr;
+    setDpr(targetDpr);
+  }, [quality, setDpr, targetDpr]);
+
+  useFrame((_, delta) => {
+    elapsed.current += delta;
+    frames.current += 1;
+    if (elapsed.current < 2) return;
+    const fps = frames.current / elapsed.current;
+    let next = currentDpr.current;
+    if (fps < 27) next = Math.max(1, next - 0.1);
+    else if (fps > 52) next = Math.min(targetDpr, next + 0.05);
+    if (Math.abs(next - currentDpr.current) >= 0.045) {
+      currentDpr.current = Number(next.toFixed(2));
+      setDpr(currentDpr.current);
+    }
+    elapsed.current = 0;
+    frames.current = 0;
+  });
+
+  return null;
+}
+
 function DevPerformanceOverlay() {
   const { gl } = useThree();
   const element = useRef<HTMLDivElement | null>(null);
@@ -306,6 +339,7 @@ export default function GameCanvas() {
         style={{ pointerEvents: phoneOpen ? "none" : "auto", touchAction: "none" }}
       >
         <Scene />
+        <AdaptiveResolution />
         {import.meta.env.DEV && <DevPerformanceOverlay />}
       </Canvas>
       <Hud />
