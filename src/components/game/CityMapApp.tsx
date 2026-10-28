@@ -84,7 +84,7 @@ export default function CityMapApp() {
     const xy=(x:number,z:number)=>screen(x,z,S);
     ctx.fillStyle="#102923";ctx.fillRect(0,0,S,S);
     if(city==="newmap"){
-      for(const d of NEW_MAP_DISTRICTS){const a=xy(d.x-d.w/2,d.z-d.d/2),b=xy(d.x+d.w/2,d.z+d.d/2);ctx.fillStyle=d.color;ctx.globalAlpha=.20;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}ctx.globalAlpha=1;
+      for(const d of NEW_MAP_DISTRICTS){const a=xy(d.x-d.w/2,d.z-d.d/2),b=xy(d.x+d.w/2,d.z+d.d/2);ctx.fillStyle=d.color;ctx.globalAlpha=.20;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}ctx.globalAlpha=1;ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";for(const d of NEW_MAP_DISTRICTS){const p=xy(d.x,d.z);ctx.font="800 10px system-ui,sans-serif";const w=ctx.measureText(d.label).width+18;ctx.fillStyle="rgba(3,16,20,.72)";ctx.beginPath();ctx.roundRect(p.x-w/2,p.y-9,w,18,8);ctx.fill();ctx.fillStyle="#d5e8df";ctx.fillText(d.label,p.x,p.y,Math.max(20,d.w*S/WORLD-8))}ctx.restore();
       ctx.fillStyle="#163e50";ctx.beginPath();let q=xy(-112,118);ctx.ellipse(q.x,q.y,27*S/WORLD,27*S/WORLD,0,0,Math.PI*2);ctx.fill();
       q=xy(110,142);ctx.fillStyle="#123d4d";ctx.fillRect(q.x-25*S/WORLD,q.y-24*S/WORLD,48*S/WORLD,36*S/WORLD);
       ctx.lineCap="round";ctx.lineJoin="round";
