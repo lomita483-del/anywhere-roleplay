@@ -768,6 +768,8 @@ export default function Phone() {
   const storedApp = useGame((s) => s.phoneApp);
   useEffect(() => { if (open) setApp(storedApp); }, [open, storedApp]);
   if (!open) return null;
+  // The city map is a true full-screen app, not constrained by the phone frame.
+  if (app === "map") return <CityMapApp />;
   const Screen =
     app === "bank" ? <BankApp /> :
     app === "jobs" ? <JobsApp /> :
