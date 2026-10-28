@@ -1129,26 +1129,17 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
   const nearbyStall = STALLS.find((stall) => Math.hypot(x - stall.x, z - stall.z) < 3.0);
   if (nearbyStall) { st.setPrompt({ kind: "vendor", label: "Browse street vendor" }); return; }
 
-  let nearest: (typeof BUILDINGS)[number] | null = null;
+  let nearest: ReturnType<typeof getMapPlaces>[number] | null = null;
   let nearestDistance = 3.0;
-  const entranceSide = (kind: string | undefined) => {
-    if (kind === "bank") return { dx: 1, dz: 0 };
-    if (kind === "police") return { dx: 0, dz: -1 };
-    if (kind === "dealership" || kind === "market" || kind === "apartments" || kind === "depot" || kind === "clothing" || kind === "airport" || kind === "civic") return { dx: 0, dz: -1 };
-    return null;
-  };
-  for (const building of BUILDINGS) {
-    if (!building.label || building.kind === "apartments") continue;
-    const side = entranceSide(building.kind);
-    if (!side) continue;
-    // The prompt is measured from the actual marked doorway, not from the building footprint.
-    const doorX = building.x + side.dx * (building.w / 2 + 0.72);
-    const doorZ = building.z + side.dz * (building.d / 2 + 0.72);
-    const distance = Math.hypot(x - doorX, z - doorZ);
+  // Use the active city's canonical door coordinates so NEW MAP and Umuahia prompts
+  // never fall back to unrelated Lagos building coordinates.
+  for (const building of getMapPlaces(s2.city)) {
+    if (!building.label) continue;
+    const distance = Math.hypot(x - building.doorX, z - building.doorZ);
     if (distance < nearestDistance) { nearest = building; nearestDistance = distance; }
   }
   if (nearest) {
-    st.setPrompt({ kind: "building", label: "Enter " + (nearest.label ?? "Building"), buildingLabel: nearest.label ?? "City Building", buildingKind: nearest.kind ?? "building" });
+    st.setPrompt({ kind: "building", label: "Enter " + nearest.label, buildingLabel: nearest.label, buildingKind: nearest.kind ?? "building" });
     return;
   }
 
