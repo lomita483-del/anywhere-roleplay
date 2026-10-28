@@ -150,13 +150,13 @@ export const NEW_MAP_LIGHT_POLES = poleCandidates.filter(p =>
   !(p.x>NEW_MAP_PORT_WATER.x-NEW_MAP_PORT_WATER.w/2-5 && p.x<NEW_MAP_PORT_WATER.x+NEW_MAP_PORT_WATER.w/2+5 && p.z>NEW_MAP_PORT_WATER.z-NEW_MAP_PORT_WATER.d/2-5 && p.z<NEW_MAP_PORT_WATER.z+NEW_MAP_PORT_WATER.d/2+5) &&
   !NEW_MAP_BUILDINGS.some(b=>Math.abs(p.x-b.x)<b.w/2+3&&Math.abs(p.z-b.z)<b.d/2+3)
 );
-export const NEW_MAP_PEDESTRIAN_ANCHORS: [number,number][] = [
+export const NEW_MAP_PEDESTRIAN_ANCHORS: [number,number][] = ([
   [-80,-128],[-70,-128],[-76,-120],[-66,-120],
   [-119,82],[-116,85],[-142,87],
   [94,114],[102,118],[116,106],
   [-137,113],[-143,116],
   [16,12],[26,16],
-].filter(([x,z]) => !newMapPointOnRoad(x,z,2.5) &&
+] as [number, number][]).filter(([x,z]) => !newMapPointOnRoad(x,z,2.5) &&
   !NEW_MAP_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w/2+1.2&&Math.abs(z-b.z)<b.d/2+1.2) &&
   Math.hypot(x,z)>50 &&
   Math.hypot(x-NEW_MAP_LAKE_LAYOUT.x,z-NEW_MAP_LAKE_LAYOUT.z)>NEW_MAP_LAKE_LAYOUT.radius+2
