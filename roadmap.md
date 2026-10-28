@@ -20,6 +20,19 @@
 - [x] Optimized profile/save RLS policies with scalar auth.uid() checks; Supabase security and performance advisors now return no findings
 - [x] Recorded the RLS policy optimization in supabase/migrations/
 
+## Phase 0 — safety net and world fixes
+- [x] Correct NEW MAP walking/vehicle bounds to use the canonical +/-180 world limits instead of the old +/-88 clamp
+- [x] Add NEW MAP collision checks for building footprints, lake/harbour water and map boundaries
+- [x] Fix residential shop-sign instance capacity and correct the airport sign
+- [x] Reduce duplicate NEW MAP traffic rendering to one visible traffic layer
+- [x] Keep the NEW MAP sky inside the camera far plane; allow `?hd=0` to disable the HD sky
+- [x] Reuse the day/night background color instead of allocating a new color on every frame
+- [x] Remove duplicate Umuahia building labels
+- [x] Auto-select a starting graphics quality from device memory, CPU cores and screen size while preserving the saved manual override
+- [x] Add a development-only renderer overlay for FPS, draw calls, triangles and texture count
+- [ ] Run typecheck, lint, tests and production build in a full project environment
+- [ ] Browser-test NEW MAP airport, port, lake, university and boundary movement on foot and in vehicles
+
 ## Remaining work
 - [ ] Confirm email sign-up behavior against the project's actual Auth provider configuration
 - [ ] Run the latest build, lint and unit tests after the account/cloud-save changes
