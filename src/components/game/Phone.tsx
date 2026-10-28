@@ -658,7 +658,9 @@ function RideApp() {
   const driving = useGame((s) => s.driving);
   const rideRequest = useGame((s) => s.rideRequest);
   const requestRide = useGame((s) => s.requestRide);
-  const [notice, setNotice] = useState("");\n  const [skipFade, setSkipFade] = useState(false);\n  const distance = waypoint ? Math.hypot(waypoint.x-g.playerPos.x, waypoint.z-g.playerPos.z) : 0;
+  const [notice, setNotice] = useState("");
+  const [skipFade, setSkipFade] = useState(false);
+  const distance = waypoint ? Math.hypot(waypoint.x-g.playerPos.x, waypoint.z-g.playerPos.z) : 0;
 
   const book = (service: "ride" | "bike" | "private" | "danfo" | "keke") => {
     if (!waypoint) { setNotice("Open the Map app and tap a destination first."); return; }
@@ -669,7 +671,8 @@ function RideApp() {
     useGame.getState().closePhone();
   };
 
-  return <div className="relative flex flex-col gap-3 p-3 text-sm">\n    {skipFade && <div className="fixed inset-0 z-[100] bg-black" aria-label="Arriving at destination" />}
+  return <div className="relative flex flex-col gap-3 p-3 text-sm">
+    {skipFade && <div className="fixed inset-0 z-[100] bg-black" aria-label="Arriving at destination" />}
     <div className="rounded-2xl border border-sky-300/20 bg-gradient-to-br from-[#123346] to-[#111923] p-4">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-200"><MapPin className="h-3.5 w-3.5" /> Lagos Ride</div>
       <div className="mt-1 text-lg font-bold text-white">Where to?</div>
