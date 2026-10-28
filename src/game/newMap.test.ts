@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, validateNewMapLayout } from "./newMap";
+import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_BUILDINGS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, isNewMapBlocked, validateNewMapLayout } from "./newMap";
 
 describe("NEW MAP layout", () => {
   it("keeps every planned building, stall, tree and hill clear of roads and one another", () => {
@@ -27,6 +27,20 @@ describe("NEW MAP layout", () => {
     for (const building of innerCity) {
       expect(NEW_MAP_POIS.some(poi => poi.buildingId === building.id && poi.label === building.label)).toBe(true);
     }
+  });
+
+  it("blocks map boundaries, building footprints and water while keeping door approaches open", () => {
+    expect(isNewMapBlocked(NEW_MAP_BOUNDS.minX - 1, 0)).toBe(true);
+    expect(isNewMapBlocked(NEW_MAP_BOUNDS.maxX + 1, 0)).toBe(true);
+
+    const tower = NEW_MAP_BUILDINGS.find((building) => building.id === "tower-a")!;
+    expect(isNewMapBlocked(tower.x, tower.z)).toBe(true);
+
+    const university = NEW_MAP_BUILDINGS.find((building) => building.id === "university")!;
+    expect(isNewMapBlocked(university.doorX!, university.doorZ!, 0.4)).toBe(false);
+
+    expect(isNewMapBlocked(NEW_MAP_LAKE_LAYOUT.x, NEW_MAP_LAKE_LAYOUT.z)).toBe(true);
+    expect(isNewMapBlocked(NEW_MAP_PORT_WATER.x, NEW_MAP_PORT_WATER.z)).toBe(true);
   });
 
   it("derives service POIs from their canonical building doors", () => {
