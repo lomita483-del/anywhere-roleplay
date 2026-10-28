@@ -16,7 +16,7 @@ function PropBatch({items}:{items:Prop[]}) {
   }),[items]);
   useEffect(()=>{if(!ref.current)return;matrices.forEach((m,i)=>ref.current!.setMatrixAt(i,m));ref.current.instanceMatrix.needsUpdate=true;ref.current.computeBoundingSphere()},[matrices]);
   if(!items.length)return null;
-  return <instancedMesh ref={ref} args={[undefined,undefined,items.length]} castShadow receiveShadow><boxGeometry args={[1,1,1]}/><meshStandardMaterial color={items[0]?.color??"#777"} roughness={0.82}/></instancedMesh>;
+  return <instancedMesh ref={ref} args={[undefined,undefined,items.length]} castShadow receiveShadow>{items[0]?.type==="plant"?<coneGeometry args={[0.5,1,8]}/>:items[0]?.type==="stove"||items[0]?.type==="pool"?<cylinderGeometry args={[0.5,0.5,1,12]}/>:items[0]?.type==="seat"?<cylinderGeometry args={[0.5,0.5,1,10]}/>:<boxGeometry args={[1,1,1]}/>}<meshStandardMaterial color={items[0]?.color??"#777"} roughness={0.82}/></instancedMesh>;
 }
 function Npc({npc,index}:{npc:{role:string;x:number;z:number;lines:string[]};index:number}) {
   const group=useRef<THREE.Group>(null);const [line,setLine]=useState(0);
