@@ -416,7 +416,7 @@ function LagosResidentialDistrict() {
     <instancedMesh ref={gates} args={[undefined, undefined, homes.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={0.35} roughness={0.55} /></instancedMesh>
     <instancedMesh ref={shopFronts} args={[undefined, undefined, Math.ceil(homes.length/8)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.15} roughness={.32} /></instancedMesh>
     <instancedMesh ref={rollerDoors} args={[undefined, undefined, Math.ceil(homes.length/8)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" metalness={.2} roughness={.68} /></instancedMesh>
-    <instancedMesh ref={shopSigns} args={[undefined, undefined, homes.length/8]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.7} /></instancedMesh>
+    <instancedMesh ref={shopSigns} args={[undefined, undefined, Math.ceil(homes.length/8)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={.7} /></instancedMesh>
     <instancedMesh ref={laundry} args={[undefined, undefined, Math.floor(homes.length/3)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#ffffff" roughness={0.8} /></instancedMesh>
     <Html position={[NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!.x, 22, NEW_MAP_DISTRICTS.find(d=>d.id==="residential")!.z-18]} center distanceFactor={30} style={{pointerEvents:"none"}}><div style={{padding:"5px 9px",whiteSpace:"nowrap",border:"1px solid #e0bd70",borderRadius:5,background:"#071923e8",color:"#fff0c8",fontSize:10,fontWeight:900,letterSpacing:1.6}}>RESIDENTIAL DISTRICT</div></Html>
   </>;
@@ -592,7 +592,7 @@ function CityNamedTraffic() {
   const refs=useRef<(THREE.Group|null)[]>([]);
   const quality=useGame(s=>s.graphicsQuality);
   const models=useMemo(()=>["danfo","taxi","sedan","suv","police","keke","danfo","taxi","sedan","suv"],[]);
-  const count=quality==="low"?3:quality==="high"?10:6;
+  const count=quality==="low"?2:quality==="high"?8:4;
   const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
   useFrame((state)=>{
     const t=state.clock.elapsedTime;
@@ -858,7 +858,7 @@ function CityEcosystem() {
         <mesh position={[0, 0.15, 0]}><boxGeometry args={[2.5, 0.16, 12]} /><meshStandardMaterial color="#d6dbd9" /></mesh>
         <mesh position={[0, 0.7, 0]}><boxGeometry args={[2, 0.2, 1.2]} /><meshStandardMaterial color="#7fa9b8" /></mesh>
       </group>)}
-      <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>LAGOS INTERNATIONAL AIRPORT</div></Html>
+      <Html position={[0, 8, 60]} center distanceFactor={40} style={{ pointerEvents: "none" }}><div style={{ whiteSpace: "nowrap", padding: "5px 10px", color: "#fff0c8", background: "#071923e8", border: "1px solid #d7b66c", fontWeight: 900, letterSpacing: 2, fontSize: 11 }}>NEW MAP INTERNATIONAL AIRPORT</div></Html>
     </group>
     {/* University sports court and landscaped quad. */}
     <group position={[NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.x+13, 0, NEW_MAP_BUILDINGS.find(b=>b.id==="university")!.z+16]}>
@@ -894,7 +894,6 @@ function CityEcosystem() {
     </Html>
     <CityTrees />
     {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
-    <CityTraffic />
     <CityNamedTraffic />
   </>;
 }
@@ -926,7 +925,7 @@ function StadiumPlaza() {
   </>;
 }
 
-function NewMapSky() { return <mesh frustumCulled={false} renderOrder={-1000}><sphereGeometry args={[480,32,20]}/><shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={`varying float vSkyY; void main(){vSkyY=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`} fragmentShader={`varying float vSkyY; void main(){float t=smoothstep(-0.08,0.72,vSkyY);vec3 horizon=vec3(0.78,0.86,0.87);vec3 zenith=vec3(0.20,0.43,0.66);vec3 col=mix(horizon,zenith,t);gl_FragColor=vec4(col,1.0);}`}/></mesh>; }
+function NewMapSky() { return <mesh frustumCulled={false} renderOrder={-1000}><sphereGeometry args={[390,32,20]}/><shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={`varying float vSkyY; void main(){vSkyY=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`} fragmentShader={`varying float vSkyY; void main(){float t=smoothstep(-0.08,0.72,vSkyY);vec3 horizon=vec3(0.78,0.86,0.87);vec3 zenith=vec3(0.20,0.43,0.66);vec3 col=mix(horizon,zenith,t);gl_FragColor=vec4(col,1.0);}`}/></mesh>; }
 export default function NewMapWorld() {
   const players = useMemo<MatchPlayerData[]>(() => {
     const home: [number, number][] = [
@@ -940,10 +939,11 @@ export default function NewMapWorld() {
 
   const enterStadium = () => useGame.getState().enterStadium();
   const stadiumMode = useGame((s) => s.stadiumMode);
+  const hdEnabled = typeof window === "undefined" || new URLSearchParams(window.location.search).get("hd") !== "0";
 
   return (
     <group>
-      <NewMapSky />
+      {hdEnabled && <NewMapSky />}
       {/* The entire city is intentionally compact so destinations are close together. */}
       <group scale={[NEW_MAP_SCALE, NEW_MAP_SCALE, NEW_MAP_SCALE]}>
         {/* Named, connected districts with S-curves and a U-shaped stadium boulevard. */}
