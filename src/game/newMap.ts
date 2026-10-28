@@ -95,6 +95,19 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:82,z:132,w:12,d:9,h:7,color:"#c7b89c",doorSide:"west"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-116,w:9,d:7,h:4,color:"#d7b37a",doorSide:"east"},
  {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"east"},
+
+ // Walkable inner-ring neighbourhood: small shops and food spots make the stadium district feel lived-in.
+ ...[
+  {id:"inner-shop-nw",label:"UNITY MINI MART",kind:"shop",district:"market",x:-48,z:-32,w:8,d:7,h:5,color:"#d8c6a4",doorSide:"south" as const},
+  {id:"inner-buka-nw",label:"MAMA CHINYERE BUKA",kind:"mama-put",district:"market",x:-32,z:-32,w:7,d:6,h:4,color:"#d8a66d",doorSide:"south" as const},
+  {id:"inner-shop-ne",label:"CITY PHONE & ACCESSORIES",kind:"shop",district:"civic",x:32,z:-32,w:8,d:7,h:5,color:"#b7c9c2",doorSide:"south" as const},
+  {id:"inner-cafe-ne",label:"GOLDEN PALM CAFE",kind:"mama-put",district:"civic",x:48,z:-32,w:7,d:6,h:4,color:"#d1b58a",doorSide:"south" as const},
+  {id:"inner-shop-sw",label:"NEIGHBOURHOOD PROVISIONS",kind:"shop",district:"university",x:-48,z:32,w:8,d:7,h:5,color:"#c5d0bd",doorSide:"north" as const},
+  {id:"inner-buka-sw",label:"CORNER JOLLOF SPOT",kind:"mama-put",district:"university",x:-32,z:32,w:7,d:6,h:4,color:"#c98f5f",doorSide:"north" as const},
+  {id:"inner-shop-se",label:"QUICK FIX ELECTRONICS",kind:"shop",district:"residential",x:32,z:32,w:8,d:7,h:5,color:"#c3c8d4",doorSide:"north" as const},
+  {id:"inner-cafe-se",label:"PALM COURT EATERY",kind:"mama-put",district:"residential",x:48,z:32,w:7,d:6,h:4,color:"#d8c09b",doorSide:"north" as const},
+ ],
+
  ...Array.from({length:18},(_,i)=>({id:"home-"+i,label:i%3===0?"Walk-up Apartments":"Residential Home",kind:"residential",district:"residential",x:[106,134,162][i%3]!,z:[-70,-42,-14,14,42,70][Math.floor(i/3)]!,w:i%3===0?9:8,d:8,h:i%3===0?13:6.5,color:["#d9c9a8","#d7d4c8","#c9b39a"][i%3]!,doorSide:"south" as const})),
 ];
 export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
@@ -102,7 +115,7 @@ export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
  return {...b,doorX:b.x+(b.doorSide==="east"?doorOffset:b.doorSide==="west"?doorOffset:0),doorZ:b.z+(b.doorSide==="north"||b.doorSide==="south"?doorOffset:0)};
 });
 export const NEW_MAP_POIS: NewMapPoi[] = [
- ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
+ ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market","shop"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
  {id:"stadium",label:"CITY STADIUM",kind:"stadium",x:0,z:0},
  {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-120,z:142},
  {id:"atm-market",label:"MARKET ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorZ!,buildingId:"market"},
