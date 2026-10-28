@@ -84,12 +84,12 @@ export default function CityMapApp() {
     const xy=(x:number,z:number)=>screen(x,z,S);
     ctx.fillStyle="#102923";ctx.fillRect(0,0,S,S);
     if(city==="newmap"){
-      for(const d of NEW_MAP_DISTRICTS){const a=xy(d.x-d.w/2,d.z-d.d/2),b=xy(d.x+d.w/2,d.z+d.d/2);ctx.fillStyle=d.color;ctx.globalAlpha=.20;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}ctx.globalAlpha=1;ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";for(const d of NEW_MAP_DISTRICTS){const p=xy(d.x,d.z);ctx.font="800 10px system-ui,sans-serif";const w=ctx.measureText(d.label).width+18;ctx.fillStyle="rgba(3,16,20,.72)";ctx.beginPath();ctx.roundRect(p.x-w/2,p.y-9,w,18,8);ctx.fill();ctx.fillStyle="#d5e8df";ctx.fillText(d.label,p.x,p.y,Math.max(20,d.w*S/WORLD-8))}ctx.restore();
+      for(const d of NEW_MAP_DISTRICTS){const a=xy(d.x-d.w/2,d.z-d.d/2),b=xy(d.x+d.w/2,d.z+d.d/2);ctx.fillStyle=d.color;ctx.globalAlpha=.20;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}ctx.globalAlpha=1;
       ctx.fillStyle="#163e50";ctx.beginPath();let q=xy(-112,118);ctx.ellipse(q.x,q.y,27*S/WORLD,27*S/WORLD,0,0,Math.PI*2);ctx.fill();
       q=xy(110,142);ctx.fillStyle="#123d4d";ctx.fillRect(q.x-25*S/WORLD,q.y-24*S/WORLD,48*S/WORLD,36*S/WORLD);
       ctx.lineCap="round";ctx.lineJoin="round";
       for(const e of NEW_MAP_ROAD_GRAPH.edges){const draw=(color:string,w:number,dash:number[])=>{ctx.beginPath();e.points.forEach((p,i)=>{const a=xy(p[0],p[1]);i?ctx.lineTo(a.x,a.y):ctx.moveTo(a.x,a.y)});ctx.strokeStyle=color;ctx.lineWidth=Math.max(2,w*S/WORLD);ctx.setLineDash(dash);ctx.stroke()};draw("#243f3e",e.width+2,[]);draw("#536765",e.width,[]);draw("#e0dfc9",.45,[5,5])}
-      for(const j of NEW_MAP_ROAD_GRAPH.nodes){const a=xy(j.x,j.z);ctx.fillStyle="#34514a";ctx.beginPath();ctx.arc(a.x,a.y,Math.max(3,3*S/WORLD),0,Math.PI*2);ctx.fill()}
+      ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";for(const d of NEW_MAP_DISTRICTS){const p=xy(d.x,d.z);ctx.font="800 10px system-ui,sans-serif";const w=ctx.measureText(d.label).width+18;ctx.fillStyle="rgba(3,16,20,.72)";ctx.beginPath();ctx.roundRect(p.x-w/2,p.y-9,w,18,8);ctx.fill();ctx.fillStyle="#d5e8df";ctx.fillText(d.label,p.x,p.y,Math.max(20,d.w*S/WORLD-8))}ctx.restore();for(const j of NEW_MAP_ROAD_GRAPH.nodes){const a=xy(j.x,j.z);ctx.fillStyle="#34514a";ctx.beginPath();ctx.arc(a.x,a.y,Math.max(3,3*S/WORLD),0,Math.PI*2);ctx.fill()}
       for(const t of NEW_MAP_TREES){const a=xy(t.x,t.z);ctx.fillStyle=t.type==="palm"?"#72a878":"#3b785b";ctx.beginPath();ctx.arc(a.x,a.y,3.2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#1b463a";ctx.beginPath();ctx.arc(a.x+1,a.y+1,2.1,0,Math.PI*2);ctx.fill()}
       for(const stall of NEW_MAP_MARKET_STALLS){const a=xy(stall.x-stall.w/2,stall.z-stall.d/2),b=xy(stall.x+stall.w/2,stall.z+stall.d/2);ctx.fillStyle=stall.color;ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y)}
     } else {
