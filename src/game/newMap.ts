@@ -123,6 +123,38 @@ export const NEW_MAP_POIS: NewMapPoi[] = [
 ];
 export const NEW_MAP_BOUNDS = { minX: -180, maxX: 180, minZ: -180, maxZ: 180 };
 
+/** Collision checks use unscaled game-space coordinates (the render scale is applied by the scene). */
+export function isNewMapBlocked(x: number, z: number, radius = 0.5): boolean {
+  if (
+    x < NEW_MAP_BOUNDS.minX + radius ||
+    x > NEW_MAP_BOUNDS.maxX - radius ||
+    z < NEW_MAP_BOUNDS.minZ + radius ||
+    z > NEW_MAP_BOUNDS.maxZ - radius
+  ) return true;
+
+  // Keep players and vehicles out of building footprints while leaving the door approach clear.
+  if (NEW_MAP_BUILDINGS.some((building) =>
+    x + radius > building.x - building.w / 2 &&
+    x - radius < building.x + building.w / 2 &&
+    z + radius > building.z - building.d / 2 &&
+    z - radius < building.z + building.d / 2
+  )) return true;
+
+  // The lake and harbour are water volumes, not walkable terrain.
+  const lakeDx = x - NEW_MAP_LAKE_LAYOUT.x;
+  const lakeDz = z - NEW_MAP_LAKE_LAYOUT.z;
+  if (Math.hypot(lakeDx, lakeDz) < NEW_MAP_LAKE_LAYOUT.radius + radius) return true;
+
+  if (
+    x + radius > NEW_MAP_PORT_WATER.x - NEW_MAP_PORT_WATER.w / 2 &&
+    x - radius < NEW_MAP_PORT_WATER.x + NEW_MAP_PORT_WATER.w / 2 &&
+    z + radius > NEW_MAP_PORT_WATER.z - NEW_MAP_PORT_WATER.d / 2 &&
+    z - radius < NEW_MAP_PORT_WATER.z + NEW_MAP_PORT_WATER.d / 2
+  ) return true;
+
+  return false;
+}
+
 export interface NewMapTree {x:number;z:number;type:"round"|"palm";h:number;park?:string}
 export interface NewMapStall {x:number;z:number;w:number;d:number;id:string;color:string}
 export interface NewMapHill {x:number;z:number;w:number;d:number;h:number}
