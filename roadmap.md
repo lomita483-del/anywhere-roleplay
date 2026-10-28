@@ -30,7 +30,7 @@
 - [x] Remove duplicate Umuahia building labels
 - [x] Auto-select a starting graphics quality from device memory, CPU cores and screen size while preserving the saved manual override
 - [x] Add a development-only renderer overlay for FPS, draw calls, triangles and texture count
-- [ ] Run typecheck, lint, tests and production build in a full project environment
+- [x] Run typecheck, tests and production build in GitHub Actions (all passed for the Phase 0 source changes)\n- [ ] Resolve the repository-wide lint baseline: `bun run lint` currently reports 3,218 Prettier errors and 7 warnings across existing files; avoid mass-formatting unrelated files as part of Phase 0
 - [ ] Browser-test NEW MAP airport, port, lake, university and boundary movement on foot and in vehicles
 
 ## Remaining work
