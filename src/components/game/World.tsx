@@ -9,6 +9,7 @@ import {
 import { asphaltTexture, sidewalkTexture, groundTexture, facadeTexture, signTexture } from "@/game/textures";
 import { g } from "@/game/state";
 import { useGame } from "@/game/store";
+import { getGraphicsProfile } from "@/game/graphics";
 import LivingCity from "./LivingCity";
 
 const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
@@ -24,6 +25,17 @@ const SIGN_SIDES: Record<string, { dx: number; dz: number; ry: number }> = {
 };
 
 function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
+  const root = useRef<THREE.Group>(null);
+  const quality = useGame((s) => s.graphicsQuality);
+  const cullTimer = useRef(0);
+  useFrame((_, delta) => {
+    cullTimer.current += delta;
+    if (cullTimer.current < 0.4 || !root.current) return;
+    cullTimer.current = 0;
+    const distance = Math.hypot(g.playerPos.x - b.x, g.playerPos.z - b.z);
+    const cutoff = getGraphicsProfile(quality).buildingCullDistance;
+    root.current.visible = distance <= cutoff || (!!b.label && distance <= cutoff * 1.35);
+  });
   const facade = useMemo(() => facadeTexture("#ffffff", false), []);
   const windowMaterials = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const lightTimer = useRef(0);
@@ -45,7 +57,7 @@ function Building({ b }: { b: (typeof BUILDINGS)[number] }) {
   const sign = useMemo(() => (b.label ? signTexture(b.label, b.kind === "dealership" ? "#b98a1f" : b.kind === "police" ? "#2c4a7c" : b.kind === "bank" ? "#1f6b4a" : "#8a4a2a") : null), [b.label, b.kind]);
 
   return (
-    <group position={[b.x, 0, b.z]}>
+    <group ref={root} position={[b.x, 0, b.z]}>
       <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[b.w, b.h, b.d]} />
         <meshStandardMaterial map={facade} color={b.color} roughness={0.9} />
