@@ -4,6 +4,17 @@ import { BUILDINGS, WORLD, ROADS_X, ROADS_Z, ROAD_HALF, SIDEWALK } from "@/game/
 import { groundTexture, asphaltTexture, sidewalkTexture } from "@/game/textures";
 
 function UmuahiaBuilding({ b }: { b: (typeof BUILDINGS)[number] }) {
+  const root = useRef<THREE.Group>(null);
+  const quality = useGame((s) => s.graphicsQuality);
+  const cullTimer = useRef(0);
+  useFrame((_, delta) => {
+    cullTimer.current += delta;
+    if (cullTimer.current < 0.4 || !root.current) return;
+    cullTimer.current = 0;
+    const distance = Math.hypot(g.playerPos.x - b.x, g.playerPos.z - b.z);
+    const cutoff = getGraphicsProfile(quality).buildingCullDistance;
+    root.current.visible = distance <= cutoff || (!!b.label && distance <= cutoff * 1.35);
+  });
   const windowRows = Math.max(1, Math.floor((b.h - 1.5) / 3));
   const windowCols = Math.max(2, Math.floor((b.w - 2) / 3.2));
   const isCivic = b.kind === "civic";
@@ -11,7 +22,7 @@ function UmuahiaBuilding({ b }: { b: (typeof BUILDINGS)[number] }) {
   const isChurch = /CATHOLIC CHURCH/i.test(b.label ?? "");
   const isHospital = /HOSPITAL/i.test(b.label ?? "");
   const isTerminal = /BUS TERMINAL/i.test(b.label ?? "");
-  return <group position={[b.x, 0, b.z]}>
+  return <group ref={root} position={[b.x, 0, b.z]}>
     {!isStadium && <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
       <boxGeometry args={[b.w, b.h, b.d]} />
       <meshStandardMaterial color={b.color} roughness={0.88} />
