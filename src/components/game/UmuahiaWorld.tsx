@@ -1,7 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { Html } from "@react-three/drei";
 import { BUILDINGS, WORLD, ROADS_X, ROADS_Z, ROAD_HALF, SIDEWALK } from "@/game/city";
 import { groundTexture, asphaltTexture, sidewalkTexture } from "@/game/textures";
+import { g } from "@/game/state";
+import { useGame } from "@/game/store";
+import { getGraphicsProfile } from "@/game/graphics";
 
 function UmuahiaBuilding({ b }: { b: (typeof BUILDINGS)[number] }) {
   const root = useRef<THREE.Group>(null);
