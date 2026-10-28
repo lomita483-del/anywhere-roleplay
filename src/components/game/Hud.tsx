@@ -361,7 +361,7 @@ export default function Hud() {
       )}
 
       {!phoneOpen && !stadiumMode && <Joystick />}
-      {stadiumMode && <div className="pointer-events-auto absolute bottom-7 left-1/2 z-30 -translate-x-1/2"><button type="button" onClick={exitStadium} className="rounded-full border border-amber-200/70 bg-[#101820]/95 px-6 py-3 text-sm font-black tracking-wide text-amber-100 shadow-2xl shadow-black/50 active:scale-95">↗ EXIT STADIUM</button><div className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Spectator mode · Free entry</div></div>}
+      {stadiumMode && !phoneOpen && <div className="pointer-events-auto absolute bottom-7 left-1/2 z-30 -translate-x-1/2"><button type="button" onClick={exitStadium} className="rounded-full border border-amber-200/70 bg-[#101820]/95 px-6 py-3 text-sm font-black tracking-wide text-amber-100 shadow-2xl shadow-black/50 active:scale-95">↗ EXIT STADIUM</button><div className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Spectator mode · Free entry</div></div>}
       <Phone />
       {interiorTransition && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[60] bg-black" style={{ animation: "lagosInteriorFade 520ms ease-in-out forwards" }}><style>{`@keyframes lagosInteriorFade { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }`}</style></div>}
     </div>
