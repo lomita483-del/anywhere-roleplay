@@ -564,7 +564,7 @@ function buildRoadRoute(startX: number, startZ: number, destX: number, destZ: nu
   return raw.filter((point, index) => index === 0 || Math.hypot(point[0] - raw[index - 1]![0], point[1] - raw[index - 1]![1]) > 1);
 }
 
-function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: string } | null }) {
+function GpsRoute({ waypoint, isNewMap = false, worldScale = 1 }: { waypoint: { x: number; z: number; label: string } | null; isNewMap?: boolean; worldScale?: number }) {
   const glow = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#24ef91", transparent: true, opacity: 0.24 })), []);
   const route = useMemo(() => new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: "#57f5a9", transparent: true, opacity: 0.98 })), []);
   const beacon = useRef<THREE.Group>(null);
@@ -581,7 +581,8 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
       distanceTimer.current = 0;
       setDistance(Math.round(Math.hypot(waypoint.x - g.playerPos.x, waypoint.z - g.playerPos.z)));
     }
-    const points = buildRoadRoute(g.playerPos.x, g.playerPos.z, waypoint.x, waypoint.z).map(([x, z]) => new THREE.Vector3(x, 0.16, z));
+    const routePoints: [number, number][] = isNewMap ? [[g.playerPos.x, g.playerPos.z], [waypoint.x, waypoint.z]] : buildRoadRoute(g.playerPos.x, g.playerPos.z, waypoint.x, waypoint.z);
+    const points = routePoints.map(([x, z]) => new THREE.Vector3(x, 0.16, z));
     glow.geometry.setFromPoints(points);
     route.geometry.setFromPoints(points);
     if (beacon.current) {
@@ -592,7 +593,7 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   });
   if (!waypoint) return null;
   return (
-    <>
+    <group scale={worldScale}>
       <primitive object={glow} />
       <primitive object={route} />
       <group ref={beacon} position={[waypoint.x, 0, waypoint.z]}>
@@ -608,7 +609,7 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
           <div className="whitespace-nowrap rounded-lg border border-emerald-300/60 bg-[#04170f]/90 px-2.5 py-1 text-[10px] font-black text-emerald-100 shadow-[0_0_18px_rgba(53,242,154,.35)]">{waypoint.label} · {distance}m</div>
         </Html>
       </group>
-    </>
+    </group>
   );
 }
 
@@ -1062,7 +1063,7 @@ export default function GameWorld() {
       {!isNewMap && <Pedestrians />}
       {!isNewMap && <JobMarker />}
       {!isNewMap && <JobPickupVisual job={activeJob} />}
-      {!isNewMap && <GpsRoute waypoint={waypoint} />}
+      <GpsRoute waypoint={waypoint} isNewMap={isNewMap} worldScale={isNewMap ? NEW_MAP_SCALE : 1} />
       <RideDriver />
     </>
   );
