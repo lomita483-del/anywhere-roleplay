@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
 import { getInteriorDefinition } from "@/game/interiors";
+import { getGraphicsProfile } from "@/game/graphics";
 
 type Prop = {type:string;x:number;z:number;rotY:number;scale:[number,number,number];color:string};
 function PropBatch({items}:{items:Prop[]}) {
@@ -52,7 +53,7 @@ export default function InteriorWorld() {
     <mesh position={[w/2,1.75,0]} receiveShadow><boxGeometry args={[.18,3.5,d]}/><meshStandardMaterial color={def.wallColor} roughness={.92}/></mesh>
     <mesh position={[0,3.45,0]}><boxGeometry args={[w,.12,d]}/><meshStandardMaterial color={def.wallColor} transparent opacity={.18}/></mesh>
     {groups.map(group=><PropBatch key={group.key} items={group.items}/>)}
-    {def.npcs.slice(0,quality==="low"?1:def.npcs.length).map((n,i)=><Npc key={n.role+"-"+i} npc={n} index={i}/>)}
+    {def.npcs.slice(0,getGraphicsProfile(quality).interiorNpcCount).map((n,i)=><Npc key={n.role+"-"+i} npc={n} index={i}/>)}
     {def.hotspots.map(h=><group key={h.id} position={[h.x,.045,h.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.42,.55,20]}/><meshStandardMaterial color={def.accent} emissive={def.accent} emissiveIntensity={.9} side={THREE.DoubleSide}/></mesh>
       <Html position={[0,.15,0]} center distanceFactor={14} style={{pointerEvents:"none"}}><div className="whitespace-nowrap rounded-lg border border-emerald-200/30 bg-[#071319]/90 px-2 py-1 text-[11px] font-bold text-white">{h.label}</div></Html>
