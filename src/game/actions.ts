@@ -92,7 +92,7 @@ export function interact() {
       else { useGame.setState(state => ({ needs: { ...state.needs, health: 100, stress: Math.max(0,state.needs.stress-12) } })); s.radio("🩺 Check-up complete. Health restored."); }
     } else if (action === "startShift") {
       const jobMap: Record<string, any> = { security:"security", courier:"courier", "office-clerk":"retail", packer:"construction", loader:"construction", "dock-worker":"construction", "customs-clerk":"retail", teacher:"retail" };
-      const job = jobMap[value];
+      const job = value ? jobMap[value] : undefined;
       if (job) { s.acceptJob(job); s.radio("🧾 Shift started: " + hotspot.label + ". Follow the job target markers."); }
       else s.radio("This shift is not available yet.");
     } else if (action === "openModal") {
