@@ -3,6 +3,8 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/game/store";
+import { g } from "@/game/state";
+import { getGraphicsProfile } from "@/game/graphics";
 import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
@@ -176,6 +178,17 @@ function BigScreen({ z, rotate = false }: { z: number; rotate?: boolean }) {
 type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string };
 
 function CityBuilding({ b }: { b: CityBlock }) {
+  const root = useRef<THREE.Group>(null);
+  const quality = useGame((s) => s.graphicsQuality);
+  const cullTimer = useRef(0);
+  useFrame((_, delta) => {
+    cullTimer.current += delta;
+    if (cullTimer.current < 0.35 || !root.current) return;
+    cullTimer.current = 0;
+    const distance = Math.hypot(g.playerPos.x - b.x, g.playerPos.z - b.z);
+    const cutoff = getGraphicsProfile(quality).buildingCullDistance;
+    root.current.visible = distance <= cutoff || (!!b.label && distance <= cutoff * 1.35);
+  });
   const isHouse = b.h < 6;
   const windowRows = Math.max(1, Math.floor(b.h / 3.2));
   const windowCols = Math.max(2, Math.floor(b.w / 2.8));
@@ -194,7 +207,7 @@ function CityBuilding({ b }: { b: CityBlock }) {
   const roofColors = ["#934b37", "#4f5c66", "#a75f3d", "#596b56", "#6c5147"];
   const roofColor = roofColors[Math.abs(Math.round(b.x * 3 + b.z)) % roofColors.length]!;
   return (
-    <group position={[b.x, 0, b.z]}>
+    <group ref={root} position={[b.x, 0, b.z]}>
       {isHouse ? (
         <>
           {/* A small landscaped plot makes each home read as a real property, not a loose box. */}
