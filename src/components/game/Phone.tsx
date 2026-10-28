@@ -354,7 +354,6 @@ function InventoryApp() {
   </div>;
 }
 
-function MapApp() { return <CityMapApp />; }
 
 function RadarApp() {
   const [, refresh] = useState(0);
@@ -775,7 +774,6 @@ export default function Phone() {
     app === "jobs" ? <JobsApp /> :
     app === "garage" ? <GarageApp /> :
     app === "inventory" ? <InventoryApp /> :
-    app === "map" ? <MapApp /> :
     app === "radio" ? <RadioApp /> :
     app === "market" ? <MarketplaceApp /> :
     app === "wardrobe" ? <WardrobeApp /> :
