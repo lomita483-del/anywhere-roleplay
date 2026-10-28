@@ -15,6 +15,8 @@ const _c = new THREE.Color();
 function Rainfall({ active }: { active: boolean }) {
   const geometry = useMemo(() => new THREE.BufferGeometry(), []);
   const quality = useGame((s) => s.graphicsQuality);
+  const city = useGame((s) => s.city);
+  const worldScale = city === "newmap" ? NEW_MAP_SCALE : 1;
   const count = getGraphicsProfile(quality).rainfallCount;
   const offsets = useMemo(() => Array.from({ length: count }, () => ({ x: (Math.random() - 0.5) * 62, z: (Math.random() - 0.5) * 62, y: Math.random() * 24, speed: 12 + Math.random() * 12 })), [count]);
   const positions = useMemo(() => new Float32Array(count * 2 * 3), [count]);
@@ -28,11 +30,11 @@ function Rainfall({ active }: { active: boolean }) {
     offsets.forEach((drop, i) => {
       drop.y -= drop.speed * dt;
       if (drop.y < 0) drop.y = 18 + Math.random() * 10;
-      const x = g.playerPos.x + drop.x;
-      const z = g.playerPos.z + drop.z;
+      const x = (g.playerPos.x + drop.x) * worldScale;
+      const z = (g.playerPos.z + drop.z) * worldScale;
       const j = i * 6;
-      positions[j] = x; positions[j + 1] = drop.y; positions[j + 2] = z;
-      positions[j + 3] = x + 0.08; positions[j + 4] = drop.y + 0.65; positions[j + 5] = z - 0.04;
+      positions[j] = x; positions[j + 1] = drop.y * worldScale; positions[j + 2] = z;
+      positions[j + 3] = x + 0.08 * worldScale; positions[j + 4] = (drop.y + 0.65) * worldScale; positions[j + 5] = z - 0.04 * worldScale;
     });
     const attr = geometry.getAttribute("position") as THREE.BufferAttribute;
     attr.needsUpdate = true;
