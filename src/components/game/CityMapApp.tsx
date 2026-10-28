@@ -152,7 +152,7 @@ export default function CityMapApp() {
     if(driving){setNotice("Park your vehicle before booking a ride.");return}
     if(rideRequest){setNotice("Finish or cancel your current ride first.");return}
     if(!waypoint||waypoint.label!==selected.label)setWaypoint({x:selected.doorX,z:selected.doorZ,label:selected.label,kind:selected.kind});
-    const ok=requestRide(service==="walk"?"ride":service);
+    const ok=requestRide(service);
     if(!ok){setNotice("Booking failed. Check your cash and bank balance, or finish your current trip.");return}
     setNotice("Driver assigned. Watch the road for your pickup.");setRides(false);closePhone();
   };
