@@ -233,14 +233,30 @@ function AdminCommandSync() {
 }
 
 export default function GameCanvas() {
+  const phoneOpen = useGame((s) => s.phoneOpen);
+
+  useEffect(() => {
+    if (phoneOpen) {
+      // Clear any held movement input when the phone/map takes focus.
+      g.joy.x = 0;
+      g.joy.y = 0;
+    }
+  }, [phoneOpen]);
+
   return (
     <div className="fixed inset-0 touch-none select-none overflow-hidden">
-      <CloudSaveSync />\n      <AdminCommandSync />
-      <Canvas dpr={[1, 1.25]} camera={{ fov: 55, near: 0.5, far: 420, position: [-14, 6, 2] }} gl={{ antialias: true, powerPreference: "high-performance" }}>
+      <CloudSaveSync />
+      <AdminCommandSync />
+      <Canvas
+        dpr={[1, 1.25]}
+        camera={{ fov: 55, near: 0.5, far: 420, position: [-14, 6, 2] }}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+        style={{ pointerEvents: phoneOpen ? "none" : "auto", touchAction: "none" }}
+      >
         <Scene />
       </Canvas>
       <Hud />
-      <FirstDayTutorial />
+      {!phoneOpen && <FirstDayTutorial />}
     </div>
   );
 }
