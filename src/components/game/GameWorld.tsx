@@ -1173,4 +1173,4 @@ function proximityTick(st: ReturnType<typeof useGame.getState>) {
 }
 
 useGLTF.preload("/models/character.glb");
-for (const m of ["danfo", "sedan", "sports", "taxi", "suv", "police"]) useGLTF.preload(`/models/${m}.glb`);
+// Danfo and keke vehicles are procedural meshes; only preload the GLBs actually rendered by VehicleBody.\nfor (const m of ["sedan", "sports", "taxi", "suv", "police"]) useGLTF.preload(`/models/${m}.glb`);
