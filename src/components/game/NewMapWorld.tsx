@@ -944,7 +944,8 @@ function NewMapSky() {
   useFrame(() => {
     if (!material.current) return;
     const elevation = Math.sin(((g.time - 6) / 24) * Math.PI * 2);
-    material.current.uniforms.uDayFactor.value = THREE.MathUtils.clamp(elevation * 1.8 + 0.12, 0, 1);
+    const dayFactor = material.current.uniforms["uDayFactor"];
+    if (dayFactor) dayFactor.value = THREE.MathUtils.clamp(elevation * 1.8 + 0.12, 0, 1);
   });
   return (
     <mesh frustumCulled={false} renderOrder={-1000}>
