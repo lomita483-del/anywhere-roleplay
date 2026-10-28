@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { g } from "@/game/state";
 import { getInteriorDefinition } from "@/game/interiors";
 import InteriorWorld from "@/components/game/InteriorWorld";
-import { NEW_MAP_SCALE } from "@/game/newMap";
+import { NEW_MAP_SCALE, NEW_MAP_BOUNDS, isNewMapBlocked } from "@/game/newMap";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { enterBuilding, interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
@@ -885,16 +885,17 @@ export default function GameWorld() {
         v.vz = fdz * vLong + rdz * vLat;
         const nx = v.px + v.vx * dt;
         const nz = v.pz + v.vz * dt;
-        const targetDistrict = districtAt(nx, nz);
+        const targetDistrict = isNewMap ? null : districtAt(nx, nz);
         const districtOpen = !targetDistrict || (st.unlockedDistricts.includes(targetDistrict) && (targetDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
-        if (districtOpen && !isBlocked(nx, nz, 1.5)) {
+        const blocked = isNewMap ? isNewMapBlocked(nx, nz, 1.5) : isBlocked(nx, nz, 1.5);
+        if (districtOpen && !blocked) {
           v.px = nx;
           v.pz = nz;
         } else {
           v.vx *= -0.15;
           v.vz *= -0.15;
         }
-        const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(v.px, -88, 88), THREE.MathUtils.clamp(v.pz, -88, 88)] : clampWorld(v.px, v.pz, 2);
+        const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(v.px, NEW_MAP_BOUNDS.minX + 2, NEW_MAP_BOUNDS.maxX - 2), THREE.MathUtils.clamp(v.pz, NEW_MAP_BOUNDS.minZ + 2, NEW_MAP_BOUNDS.maxZ - 2)] : clampWorld(v.px, v.pz, 2);
         v.px = cw[0];
         v.pz = cw[1];
         v.fuel = Math.max(0, fuelAvailable - (Math.abs(vLong) > 1 ? dt * (0.05 + Math.abs(vLong) * 0.006) : 0));
@@ -928,19 +929,21 @@ export default function GameWorld() {
           if (k.has("Space")) g.adminFlyHeight = Math.min(180, g.adminFlyHeight + speed * dt);
           if (k.has("ControlLeft") || k.has("ControlRight")) g.adminFlyHeight = Math.max(0, g.adminFlyHeight - speed * dt);
         } else {
-          const xDistrict = districtAt(nx, g.playerPos.z);
+          const xDistrict = isNewMap ? null : districtAt(nx, g.playerPos.z);
           const xOpen = !xDistrict || (st.unlockedDistricts.includes(xDistrict) && (xDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
-          if (xOpen && !isBlocked(nx, g.playerPos.z, 0.5)) g.playerPos.x = nx;
-          const zDistrict = districtAt(g.playerPos.x, nz);
+          const xBlocked = isNewMap ? isNewMapBlocked(nx, g.playerPos.z, 0.5) : isBlocked(nx, g.playerPos.z, 0.5);
+          if (xOpen && !xBlocked) g.playerPos.x = nx;
+          const zDistrict = isNewMap ? null : districtAt(g.playerPos.x, nz);
           const zOpen = !zDistrict || (st.unlockedDistricts.includes(zDistrict) && (zDistrict !== "Eko Atlantic" || st.unlockedDistricts.includes("Lekki / Victoria Island")));
-          if (zOpen && !isBlocked(g.playerPos.x, nz, 0.5)) g.playerPos.z = nz;
+          const zBlocked = isNewMap ? isNewMapBlocked(g.playerPos.x, nz, 0.5) : isBlocked(g.playerPos.x, nz, 0.5);
+          if (zOpen && !zBlocked) g.playerPos.z = nz;
         }
         if (st.interior && !g.adminFlying) {
           // Keep the avatar inside the room boundaries while exploring an interior.
           g.playerPos.x = THREE.MathUtils.clamp(g.playerPos.x, 98.8, 109.2);
           g.playerPos.z = THREE.MathUtils.clamp(g.playerPos.z, 99.2, 108.5);
         } else {
-          const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(g.playerPos.x, -88, 88), THREE.MathUtils.clamp(g.playerPos.z, -88, 88)] : clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
+          const cw: [number, number] = isNewMap ? [THREE.MathUtils.clamp(g.playerPos.x, NEW_MAP_BOUNDS.minX + 0.5, NEW_MAP_BOUNDS.maxX - 0.5), THREE.MathUtils.clamp(g.playerPos.z, NEW_MAP_BOUNDS.minZ + 0.5, NEW_MAP_BOUNDS.maxZ - 0.5)] : clampWorld(g.playerPos.x, g.playerPos.z, 0.5);
           g.playerPos.x = cw[0];
           g.playerPos.z = cw[1];
         }
