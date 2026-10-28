@@ -4,6 +4,8 @@ import { Sky } from "@react-three/drei";
 import * as THREE from "three";
 import { g, advanceTime } from "@/game/state";
 import { useGame } from "@/game/store";
+import { getGraphicsProfile } from "@/game/graphics";
+import { NEW_MAP_SCALE } from "@/game/newMap";
 
 const DAY_COLOR = new THREE.Color("#cfe4ee");
 const DUSK_COLOR = new THREE.Color("#e8b78a");
@@ -12,9 +14,10 @@ const _c = new THREE.Color();
 
 function Rainfall({ active }: { active: boolean }) {
   const geometry = useMemo(() => new THREE.BufferGeometry(), []);
-  const count = 220;
-  const offsets = useMemo(() => Array.from({ length: count }, () => ({ x: (Math.random() - 0.5) * 62, z: (Math.random() - 0.5) * 62, y: Math.random() * 24, speed: 12 + Math.random() * 12 })), []);
-  const positions = useMemo(() => new Float32Array(count * 2 * 3), []);
+  const quality = useGame((s) => s.graphicsQuality);
+  const count = getGraphicsProfile(quality).rainfallCount;
+  const offsets = useMemo(() => Array.from({ length: count }, () => ({ x: (Math.random() - 0.5) * 62, z: (Math.random() - 0.5) * 62, y: Math.random() * 24, speed: 12 + Math.random() * 12 })), [count]);
+  const positions = useMemo(() => new Float32Array(count * 2 * 3), [count]);
   useEffect(() => {
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return () => geometry.dispose();
@@ -46,6 +49,8 @@ export default function DayNight() {
   const { scene } = useThree();
   const [rainActive, setRainActive] = useState(false);
   const city = useGame((s) => s.city);
+  const quality = useGame((s) => s.graphicsQuality);
+  const shadowMapSize = getGraphicsProfile(quality).shadowMapSize;
   useEffect(() => { if (city === "newmap") { g.raining = false; g.powerOutage = false; setRainActive(false); } }, [city]);
 
   useEffect(() => {
@@ -103,8 +108,14 @@ export default function DayNight() {
       skyRef.current.material.uniforms.sunPosition.value.set(sunX, sunY, 40);
     }
 
+    const worldScale = city === "newmap" ? NEW_MAP_SCALE : 1;
+    const playerX = g.playerPos.x * worldScale;
+    const playerZ = g.playerPos.z * worldScale;
     if (sunRef.current) {
-      sunRef.current.position.set(sunX * 0.5, Math.max(elev, 0.1) * 80 + 12, 40);
+      // Follow the active player so the shadow camera stays useful as the player explores.
+      sunRef.current.position.set(playerX + sunX * 0.5 * worldScale, Math.max(elev, 0.1) * 80 * worldScale + 12, playerZ + 40 * worldScale);
+      sunRef.current.target.position.set(playerX, 0, playerZ);
+      sunRef.current.target.updateMatrixWorld();
       sunRef.current.intensity = Math.max(0.08, elev) * 2.1;
       const warm = 1 - Math.min(1, Math.max(0, elev) * 2.2);
       sunRef.current.color.setRGB(1, 0.92 - warm * 0.25, 0.78 - warm * 0.35);
@@ -137,8 +148,8 @@ export default function DayNight() {
         castShadow
         intensity={2}
         position={[60, 80, 40]}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={shadowMapSize}
+        shadow-mapSize-height={shadowMapSize}
         shadow-camera-left={-40}
         shadow-camera-right={40}
         shadow-camera-top={40}
