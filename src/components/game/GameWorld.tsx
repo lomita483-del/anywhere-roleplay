@@ -612,17 +612,18 @@ function GpsRoute({ waypoint }: { waypoint: { x: number; z: number; label: strin
   );
 }
 
-function RemotePlayerAvatar({ player, variant }: { player: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }; variant: number }) {
+function RemotePlayerAvatar({ player, variant, worldScale = 1 }: { player: { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string } }; variant: number; worldScale?: number }) {
   const ref = useRef<THREE.Group>(null);
+  const target = useRef(new THREE.Vector3());
   const topColors: Record<string, string> = { streetwear: "#e7e4e0", formal: "#202b3c", agbada: "#d8b24c", uniform: "#263d66" };
   useFrame((_, delta) => {
     if (!ref.current) return;
-    const target = new THREE.Vector3(player.x, player.y, player.z);
-    ref.current.position.lerp(target, 1 - Math.exp(-Math.min(delta, 0.05) * 10));
+    target.current.set(player.x, player.y, player.z);
+    ref.current.position.lerp(target.current, 1 - Math.exp(-Math.min(delta, 0.05) * 10));
     ref.current.rotation.y = THREE.MathUtils.damp(ref.current.rotation.y, player.yaw, 8, delta);
   });
   return (
-    <group ref={ref} position={[player.x, player.y, player.z]} rotation-y={player.yaw}>
+    <group ref={ref} position={[player.x, player.y, player.z]} scale={worldScale} rotation-y={player.yaw}>
       {player.vehicle ? <VehicleBody model={player.vehicle} /> : <PedBody variant={variant} gender={player.outfit?.gender ?? "male"} skinTone={player.outfit?.skinTone ?? "#986344"} topColor={topColors[player.outfit?.top ?? ""] ?? "#c35c3e"} hairColor={player.outfit?.hairColor ?? "#171411"} />}
       <Html position={[0, player.vehicle ? 2.8 : 3.05, 0]} center distanceFactor={12} occlude={false}>
         <div className="pointer-events-none whitespace-nowrap rounded-full border border-[#eab308]/55 bg-[#07131d]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg shadow-black/30">
@@ -1041,8 +1042,8 @@ export default function GameWorld() {
         <CharacterBody />
       </group>
       <InteriorWorld />
-      {!isNewMap && Object.entries(remotePlayers).map(([id, player], index) => (
-        <RemotePlayerAvatar key={id} player={player} variant={index + 1} />
+      {Object.entries(remotePlayers).map(([id, player], index) => (
+        <RemotePlayerAvatar key={id} player={player} variant={index + 1} worldScale={isNewMap ? NEW_MAP_SCALE : 1} />
       ))}
       {!isNewMap && VEHICLE_SPAWNS.map((v) => (
         <ParkedVehicle key={v.id} id={v.id} model={v.model} register={register} />
