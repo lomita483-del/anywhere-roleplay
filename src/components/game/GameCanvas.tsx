@@ -2,6 +2,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SAVE_KEY, useGame } from "@/game/store";
+import * as THREE from "three";
+import { getGraphicsProfile } from "@/game/graphics";
 import { g } from "@/game/state";
 import { VEHICLE_CATALOG } from "@/game/store";
 import Scene from "./Scene";
@@ -281,6 +283,8 @@ function DevPerformanceOverlay() {
 
 export default function GameCanvas() {
   const phoneOpen = useGame((s) => s.phoneOpen);
+  const graphicsQuality = useGame((s) => s.graphicsQuality);
+  const graphicsProfile = getGraphicsProfile(graphicsQuality);
 
   useEffect(() => {
     if (phoneOpen) {
@@ -295,9 +299,10 @@ export default function GameCanvas() {
       <CloudSaveSync />
       <AdminCommandSync />
       <Canvas
-        dpr={[1, 1.25]}
+        dpr={graphicsProfile.dpr}
+        shadows={graphicsQuality !== "low"}
         camera={{ fov: 55, near: 0.5, far: 420, position: [-14, 6, 2] }}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        gl={{ antialias: graphicsQuality !== "low", powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping }}
         style={{ pointerEvents: phoneOpen ? "none" : "auto", touchAction: "none" }}
       >
         <Scene />
