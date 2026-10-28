@@ -62,5 +62,5 @@ export function getInteriorKind(label: string, kind?: string): string {
 }
 export function getInteriorDefinition(label: string, kind?: string): InteriorDef {
   const key = getInteriorKind(label,kind);
-  return INTERIOR_DEFS[key] ?? INTERIOR_DEFS["generic"];
+  return INTERIOR_DEFS[key] ?? INTERIOR_DEFS["generic"]!;
 }
