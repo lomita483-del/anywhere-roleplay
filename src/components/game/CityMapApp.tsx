@@ -21,7 +21,9 @@ const RIDE_OPTIONS: RideOption[] = [
   {id:"walk",title:"Walk",price:0,rate:0,eta:d=>Math.ceil(d/1.4),detail:"Free · take the streets"},
   {id:"ride",title:"Book taxi",price:1600,rate:4.5,eta:d=>Math.max(2,Math.ceil(d/8)+3),detail:"City taxi · comfortable"},
   {id:"bike",title:"Book bike man / okada",price:700,rate:3.2,eta:d=>Math.max(1,Math.ceil(d/16)+2),detail:"Fastest through traffic"},
-  {id:"private",title:"My private driver",price:4200,rate:10,eta:d=>Math.max(2,Math.ceil(d/9)+3),detail:"Private sedan · premium"},\n  {id:"danfo",title:"Book danfo",price:300,rate:1.1,eta:d=>Math.max(4,Math.ceil(d/4)+5),detail:"Cheapest · slower shared ride"},\n  {id:"keke",title:"Book keke",price:500,rate:1.8,eta:d=>Math.max(3,Math.ceil(d/6)+4),detail:"Local three-wheeler"},
+  {id:"private",title:"My private driver",price:4200,rate:10,eta:d=>Math.max(2,Math.ceil(d/9)+3),detail:"Private sedan · premium"},
+  {id:"danfo",title:"Book danfo",price:300,rate:1.1,eta:d=>Math.max(4,Math.ceil(d/4)+5),detail:"Cheapest · slower shared ride"},
+  {id:"keke",title:"Book keke",price:500,rate:1.8,eta:d=>Math.max(3,Math.ceil(d/6)+4),detail:"Local three-wheeler"},
 ];
 
 export default function CityMapApp() {
@@ -55,7 +57,8 @@ export default function CityMapApp() {
   const [muted,setMuted] = useState(false);
   const [tick,setTick] = useState(0);
   const [now,setNow] = useState(()=>new Date());
-  const [routeToEnter,setRouteToEnter] = useState(false);\n  const [skipFade,setSkipFade] = useState(false);
+  const [routeToEnter,setRouteToEnter] = useState(false);
+  const [skipFade,setSkipFade] = useState(false);
   const places = useMemo(() => getMapPlaces(city), [city]);
   const playerDistance = selected ? Math.hypot(selected.doorX-g.playerPos.x,selected.doorZ-g.playerPos.z) : 0;
   const etaWalk = Math.max(1,Math.ceil(playerDistance/1.4));
@@ -189,7 +192,8 @@ export default function CityMapApp() {
       {rides&&<div className="mt-3 space-y-2">{RIDE_OPTIONS.map(opt=><button key={opt.id} onClick={()=>startRide(opt.id)} className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/15 px-3 text-left"><span><span className="block text-sm font-bold">{opt.title}</span><span className="block text-xs text-slate-300">{opt.detail} · ETA {opt.eta(playerDistance)} min</span></span><span className="text-sm font-extrabold text-emerald-200">{opt.price?cashLabel(opt.price + Math.ceil(playerDistance*opt.rate)):"FREE"}</span></button>)}
       <button onClick={()=>{if(!owned.length){setNotice("You don't own a vehicle yet. Open Garage to buy one.");openPhone("garage");return}setWaypoint({x:selected.doorX,z:selected.doorZ,label:selected.label,kind:selected.kind});openPhone("garage")}} className="flex min-h-11 w-full items-center justify-between rounded-xl border border-white/10 px-3 text-sm font-bold"><span>Drive myself</span><span className="text-xs text-emerald-200">{owned.length?"Choose owned vehicle":"Buy a vehicle"}</span></button></div>}
     </div>}
-    {rideRequest&&<div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2.5 text-xs text-sky-100"><div>{rideRequest.status==="approaching"?"Driver arriving":"On the way"} · {rideRequest.destination.label}</div><div className="mt-2 flex gap-2">{rideRequest.status==="approaching"&&<button onClick={()=>{useGame.getState().earn(rideRequest.fare,"cash");useGame.getState().setRideRequest(null);setNotice("Ride cancelled before pickup. Fare refunded.");}} className="min-h-10 rounded-lg border border-white/15 px-3 font-bold">Cancel</button>}{rideRequest.status==="travelling"&&<button onClick={()=>{setSkipFade(true);window.setTimeout(()=>{g.playerPos.set(rideRequest.destination.x,0,rideRequest.destination.z);g.ridingPassenger=false;useGame.getState().setRideRequest(null);useGame.getState().setWaypoint(null);setSkipFade(false)},450)}} className="min-h-10 rounded-lg bg-emerald-300 px-3 font-extrabold text-[#05231b]">Skip · arrive now</button>}</div></div>}\n    {skipFade&&<div className="fixed inset-0 z-[100] bg-black transition-opacity duration-500" aria-label="Arriving at destination"/>}
+    {rideRequest&&<div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-2.5 text-xs text-sky-100"><div>{rideRequest.status==="approaching"?"Driver arriving":"On the way"} · {rideRequest.destination.label}</div><div className="mt-2 flex gap-2">{rideRequest.status==="approaching"&&<button onClick={()=>{useGame.getState().earn(rideRequest.fare,"cash");useGame.getState().setRideRequest(null);setNotice("Ride cancelled before pickup. Fare refunded.");}} className="min-h-10 rounded-lg border border-white/15 px-3 font-bold">Cancel</button>}{rideRequest.status==="travelling"&&<button onClick={()=>{setSkipFade(true);window.setTimeout(()=>{g.playerPos.set(rideRequest.destination.x,0,rideRequest.destination.z);g.ridingPassenger=false;useGame.getState().setRideRequest(null);useGame.getState().setWaypoint(null);setSkipFade(false)},450)}} className="min-h-10 rounded-lg bg-emerald-300 px-3 font-extrabold text-[#05231b]">Skip · arrive now</button>}</div></div>}
+    {skipFade&&<div className="fixed inset-0 z-[100] bg-black transition-opacity duration-500" aria-label="Arriving at destination"/>}
     <div className="sticky bottom-0 z-10 flex items-center justify-around rounded-2xl border border-white/10 bg-[#102326]/95 p-1.5 backdrop-blur"><button onClick={()=>openPhone("home")} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><Home size={17}/>Home</button><button onClick={()=>openPhone("market")} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><ShoppingBag size={17}/>Buy</button><span className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-bold text-emerald-200"><MapPin size={17}/>Map</span><button onClick={closePhone} className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-slate-200"><X size={17}/>Phone</button></div>
   </div>;
 }
