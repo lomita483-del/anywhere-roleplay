@@ -939,7 +939,27 @@ function StadiumPlaza() {
   </>;
 }
 
-function NewMapSky() { return <mesh frustumCulled={false} renderOrder={-1000}><sphereGeometry args={[390,32,20]}/><shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={`varying float vSkyY; void main(){vSkyY=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`} fragmentShader={`varying float vSkyY; void main(){float t=smoothstep(-0.08,0.72,vSkyY);vec3 horizon=vec3(0.78,0.86,0.87);vec3 zenith=vec3(0.20,0.43,0.66);vec3 col=mix(horizon,zenith,t);gl_FragColor=vec4(col,1.0);}`}/></mesh>; }
+function NewMapSky() {
+  const material = useRef<THREE.ShaderMaterial>(null);
+  useFrame(() => {
+    if (!material.current) return;
+    const elevation = Math.sin(((g.time - 6) / 24) * Math.PI * 2);
+    material.current.uniforms.uDayFactor.value = THREE.MathUtils.clamp(elevation * 1.8 + 0.12, 0, 1);
+  });
+  return (
+    <mesh frustumCulled={false} renderOrder={-1000}>
+      <sphereGeometry args={[390, 32, 20]} />
+      <shaderMaterial
+        ref={material}
+        uniforms={{ uDayFactor: { value: 1 } }}
+        side={THREE.BackSide}
+        depthWrite={false}
+        vertexShader={`varying float vSkyY; void main(){vSkyY=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`}
+        fragmentShader={`uniform float uDayFactor; varying float vSkyY; void main(){float t=smoothstep(-0.08,0.72,vSkyY);vec3 nightHorizon=vec3(0.018,0.035,0.075);vec3 nightZenith=vec3(0.004,0.009,0.028);vec3 dayHorizon=vec3(0.78,0.86,0.87);vec3 dayZenith=vec3(0.20,0.43,0.66);vec3 horizon=mix(nightHorizon,dayHorizon,uDayFactor);vec3 zenith=mix(nightZenith,dayZenith,uDayFactor);vec3 col=mix(horizon,zenith,t);gl_FragColor=vec4(col,1.0);}`}
+      />
+    </mesh>
+  );
+}
 export default function NewMapWorld() {
   const players = useMemo<MatchPlayerData[]>(() => {
     const home: [number, number][] = [
