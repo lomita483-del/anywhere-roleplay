@@ -1,6 +1,9 @@
 # Roadmap — Anywhere Roleplay
 
 ## Implemented in source (browser verification still required)
+- [x] Expanded NEW MAP inner-city district with eight named shops and food landmarks, included in the canonical POI dataset
+- [x] Fixed phone-map pinch gestures so zooming cannot accidentally place a GPS waypoint; pointer capture cleanup and multi-touch drag isolation improved
+- [x] Added a regression test for the new landmarks and their map POI entries
 - [x] Three.js / React Three Fiber open-world Nigerian city scene
 - [x] Player movement, third-person follow camera, collision helpers and touch joystick
 - [x] Driveable vehicles, enter/exit interactions, vehicle HUD and dealership
