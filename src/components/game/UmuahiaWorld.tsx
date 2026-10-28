@@ -85,9 +85,6 @@ function UmuahiaBuilding({ b }: { b: (typeof BUILDINGS)[number] }) {
         <boxGeometry args={[Math.min(b.w * 0.9, 14), 0.8, 0.14]} />
         <meshStandardMaterial color={isCivic ? "#163d35" : b.kind === "market" ? "#8d3e27" : "#263642"} roughness={0.65} />
       </mesh>
-      <Html position={[0, Math.min(b.h - 0.7, Math.max(2.4, b.h * 0.72)), b.d / 2 + 0.17]} center distanceFactor={19} style={{ pointerEvents: "none" }}>
-        <div className="max-w-[180px] whitespace-nowrap border border-amber-200/45 bg-[#10231f]/95 px-2 py-1 text-center text-[9px] font-black tracking-wide text-amber-50 shadow-lg">{b.label}</div>
-      </Html>
       <Html position={[0, b.h + 1.1, b.d / 2 + 0.25]} center distanceFactor={25} style={{ pointerEvents: "none" }}>
         <div className="whitespace-nowrap rounded bg-slate-950/80 px-2 py-1 text-[10px] font-bold text-white">{b.label}</div>
       </Html>
