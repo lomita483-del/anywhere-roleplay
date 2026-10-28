@@ -629,7 +629,7 @@ function CityTraffic() {
   const wheelRef=useRef<THREE.InstancedMesh>(null);
   const quality=useGame(s=>s.graphicsQuality);
   const dummy=useMemo(()=>new THREE.Object3D(),[]);
-  const count=quality==="low"?14:quality==="high"?40:26;
+  const count=getGraphicsProfile(quality).trafficCount;
   const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
   useEffect(()=>{
     const body=bodyRef.current;if(!body)return;
