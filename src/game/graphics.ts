@@ -8,6 +8,7 @@ export interface GraphicsProfile {
   rainfallCount: 70 | 140 | 220;
   buildingCullDistance: 70 | 115 | 180;
   trafficCount: 14 | 26 | 40;
+  pedestrianCount: 20 | 45 | 80;
   interiorNpcCount: 1 | 2 | 4;
 }
 
@@ -19,6 +20,7 @@ const GRAPHICS_PROFILES: Record<GraphicsQuality, GraphicsProfile> = {
     rainfallCount: 70,
     buildingCullDistance: 70,
     trafficCount: 14,
+    pedestrianCount: 20,
     interiorNpcCount: 1,
   },
   medium: {
@@ -28,6 +30,7 @@ const GRAPHICS_PROFILES: Record<GraphicsQuality, GraphicsProfile> = {
     rainfallCount: 140,
     buildingCullDistance: 115,
     trafficCount: 26,
+    pedestrianCount: 45,
     interiorNpcCount: 2,
   },
   high: {
@@ -37,6 +40,7 @@ const GRAPHICS_PROFILES: Record<GraphicsQuality, GraphicsProfile> = {
     rainfallCount: 220,
     buildingCullDistance: 180,
     trafficCount: 40,
+    pedestrianCount: 80,
     interiorNpcCount: 4,
   },
 };
