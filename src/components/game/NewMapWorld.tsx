@@ -437,6 +437,7 @@ function LagosResidentialDistrict() {
 
 function RoadFurniture() {
   const lampRef = useRef<THREE.InstancedMesh>(null);
+  const bulbRef = useRef<THREE.InstancedMesh>(null);
   const crossingRef = useRef<THREE.InstancedMesh>(null);
   const signRef = useRef<THREE.InstancedMesh>(null);
   const stopRef = useRef<THREE.InstancedMesh>(null);
@@ -472,11 +473,36 @@ function RoadFurniture() {
       });
       mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
     };
-    write(lampRef.current,placements.lamps,"lamp");write(crossingRef.current,placements.crossings,"cross");write(signRef.current,placements.signs,"sign");
+    write(lampRef.current,placements.lamps,"lamp");
+    const bulbs = bulbRef.current;
+    if (bulbs) {
+      placements.lamps.forEach((p, i) => {
+        dummy.position.set(p.x, 6.55, p.z);
+        dummy.rotation.set(0, p.yaw, 0);
+        dummy.scale.set(0.42, 0.2, 0.42);
+        dummy.updateMatrix();
+        bulbs.setMatrixAt(i, dummy.matrix);
+      });
+      bulbs.instanceMatrix.needsUpdate = true;
+      bulbs.computeBoundingSphere();
+    }
+    write(crossingRef.current,placements.crossings,"cross");write(signRef.current,placements.signs,"sign");
     write(stopRef.current,placements.lamps.filter((_,i)=>i%7===0),"stop");
   },[placements]);
+  useFrame(() => {
+    const material = bulbRef.current?.material;
+    if (material instanceof THREE.MeshStandardMaterial) {
+      const isNight = g.time >= 19 || g.time < 6;
+      material.emissiveIntensity = g.powerOutage ? 0.04 : isNight ? 1.65 : 0.08;
+      material.color.set(isNight && !g.powerOutage ? "#fff0c2" : "#b9c0c0");
+    }
+  });
   return <>
     <instancedMesh ref={lampRef} args={[undefined,undefined,placements.lamps.length]} castShadow><cylinderGeometry args={[0.5,0.5,1,6]} /><meshStandardMaterial color="#353e40" roughness={0.6} /></instancedMesh>
+    <instancedMesh ref={bulbRef} args={[undefined,undefined,placements.lamps.length]} frustumCulled={false}>
+      <sphereGeometry args={[0.5, 8, 6]} />
+      <meshStandardMaterial color="#b9c0c0" emissive="#ffc86b" emissiveIntensity={0.08} roughness={0.35} />
+    </instancedMesh>
     <instancedMesh ref={crossingRef} args={[undefined,undefined,placements.crossings.length]}><boxGeometry args={[1,1,1]} /><meshBasicMaterial color="#f4f0df" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} /></instancedMesh>
     <instancedMesh ref={signRef} args={[undefined,undefined,placements.signs.length]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d9bd69" roughness={0.7} /></instancedMesh>
     <instancedMesh ref={stopRef} args={[undefined,undefined,Math.max(1,placements.lamps.filter((_,i)=>i%7===0).length)]}><boxGeometry args={[1,1,1]} /><meshStandardMaterial color="#d7c9a8" roughness={0.85} /></instancedMesh>
