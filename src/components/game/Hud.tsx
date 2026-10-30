@@ -220,7 +220,9 @@ export default function Hud() {
             ["Hunger", needs.hunger, "#f59e0b"],
             ["Energy", needs.energy, "#60a5fa"],
             ["Health", needs.health, "#34d399"],
-            ["Stress", 100 - needs.stress, "#f87171"],
+            ["Fun", needs.fun, "#c084fc"],
+            ["Hygiene", needs.hygiene, "#2dd4bf"],
+            ["Bladder", 100 - needs.bladder, "#f472b6"],
           ] as [string, number, string][]).map(([label, value, color]) => (
             <div key={label} className="min-w-[66px]">
               <div className="mb-0.5 flex justify-between gap-2 text-[8px] uppercase tracking-wider text-hud-muted"><span>{label}</span><span>{Math.round(value)}%</span></div>
