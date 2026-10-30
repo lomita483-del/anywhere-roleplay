@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getInteriorDefinition, getInteriorKind } from "./interiors";
-import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute } from "./newMap";
+import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute, getNewMapTrafficSignalState } from "./newMap";
 
 describe("NEW MAP layout", () => {
   it("keeps every planned building, stall, tree and hill clear of roads and one another", () => {
@@ -20,6 +20,16 @@ describe("NEW MAP layout", () => {
     expect(seen.size).toBe(NEW_MAP_ROAD_GRAPH.nodes.length);
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "avenue" || edge.type === "boulevard" || edge.type === "perimeter").every(edge => edge.width === 8)).toBe(true);
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "street").every(edge => edge.width === 5)).toBe(true);
+  });
+
+  it("cycles NEW MAP junction signals through green, amber and red safely", () => {
+    expect(getNewMapTrafficSignalState(0)).toBe("green");
+    expect(getNewMapTrafficSignalState(9.99)).toBe("green");
+    expect(getNewMapTrafficSignalState(10)).toBe("amber");
+    expect(getNewMapTrafficSignalState(12)).toBe("red");
+    expect(getNewMapTrafficSignalState(18)).toBe("green");
+    expect(getNewMapTrafficSignalState(0, 4.5)).toBe("green");
+    expect(getNewMapTrafficSignalState(14, 4.5)).toBe("green");
   });
 
   it("routes ride vehicles through connected NEW MAP streets instead of cutting directly across blocks", () => {
