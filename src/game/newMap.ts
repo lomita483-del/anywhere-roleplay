@@ -83,7 +83,7 @@ export function findNewMapRoadRoute(startX: number, startZ: number, endX: number
     adjacency.get(b.id)!.push({ id: a.id, cost });
   }
 
-  const distances = new Map<string, number>(nodes.map(node => [node.id, Infinity]));
+  const distances = new Map<string, number>(nodes.map(node => [node.id, Infinity] as [string, number]));
   const previous = new Map<string, string>();
   const pending = new Set(nodes.map(node => node.id));
   distances.set(start.id, 0);
