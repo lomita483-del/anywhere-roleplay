@@ -33,11 +33,22 @@ export const INTERIOR_DEFS: Record<string, InteriorDef> = {
   airport:{name:"International Airport Terminal",size:[14,11],floorColor:"#718087",wallColor:"#d4dedc",accent:"#7bc4e4",props:[p("counter",-4,-2,"#9b8b72",[1.8,.9,.7]),p("counter",-1,-2,"#9b8b72",[1.8,.9,.7]),p("counter",2,-2,"#9b8b72",[1.8,.9,.7]),p("board",2,-3,"#25383e",[2,1,.1]),p("gate",4,0,"#6d8e95",[.5,2,.3]),p("seat",-2,1,"#485b65",[1.8,.5,.5]),p("seat",1,1,"#485b65",[1.8,.5,.5])],npcs:[npc("Check-in agent",-2,-1,["Welcome aboard. May I see your ticket?","Check in here before security."]),npc("Security officer",4,-1,["Please keep your documents ready.","Safe travels, boss."])],hotspots:[h("checkin","Check-in desk",-4,-2,"openPhone:travel"),h("security","Security lane",4,0,"openModal:security")],exit:{x:0,z:5}},
   port:{name:"Port Terminal",size:[14,11],floorColor:"#5e6b68",wallColor:"#b8c4bd",accent:"#d8a64d",props:[p("desk",-3,-2,"#74543b",[2,.8,.7]),p("container",2,0,"#bd594b",[1.4,1.4,2.2]),p("container",4,0,"#3f8296",[1.4,1.4,2.2]),p("container",2,2,"#d2a84b",[1.4,1.4,2.2]),p("rack",-3,1,"#697e79",[1,1.5,.7])],npcs:[npc("Dock supervisor",0,-2,["Cargo needs to move before tide changes.","Ready for a shift?"]),npc("Customs clerk",-3,-1,["Show the manifest, please.","No paperwork, no clearance."])],hotspots:[h("dock","Dock worker shift",2,0,"startShift:dock-worker"),h("customs","Customs clerk",-3,-2,"startShift:customs-clerk")],exit:{x:0,z:5}},
   resort:{name:"Lake Park Resort",size:[12,10],floorColor:"#9b896d",wallColor:"#d9d1b9",accent:"#5cbba4",props:[p("desk",-3,-2,"#9b7651",[1.8,.8,.7]),p("table",0,-1,"#906e4d",[1.5,.5,1]),p("chair",1,0,"#4b7775",[.5,.8,.5]),p("pool",3,1,"#277f9b",[2,.2,1.4]),p("plant",-4,2,"#3e8b58",[.8,1.4,.8])],npcs:[npc("Receptionist",-3,-1,["Welcome to the resort, relax small.","A short rest will help you recharge."]),npc("Lifeguard",3,0,["Pool is open, enjoy yourself.","Please be safe in the water."])],hotspots:[h("reception","Reception",-3,-2,"heal"),h("pool","Pool",3,1,"openModal:swim")],exit:{x:0,z:4.5}},
+  court:{name:"City Court Complex",size:[14,12],floorColor:"#777b78",wallColor:"#d7d5ca",accent:"#b99a5a",props:[
+    p("desk",-4,-2,"#76583e",[2,.9,.8]),p("desk",0,-3,"#76583e",[4,.9,.9]),p("desk",0,-1,"#8d6b49",[2.5,.8,.8]),
+    p("chair",-4,0,"#4a555b",[.55,.8,.55]),p("chair",-2,0,"#4a555b",[.55,.8,.55]),p("chair",2,0,"#4a555b",[.55,.8,.55]),p("chair",4,0,"#4a555b",[.55,.8,.55]),
+    p("bench",-3,3,"#76583e",[2,.45,.6]),p("bench",0,3,"#76583e",[2,.45,.6]),p("bench",3,3,"#76583e",[2,.45,.6]),
+    p("board",5,-2,"#385a62",[1.2,1.5,.12])
+  ],npcs:[npc("Court clerk",-4,-1,["Welcome to the court registry.","Please take a seat until your matter is called."]),npc("Court usher",4,1,["The courtroom is this way.","Please keep the aisle clear."]),npc("Registrar",0,-2,["Documents can be filed at the registry desk."])],hotspots:[h("registry","Court registry",-4,-2,"openModal:court"),h("hearing","Court hearing",0,-3,"openModal:court"),h("usher","Court usher",4,1,"openModal:court")],exit:{x:0,z:5}},
+  government:{name:"Government House",size:[14,12],floorColor:"#8b8578",wallColor:"#e0d8c7",accent:"#c6a45c",props:[
+    p("desk",-3,-2,"#76583e",[2,.9,.8]),p("desk",2,-2,"#76583e",[2,.9,.8]),p("meeting-table",0,1,"#76583e",[3,.65,1.3]),
+    p("chair",-3,0,"#45545a",[.55,.8,.55]),p("chair",3,0,"#45545a",[.55,.8,.55]),p("chair",-2,2,"#45545a",[.55,.8,.55]),p("chair",2,2,"#45545a",[.55,.8,.55]),
+    p("plant",-5,3,"#3e8055",[.7,1.3,.7]),p("plant",5,3,"#3e8055",[.7,1.3,.7]),p("board",0,-3,"#36545c",[1.8,1.2,.12])
+  ],npcs:[npc("Reception officer",-3,-2,["Welcome to Government House.","Please sign in at reception."]),npc("Administrative aide",2,-2,["The meeting room is prepared.","Appointments are handled at reception."])],hotspots:[h("reception","Reception",-3,-2,"openModal:government"),h("meeting","Meeting room",0,1,"openModal:government"),h("admin","Administrative office",2,-2,"openModal:government")],exit:{x:0,z:5}},
   generic:{name:"City Interior",size:[10,9],floorColor:"#777a73",wallColor:"#c7c8bd",accent:"#d6b15e",props:[p("counter",0,-2,"#80664a",[2,.8,.7]),p("chair",-2,0,"#705744",[.6,.7,.6]),p("plant",3,1,"#3b8052",[.7,1.2,.7])],npcs:[npc("Staff member",1,-1,["Welcome in, how can I help?","Please ask if you need anything."])],hotspots:[h("service","Service counter",0,-2,"openModal:service")],exit:{x:0,z:4}}
 };
 export function getInteriorKind(label: string, kind?: string): string {
   const k=(kind??"").toLowerCase();
-  const known=["home","bank","mama-put","hospital","pharmacy","police","market","depot","fuel","dealership","real-estate","tower","factory","university","school","airport","port","resort"];
+  const known=["home","bank","mama-put","hospital","pharmacy","police","market","depot","fuel","dealership","real-estate","tower","factory","university","school","airport","port","resort","court","government"];
   if(known.includes(k))return k;
   const s=label.toLowerCase();
   if(/bank|atm/.test(s))return "bank";
@@ -45,6 +56,8 @@ export function getInteriorKind(label: string, kind?: string): string {
   if(/hospital|clinic/.test(s))return "hospital";
   if(/pharmacy|chemist/.test(s))return "pharmacy";
   if(/police/.test(s))return "police";
+  if(/court|justice|judicial|magistrate/.test(s))return "court";
+  if(/government house|governor|government complex|administrative house/.test(s))return "government";
   if(/market/.test(s))return "market";
   if(/depot|bus|transport/.test(s))return "depot";
   if(/fuel|oando|petrol/.test(s))return "fuel";
