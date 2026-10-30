@@ -406,14 +406,14 @@ export const useGame = create<GameStore>((set, get) => ({
     if (current.needs.energy < 10 || current.needs.health < 15) return false;
     if (current.interior && current.interiorKind !== "home") return false;
     const workplaces: Record<JobType, { label: string; kind: string; point: [number, number] }> = {
-      courier: { label: "Courier & Logistics Depot", kind: "depot", point: [22, 47] },
-      driver: { label: "City Transport Depot", kind: "depot", point: [-40, 32] },
+      courier: { label: "Courier & Logistics Depot", kind: "courier-depot", point: [22, 47] },
+      driver: { label: "City Transport Depot", kind: "transport-depot", point: [-40, 32] },
       trader: { label: "Balogun Market", kind: "market", point: [-40, 32] },
       security: { label: "Police Headquarters", kind: "police", point: [86, 78] },
-      construction: { label: "Construction Site Office", kind: "factory", point: [86, 78] },
-      retail: { label: "Retail & Corporate Plaza", kind: "tower", point: [2, 42] },
+      construction: { label: "Construction Site Office", kind: "construction-site", point: [86, 78] },
+      retail: { label: "Retail & Corporate Plaza", kind: "retail-workplace", point: [2, 42] },
       airport: { label: "Airport Cargo Operations", kind: "airport", point: [140, -132] },
-      "estate-agent": { label: "Property & Estate Office", kind: "real-estate", point: [151, 88] },
+      "estate-agent": { label: "Property & Estate Office", kind: "estate-office", point: [151, 88] },
     };
     const destination = workplaces[role];
     if (current.interior) {
