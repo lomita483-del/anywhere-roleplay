@@ -45,6 +45,20 @@ export const g = {
   adminSpawnedNpcs: [] as { id: string; x: number; z: number; name: string }[],
 };
 
+
+/** Convert forward/strafe input into a normalized world-space vector using the camera's ground-plane basis. */
+export function getCameraRelativeMove(cameraYaw: number, forwardInput: number, strafeInput: number) {
+  const forwardX = -Math.sin(cameraYaw);
+  const forwardZ = -Math.cos(cameraYaw);
+  const rightX = -Math.cos(cameraYaw);
+  const rightZ = Math.sin(cameraYaw);
+  let x = forwardX * forwardInput + rightX * strafeInput;
+  let z = forwardZ * forwardInput + rightZ * strafeInput;
+  const magnitude = Math.hypot(x, z);
+  if (magnitude > 1) { x /= magnitude; z /= magnitude; }
+  return { x, z };
+}
+
 export const DAY_SECONDS = 600; // 10 real minutes = one in-game day
 
 export function advanceTime(delta: number) {
