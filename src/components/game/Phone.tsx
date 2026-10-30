@@ -91,6 +91,12 @@ function JobsApp() {
   const cancel = useGame((s) => s.cancelJob);
   const nearTarget = useGame((s) => s.nearJobTarget);
   const skills = useGame((s) => s.skills);
+  const employment = useGame((s) => s.employment);
+  const workShift = useGame((s) => s.workShift);
+  const hire = useGame((s) => s.hireForRole);
+  const clockIn = useGame((s) => s.clockIn);
+  const clockOut = useGame((s) => s.clockOut);
+  const [shiftNotice, setShiftNotice] = useState("");
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const remaining = active?.startedAt ? Math.max(0, (active.timeLimitSeconds ?? 480) - Math.floor((now - active.startedAt) / 1000)) : 480;
@@ -121,6 +127,13 @@ function JobsApp() {
   }
   return (
     <div className="flex flex-col gap-2 p-3 text-sm">
+      <section className="rounded-2xl border border-emerald-300/20 bg-emerald-950/25 p-3">
+        <div className="text-sm font-bold text-emerald-100">Employment & work shifts</div>
+        <p className="mt-1 text-[11px] text-slate-300">Sign a role contract, clock in, then clock out after at least two real minutes. A full shift takes ten minutes.</p>{shiftNotice&&<div role="status" className="mt-2 rounded-lg bg-white/5 p-2 text-[11px] text-emerald-100">{shiftNotice}</div> }
+        {workShift ? <div className="mt-3 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3"><div className="text-xs font-bold text-amber-100">On shift · {JOB_INFO[workShift.role].title}</div><div className="mt-1 text-[11px] text-slate-200">{Math.max(0,Math.floor((now-workShift.startedAt)/60000))} / 10 minutes elapsed</div><button onClick={()=>setShiftNotice(clockOut()?"Shift completed and pay deposited into your bank.":"Stay on shift for at least two minutes before clocking out.")} className="mt-2 min-h-11 w-full rounded-lg bg-emerald-300 px-3 text-xs font-black text-emerald-950">Clock out & collect pay</button></div> : null}
+        <div className="mt-3 space-y-2">{(Object.keys(JOB_INFO) as JobType[]).map(role=>{const record=employment[role];return <div key={role} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2"><div className="min-w-0 flex-1"><div className="text-xs font-semibold text-white">{JOB_INFO[role].title}</div><div className="text-[10px] text-slate-300">{record?`${record.shiftsCompleted} shifts · ${naira(record.totalEarned)} earned`:"No contract signed"}</div></div>{record?<button disabled={!!workShift||!!active} onClick={()=>{const ok=clockIn(role);setShiftNotice(ok?"Clocked in. Your shift has started.":"Cannot clock in while another activity is active or your needs are too low.");}} className="min-h-10 rounded-lg bg-sky-300/15 px-3 text-[10px] font-bold text-sky-100 disabled:opacity-40">Clock in</button>:<button disabled={!!workShift} onClick={()=>{const ok=hire(role);setShiftNotice(ok?"Employment contract signed.":"Could not sign this contract.");}} className="min-h-10 rounded-lg bg-emerald-300/15 px-3 text-[10px] font-bold text-emerald-100 disabled:opacity-40">Sign contract</button>}</div>;})}</div>
+        <div className="mt-2 text-[10px] text-slate-400">Shift earnings are based on completed time, capped at ten minutes, with your existing skill bonus. This prototype currently stores contracts locally.</div>
+      </section>
       <div className="text-xs uppercase tracking-widest text-slate-300">Job board — Lagos hustle</div>
       {(Object.keys(JOB_INFO) as JobType[]).map((t) => (
         <div key={t} className="rounded-2xl border border-hud-line bg-white/5 p-3">
