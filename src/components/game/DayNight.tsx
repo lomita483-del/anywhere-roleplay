@@ -113,27 +113,34 @@ export default function DayNight() {
     const worldScale = city === "newmap" ? NEW_MAP_SCALE : 1;
     const playerX = g.playerPos.x * worldScale;
     const playerZ = g.playerPos.z * worldScale;
+    // A smooth twilight band avoids the old always-lit night floor and harsh sunrise jumps.
+    const daylight = THREE.MathUtils.smoothstep(elev, -0.12, 0.28);
+    const night = 1 - daylight;
+    const twilight = 1 - THREE.MathUtils.smoothstep(Math.abs(elev), 0.02, 0.62);
     if (sunRef.current) {
       // Follow the active player so the shadow camera stays useful as the player explores.
-      sunRef.current.position.set(playerX + sunX * 0.5 * worldScale, Math.max(elev, 0.1) * 80 * worldScale + 12, playerZ + 40 * worldScale);
+      sunRef.current.position.set(playerX + sunX * 0.5 * worldScale, Math.max(elev, -0.18) * 80 * worldScale + 16, playerZ + 40 * worldScale);
       sunRef.current.target.position.set(playerX, 0, playerZ);
       sunRef.current.target.updateMatrixWorld();
-      sunRef.current.intensity = Math.max(0.08, elev) * 2.1;
-      const warm = 1 - Math.min(1, Math.max(0, elev) * 2.2);
-      sunRef.current.color.setRGB(1, 0.92 - warm * 0.25, 0.78 - warm * 0.35);
+      sunRef.current.intensity = daylight * 2.05;
+      const warm = Math.min(1, twilight * 0.9 + (1 - daylight) * 0.16);
+      sunRef.current.color.setRGB(1, 0.96 - warm * 0.22, 0.88 - warm * 0.34);
     }
     if (ambRef.current) {
-      ambRef.current.intensity = 0.3 + Math.max(0, elev) * 0.35;
-      ambRef.current.color.setRGB(0.55 + Math.max(0, elev) * 0.45, 0.6 + Math.max(0, elev) * 0.35, 0.85 - Math.max(0, elev) * 0.2);
+      ambRef.current.intensity = 0.18 + daylight * 0.48 + night * 0.1;
+      ambRef.current.color.setRGB(
+        0.48 + daylight * 0.48 + twilight * 0.06,
+        0.53 + daylight * 0.39 + twilight * 0.02,
+        0.72 + daylight * 0.12,
+      );
     }
     if (hemiRef.current) {
-      hemiRef.current.intensity = 0.25 + Math.max(0, elev) * 0.4;
+      hemiRef.current.intensity = 0.16 + daylight * 0.5 + night * 0.08;
     }
 
-    // Fog + tone shifts with time of day
-    const t = Math.max(0, Math.min(1, elev * 2 + 0.3)); // 0 night → 1 day
-    if (t < 0.5) _c.copy(NIGHT_COLOR).lerp(DUSK_COLOR, t * 2);
-    else _c.copy(DUSK_COLOR).lerp(DAY_COLOR, (t - 0.5) * 2);
+    // Fog and ambient color track the same continuous day/night curve as the sun.
+    if (twilight > 0.05) _c.copy(NIGHT_COLOR).lerp(DUSK_COLOR, twilight);
+    else _c.copy(NIGHT_COLOR).lerp(DAY_COLOR, daylight);
     if (scene.background instanceof THREE.Color) scene.background.copy(_c);
     else scene.background = _c.clone();
     if (scene.fog) (scene.fog as THREE.Fog).color.copy(_c);
