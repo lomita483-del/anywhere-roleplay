@@ -121,6 +121,14 @@ export const VEHICLE_CATALOG: Record<
   police: { model: "police", name: "Patrol Jeep", price: 350000, maxSpeed: 22, accel: 16, turn: 2.3 },
 };
 
+export const JOB_SKILL_MAP: Record<JobType, SkillKey> = {
+  courier: "courier", driver: "driving", trader: "trading", security: "security",
+  construction: "construction", retail: "retail", airport: "aviation", "estate-agent": "negotiation",
+};
+export function skillPayoutMultiplier(level: number): number {
+  return level >= 5 ? 1.1 : level >= 3 ? 1.05 : 1;
+}
+
 export const JOB_INFO: Record<JobType, { title: string; desc: string; payout: number }> = {
   courier: { title: "Courier Run", desc: "Pick up a package and deliver it across town.", payout: 1800 },
   driver: { title: "Transport Driver", desc: "Drive a vehicle: pick up a passenger and drop them off.", payout: 3200 },
@@ -574,17 +582,16 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "driver") stats.drives++;
       if (job.type === "trader") stats.trades++;
       if (job.type === "security") stats.patrols++;
-      get().earn(job.payout, "bank");
+      const jobSkill = JOB_SKILL_MAP[job.type];
+      const skillLevel = get().skills[jobSkill].level;
+      const paidAmount = Math.round(job.payout * skillPayoutMultiplier(skillLevel));
+      get().earn(paidAmount, "bank");
       get().addXp(45);
-      const skillByJob: Record<JobType, SkillKey> = {
-        courier: "courier", driver: "driving", trader: "trading", security: "security",
-        construction: "construction", retail: "retail", airport: "aviation", "estate-agent": "negotiation",
-      };
-      get().addSkillXp(skillByJob[job.type], 35);
-      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
+      get().addSkillXp(jobSkill, 35);
+      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: paidAmount, title: job.title } }));
       set({ activeJob: null, jobStats: stats, waypoint: null });
       get().save();
-      get().radio(`✅ Job complete — ${N(job.payout)} paid into your bank account.`);
+      get().radio(`✅ Job complete — ${N(paidAmount)} paid into your bank account. ${skillLevel >= 5 ? "10% skill bonus applied." : skillLevel >= 3 ? "5% skill bonus applied." : ""}`);
     } else {
       const target = job.targets[next];
       set({ activeJob: { ...job, stage: next }, waypoint: target ? { x: target[0], z: target[1], label: job.title + " · " + (next + 1), kind: "job" } : null });
