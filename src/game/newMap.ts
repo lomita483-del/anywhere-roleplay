@@ -156,6 +156,8 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"university",label:"CITY UNIVERSITY",kind:"university",district:"university",x:-145,z:56,w:14,d:12,h:10,color:"#b8a28d",doorSide:"south"},
  {id:"school",label:"COMMUNITY SECONDARY SCHOOL",kind:"school",district:"university",x:-119,z:56,w:14,d:12,h:7,color:"#d8c7a5",doorSide:"south"},
  {id:"pharmacy",label:"NEIGHBOURHOOD PHARMACY",kind:"pharmacy",district:"university",x:-145,z:84,w:10,d:8,h:5,color:"#b8c7b9",doorSide:"north"},
+ {id:"university-library",label:"UNIVERSITY LIBRARY",kind:"university",district:"university",x:-93,z:56,w:12,d:10,h:9,color:"#c8bda8",doorSide:"north"},
+ {id:"student-union",label:"STUDENT UNION & SERVICES",kind:"university",district:"university",x:-119,z:84,w:12,d:10,h:7,color:"#b9c8b8",doorSide:"east"},
  {id:"lake-hall",label:"LAKE PARK RESORT",kind:"resort",district:"lake-park",x:-151,z:113,w:14,d:10,h:6,color:"#c8b78c",doorSide:"east"},
  {id:"airport-terminal",label:"NEW MAP INTERNATIONAL AIRPORT",kind:"airport",district:"airport",x:34,z:-92,w:34,d:12,h:8,color:"#c5c9c6",doorSide:"north"},
  {id:"fuel",label:"FUEL STATION",kind:"fuel",district:"civic",x:110,z:84,w:12,d:10,h:5,color:"#d7bd65",doorSide:"south"},
