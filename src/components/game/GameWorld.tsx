@@ -1028,6 +1028,17 @@ export default function GameWorld() {
       const targetFov = THREE.MathUtils.clamp(42 + g.camDistance * 0.34, 44, 76);
       camera.fov += (targetFov - camera.fov) * Math.min(1, 5 * dt);
       camera.updateProjectionMatrix();
+    } else if (st.interior && st.interiorKind === "home") {
+      const worldScale = isNewMap ? NEW_MAP_SCALE : 1;
+      const centerX = 104 * worldScale;
+      const centerZ = 104 * worldScale + 2.5 * worldScale;
+      _target.set(centerX, 1.2 * worldScale, centerZ);
+      _ideal.set(centerX + 18 * worldScale, 19 * worldScale, centerZ + 22 * worldScale);
+      camera.position.lerp(_ideal, 1 - Math.exp(-3.8 * dt));
+      camLook.current.lerp(_target, 1 - Math.exp(-3.8 * dt));
+      camera.lookAt(camLook.current);
+      camera.fov += (48 - camera.fov) * Math.min(1, 4 * dt);
+      camera.updateProjectionMatrix();
     } else {
       _target.set(g.playerPos.x * (isNewMap ? NEW_MAP_SCALE : 1), driving ? 1.5 : 1.1, g.playerPos.z * (isNewMap ? NEW_MAP_SCALE : 1));
       const worldScale = isNewMap ? NEW_MAP_SCALE : 1;
