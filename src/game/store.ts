@@ -42,6 +42,29 @@ export interface PlayerOutfit { gender?: "male" | "female"; skinTone: string; ha
 export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; fun: number; bladder: number; }
 export interface CharacterBackground { family: string; education: string; neighborhood: string; }
 
+export type SkillKey = "driving" | "trading" | "security" | "construction" | "retail" | "aviation" | "courier" | "negotiation";
+export interface SkillProgress { xp: number; level: number; }
+export type SkillProgression = Record<SkillKey, SkillProgress>;
+export const DEFAULT_SKILLS: SkillProgression = {
+  driving: { xp: 0, level: 1 }, trading: { xp: 0, level: 1 },
+  security: { xp: 0, level: 1 }, construction: { xp: 0, level: 1 },
+  retail: { xp: 0, level: 1 }, aviation: { xp: 0, level: 1 },
+  courier: { xp: 0, level: 1 }, negotiation: { xp: 0, level: 1 },
+};
+export const SKILL_INFO: Record<SkillKey, { label: string; description: string; perk: string }> = {
+  driving: { label: "Driving", description: "Build experience completing transport work.", perk: "Smoother handling at higher levels" },
+  trading: { label: "Trading", description: "Learn the city markets and complete trade runs.", perk: "Better trade opportunities" },
+  security: { label: "Security", description: "Gain experience from patrol assignments.", perk: "Improved patrol reputation" },
+  construction: { label: "Construction", description: "Develop experience at construction sites.", perk: "Access to advanced site roles" },
+  retail: { label: "Retail", description: "Learn customer service and shop operations.", perk: "Unlock specialist shop shifts" },
+  aviation: { label: "Aviation", description: "Gain experience around airport operations.", perk: "Access to advanced ground-crew roles" },
+  courier: { label: "Courier", description: "Improve your delivery and navigation skills.", perk: "Unlock priority delivery work" },
+  negotiation: { label: "Negotiation", description: "Build professional experience through property work.", perk: "Unlock premium client assignments" },
+};
+export function skillLevelForXp(xp: number): number {
+  return Math.floor(Math.max(0, xp) / 100) + 1;
+}
+
 export const DEFAULT_NEEDS: PlayerNeeds = { hunger: 100, energy: 100, health: 100, stress: 8, hygiene: 100, fun: 82, bladder: 12 };
 
 export interface JobStats {
@@ -58,6 +81,7 @@ export interface SaveData {
   name: string;
   city?: CityId;
   xp?: number;
+  skills?: Partial<SkillProgression>;
   cash: number;
   bank: number;
   inventory: Record<string, number>;
@@ -184,6 +208,8 @@ interface GameStore {
   setOnlinePlayers: (players: Record<string, OnlinePlayer>) => void;
   xp: number;
   level: number;
+  skills: SkillProgression;
+  addSkillXp: (skill: SkillKey, amount: number) => void;
   addXp: (amount: number) => void;
   graphicsQuality: "low" | "medium" | "high";
   setGraphicsQuality: (quality: "low" | "medium" | "high") => void;
@@ -305,6 +331,7 @@ const DEFAULTS = {
   onlinePlayers: {} as Record<string, OnlinePlayer>,
   xp: 0,
   level: 1,
+  skills: { ...DEFAULT_SKILLS },
   graphicsQuality: getInitialGraphicsQuality(),
   name: "",
   cash: 100_000_000_000,
@@ -363,6 +390,16 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save();
   },
   setOnlinePlayers: (players) => set({ onlinePlayers: players }),
+  addSkillXp: (skill, amount) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const current = get().skills[skill];
+    if (!current) return;
+    const xp = current.xp + Math.floor(amount);
+    const level = skillLevelForXp(xp);
+    set({ skills: { ...get().skills, [skill]: { xp, level } } });
+    if (level > current.level) get().radio("⭐ " + SKILL_INFO[skill].label + " skill reached Level " + level + ".");
+    get().save();
+  },
   addXp: (amount) => {
     if (!Number.isFinite(amount) || amount <= 0) return;
     const current = get();
@@ -396,6 +433,7 @@ export const useGame = create<GameStore>((set, get) => ({
       g.time = restoredTime;
       set({
         started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        skills: Object.fromEntries((Object.keys(DEFAULT_SKILLS) as SkillKey[]).map((key) => { const savedSkill = saved.skills?.[key]; const skillXp = Math.max(0, Number(savedSkill?.xp) || 0); return [key, { xp: skillXp, level: skillLevelForXp(skillXp) }]; })) as SkillProgression,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
         activeJob: saved.activeJob ?? null,
@@ -433,7 +471,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     if (!s.started) return;
     const data: SaveData = {
-      name: s.name, city: s.city, xp: s.xp, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
+      name: s.name, city: s.city, xp: s.xp, skills: s.skills, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
@@ -538,6 +576,11 @@ export const useGame = create<GameStore>((set, get) => ({
       if (job.type === "security") stats.patrols++;
       get().earn(job.payout, "bank");
       get().addXp(45);
+      const skillByJob: Record<JobType, SkillKey> = {
+        courier: "courier", driver: "driving", trader: "trading", security: "security",
+        construction: "construction", retail: "retail", airport: "aviation", "estate-agent": "negotiation",
+      };
+      get().addSkillXp(skillByJob[job.type], 35);
       if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("roleplay-job-completed", { detail: { job_type: job.type, earnings: job.payout, title: job.title } }));
       set({ activeJob: null, jobStats: stats, waypoint: null });
       get().save();
