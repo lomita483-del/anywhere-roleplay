@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { g, getCameraRelativeMove } from "@/game/state";
 import { getInteriorDefinition } from "@/game/interiors";
 import InteriorWorld from "@/components/game/InteriorWorld";
-import { NEW_MAP_SCALE, NEW_MAP_BOUNDS, isNewMapBlocked } from "@/game/newMap";
+import { NEW_MAP_SCALE, NEW_MAP_BOUNDS, isNewMapBlocked, findNewMapRoadRoute } from "@/game/newMap";
 import { useGame, VEHICLE_CATALOG, tryJobProgress, nearestPoi, type ActiveJob } from "@/game/store";
 import { enterBuilding, interact } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
@@ -670,6 +670,7 @@ function RemotePlayerAvatar({ player, variant, worldScale = 1 }: { player: { nam
 
 function RideDriver() {
   const ride = useGame((s) => s.rideRequest);
+  const isNewMap = useGame((s) => s.city === "newmap");
   const ref = useRef<THREE.Group>(null);
   const runtime = useRef<{ id: string; x: number; z: number; yaw: number; status: "approaching" | "travelling"; route: [number, number][]; routeIndex: number } | null>(null);
 
@@ -682,12 +683,18 @@ function RideDriver() {
       return;
     }
     if (!runtime.current || runtime.current.id !== ride.id) {
-      runtime.current = { id: ride.id, x: ride.x, z: ride.z, yaw: ride.yaw, status: "approaching", route: [], routeIndex: 0 };
+      const initialRoute = isNewMap
+        ? findNewMapRoadRoute(ride.x, ride.z, g.playerPos.x, g.playerPos.z)
+        : [];
+      runtime.current = { id: ride.id, x: ride.x, z: ride.z, yaw: ride.yaw, status: "approaching", route: initialRoute, routeIndex: Math.min(1, Math.max(0, initialRoute.length - 1)) };
     }
     const r = runtime.current;
     const routeTarget = r.status === "travelling" ? (r.route[r.routeIndex] ?? [ride.destination.x, ride.destination.z]) : null;
-    const targetX = r.status === "approaching" ? g.playerPos.x : (routeTarget?.[0] ?? ride.destination.x);
-    const targetZ = r.status === "approaching" ? g.playerPos.z : (routeTarget?.[1] ?? ride.destination.z);
+    const approachTarget = isNewMap && r.route.length > 1 && r.routeIndex < r.route.length - 1
+      ? r.route[r.routeIndex]!
+      : [g.playerPos.x, g.playerPos.z] as [number, number];
+    const targetX = r.status === "approaching" ? approachTarget[0] : (routeTarget?.[0] ?? ride.destination.x);
+    const targetZ = r.status === "approaching" ? approachTarget[1] : (routeTarget?.[1] ?? ride.destination.z);
     const dx = targetX - r.x;
     const dz = targetZ - r.z;
     const distance = Math.hypot(dx, dz);
@@ -697,9 +704,14 @@ function RideDriver() {
       r.x += (dx / distance) * step;
       r.z += (dz / distance) * step;
       r.yaw = Math.atan2(dx, dz);
+    } else if (r.status === "approaching" && isNewMap && r.routeIndex < r.route.length - 1) {
+      // Follow each road-graph waypoint before taking the short final approach to the player.
+      r.routeIndex += 1;
     } else if (r.status === "approaching") {
       r.status = "travelling";
-      r.route = buildRoadRoute(r.x, r.z, ride.destination.x, ride.destination.z);
+      r.route = isNewMap
+        ? findNewMapRoadRoute(r.x, r.z, ride.destination.x, ride.destination.z)
+        : buildRoadRoute(r.x, r.z, ride.destination.x, ride.destination.z);
       r.routeIndex = Math.min(1, Math.max(0, r.route.length - 1));
       g.ridingPassenger = true;
       g.playerPos.set(r.x, 0, r.z);
