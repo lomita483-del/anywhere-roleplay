@@ -817,8 +817,8 @@ function CityPedestrians() {
   const count=getGraphicsProfile(quality).pedestrianCount;
   const anchors=useMemo(()=>[[-38,-76],[-28,-72],[-110,32],[-102,35],[0,0],[12,8],[78,10],[98,-40],[-112,118]] as [number,number][],[]);
   const crossingRoutes=useMemo(()=>{
-    const routes:{sx:number;sz:number;ex:number;ez:number}[]=[];
-    NEW_MAP_JUNCTIONS.forEach(([jx,jz])=>{
+    const routes:{sx:number;sz:number;ex:number;ez:number;junctionIndex:number}[]=[];
+    NEW_MAP_JUNCTIONS.forEach(([jx,jz],junctionIndex)=>{
       const directions:{x:number;z:number}[]=[];
       NEW_MAP_ROADS.forEach(path=>{
         for(let i=1;i<path.length;i++){
@@ -832,7 +832,7 @@ function CityPedestrians() {
       });
       directions.slice(0,2).forEach(({x:ux,z:uz})=>{
         const cx=jx+ux*5.4,cz=jz+uz*5.4,px=-uz,pz=ux;
-        routes.push({sx:cx-px*5.2,sz:cz-pz*5.2,ex:cx+px*5.2,ez:cz+pz*5.2});
+        routes.push({sx:cx-px*5.2,sz:cz-pz*5.2,ex:cx+px*5.2,ez:cz+pz*5.2,junctionIndex});
       });
     });
     return routes;
@@ -851,11 +851,15 @@ function CityPedestrians() {
       let x:number,z:number,yaw:number;
       if(i%5===0&&crossingRoutes.length){
         const route=crossingRoutes[Math.floor(i/5)%crossingRoutes.length]!;
-        const cycle=(t*0.075+Math.floor(i/5)*0.19)%1;
-        const progress=cycle<0.68?cycle/0.68:cycle<0.84?1:0;
-        x=route.sx+(route.ex-route.sx)*progress;
-        z=route.sz+(route.ez-route.sz)*progress;
-        yaw=Math.atan2(route.ex-route.sx,route.ez-route.sz);
+        const signalTime=((t+route.junctionIndex*4.5)%18+18)%18;
+        const cycleNumber=Math.floor((t+route.junctionIndex*4.5)/18);
+        const progress=Math.max(0,Math.min(1,(signalTime-12)/2.4));
+        const reverse=cycleNumber%2===1;
+        const sx=reverse?route.ex:route.sx,sz=reverse?route.ez:route.sz;
+        const ex=reverse?route.sx:route.ex,ez=reverse?route.sz:route.ez;
+        x=sx+(ex-sx)*progress;
+        z=sz+(ez-sz)*progress;
+        yaw=Math.atan2(ex-sx,ez-sz);
       }else{
         const a=anchors[i%anchors.length]!;
         x=a[0]+Math.sin(t*.32+phase)*2.8;
