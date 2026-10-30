@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, isNewMapBlocked, validateNewMapLayout } from "./newMap";
+import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout } from "./newMap";
 
 describe("NEW MAP layout", () => {
   it("keeps every planned building, stall, tree and hill clear of roads and one another", () => {
