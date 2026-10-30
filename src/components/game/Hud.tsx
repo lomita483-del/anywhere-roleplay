@@ -339,7 +339,10 @@ export default function Hud() {
         <ChevronsUp className="h-5 w-5 text-hud-bright" />
       </button>}
 
-      {interior && /apartment|studio|home/i.test(interiorLabel) && (
+      {interior && /apartment|studio|home|flat/i.test(interiorLabel) && (
+        <button type="button" onClick={exitApartment} className="pointer-events-auto absolute left-1/2 top-24 z-30 -translate-x-1/2 rounded-full border border-emerald-200/50 bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-3 text-xs font-black tracking-wider text-white shadow-[0_8px_30px_rgba(16,185,129,.35)] active:scale-95">🚪 GO OUTSIDE</button>
+      )}
+      {interior && /apartment|studio|home|flat/i.test(interiorLabel) && (
         <div className="pointer-events-auto absolute right-3 top-24 flex max-w-[44vw] flex-col gap-1.5 sm:right-5">
           <button className="min-h-10 rounded-xl border border-amber-300/30 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-amber-100" onClick={() => useGame.getState().sleep()}>🛏 Sleep · 07:00</button>
           <button className="min-h-10 rounded-xl border border-emerald-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-emerald-100" onClick={() => openPhone("inventory")}>🧊 Fridge / Stored food</button>
