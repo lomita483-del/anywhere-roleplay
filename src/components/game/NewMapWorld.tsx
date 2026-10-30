@@ -816,6 +816,27 @@ function CityPedestrians() {
   const quality=useGame(s=>s.graphicsQuality);
   const count=getGraphicsProfile(quality).pedestrianCount;
   const anchors=useMemo(()=>[[-38,-76],[-28,-72],[-110,32],[-102,35],[0,0],[12,8],[78,10],[98,-40],[-112,118]] as [number,number][],[]);
+  const crossingRoutes=useMemo(()=>{
+    const routes:{sx:number;sz:number;ex:number;ez:number}[]=[];
+    NEW_MAP_JUNCTIONS.forEach(([jx,jz])=>{
+      const directions:{x:number;z:number}[]=[];
+      NEW_MAP_ROADS.forEach(path=>{
+        for(let i=1;i<path.length;i++){
+          const a=path[i-1]!,b=path[i]!,dx=b[0]-a[0],dz=b[1]-a[1],lengthSq=dx*dx+dz*dz;
+          if(lengthSq<1e-6)continue;
+          const t=Math.max(0,Math.min(1,((jx-a[0])*dx+(jz-a[1])*dz)/lengthSq));
+          if(Math.hypot(jx-(a[0]+dx*t),jz-(a[1]+dz*t))>0.65)continue;
+          const length=Math.hypot(dx,dz),ux=dx/length,uz=dz/length,angle=Math.atan2(uz,ux);
+          if(!directions.some(d=>Math.abs(Math.sin(Math.atan2(d.z,d.x)-angle))<0.12))directions.push({x:ux,z:uz});
+        }
+      });
+      directions.slice(0,2).forEach(({x:ux,z:uz})=>{
+        const cx=jx+ux*5.4,cz=jz+uz*5.4,px=-uz,pz=ux;
+        routes.push({sx:cx-px*5.2,sz:cz-pz*5.2,ex:cx+px*5.2,ez:cz+pz*5.2});
+      });
+    });
+    return routes;
+  },[]);
   const dummy=useMemo(()=>new THREE.Object3D(),[]);
   useEffect(()=>{
     const body=bodies.current,head=heads.current;if(!body||!head)return;
@@ -826,9 +847,22 @@ function CityPedestrians() {
     const body=bodies.current,head=heads.current;if(!body||!head)return;
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
-      const a=anchors[i%anchors.length]!,phase=i*1.73;
-      const x=a[0]+Math.sin(t*.32+phase)*2.8,z=a[1]+Math.cos(t*.27+phase)*2.2;
-      dummy.position.set(x,.78,z);dummy.scale.set(.34,.95,.28);dummy.rotation.y=Math.sin(t*.32+phase)*.7;dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
+      const phase=i*1.73;
+      let x:number,z:number,yaw:number;
+      if(i%5===0&&crossingRoutes.length){
+        const route=crossingRoutes[Math.floor(i/5)%crossingRoutes.length]!;
+        const cycle=(t*0.075+Math.floor(i/5)*0.19)%1;
+        const progress=cycle<0.68?cycle/0.68:cycle<0.84?1:0;
+        x=route.sx+(route.ex-route.sx)*progress;
+        z=route.sz+(route.ez-route.sz)*progress;
+        yaw=Math.atan2(route.ex-route.sx,route.ez-route.sz);
+      }else{
+        const a=anchors[i%anchors.length]!;
+        x=a[0]+Math.sin(t*.32+phase)*2.8;
+        z=a[1]+Math.cos(t*.27+phase)*2.2;
+        yaw=Math.atan2(Math.cos(t*.27+phase),Math.cos(t*.32+phase));
+      }
+      dummy.position.set(x,.78,z);dummy.scale.set(.34,.95,.28);dummy.rotation.y=yaw;dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
       dummy.position.set(x,1.48,z);dummy.scale.set(.23,.23,.23);dummy.rotation.set(0,0,0);dummy.updateMatrix();head.setMatrixAt(i,dummy.matrix);
     }
     body.instanceMatrix.needsUpdate=true;head.instanceMatrix.needsUpdate=true;
