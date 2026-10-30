@@ -104,6 +104,8 @@ export function interact() {
       else if (value === "dealer") s.setModal("dealer");
       else if (value === "home") s.setModal("home");
       else if (value === "bank") s.openPhone("bank");
+      else if (value === "court") { s.openPhone("jobs"); s.radio("⚖️ Court registry: check the Jobs app for available civic service work and appointments."); }
+      else if (value === "government") { s.openPhone("jobs"); s.radio("🏛️ Government House: check the Jobs app for public-service opportunities and available duties."); }
       else if (value === "service") s.radio("A staff member will assist you shortly.");
       else s.radio("You interacted with " + hotspot.label + ".");
     } else if (action === "study") {
