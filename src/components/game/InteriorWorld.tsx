@@ -64,10 +64,20 @@ function InteriorTapNavigation({scale}:{scale:number}) {
   return <group position={[104*scale,0,104*scale]} scale={scale}>\n    <InteriorTapNavigation scale={scale}/>
         <ambientLight intensity={.58}/><hemisphereLight args={["#d9fff2","#203b32",.65]}/>
     {[[-9,-5],[8,-6],[-9,7],[-14,2]].map(([x,z],i)=><group key={"spot-"+i} position={[x,3.1,z]}>
-      <spotLight position={[0,0,0]} target-position={[0,-2.8,0]} angle={.48} penumbra={.65} intensity={i===0?2.4:1.8} distance={9} color="#fff0d0" castShadow={false}/>
+      <pointLight position={[0,-.25,0]} intensity={i===0?1.6:1.1} distance={8} color="#fff0d0" castShadow={false}/>
       <mesh><cylinderGeometry args={[.22,.16,.08,16]}/><meshStandardMaterial color="#f4e9c8" emissive="#ffe6a8" emissiveIntensity={.65}/></mesh>
     </group>)}
     <mesh position={[0,-.08,0]} receiveShadow><boxGeometry args={[w,.16,d]}/><meshStandardMaterial color={def.floorColor} roughness={.9}/></mesh>
+    {kind==="home" && <>
+      <mesh position={[-8,.012,-5]} receiveShadow><boxGeometry args={[16,.025,13]}/><meshStandardMaterial color="#e8e5dc" roughness={.88}/></mesh>
+      <mesh position={[9,.018,-2]} receiveShadow><boxGeometry args={[15,.03,17]}/><meshStandardMaterial color="#815a3d" roughness={.78}/></mesh>
+      <mesh position={[-9,.02,7]} receiveShadow><boxGeometry args={[15,.035,8]}/><meshStandardMaterial color="#c9c9bd" roughness={.82}/></mesh>
+      <mesh position={[-13,.025,3.5]} receiveShadow><boxGeometry args={[5,.04,8]}/><meshStandardMaterial color="#dce5df" roughness={.8}/></mesh>
+      <mesh position={[0,1.25,2]}><boxGeometry args={[.14,2.5,13]}/><meshStandardMaterial color="#087b70" roughness={.9}/></mesh>
+      <mesh position={[-1,1.25,-7]}><boxGeometry args={[.14,2.5,10]}/><meshStandardMaterial color="#087b70" roughness={.9}/></mesh>
+      <mesh position={[-6,1.25,4]}><boxGeometry args={[8,2.5,.14]}/><meshStandardMaterial color="#087b70" roughness={.9}/></mesh>
+      <mesh position={[-12,1.25,0]}><boxGeometry args={[.14,2.5,8]}/><meshStandardMaterial color="#087b70" roughness={.9}/></mesh>
+    </>}
     <mesh position={[0,1.75,-d/2]} receiveShadow><boxGeometry args={[w,3.5,.18]}/><meshStandardMaterial color={def.wallColor} roughness={.92}/></mesh>
     <mesh position={[-w/2,1.75,0]} receiveShadow><boxGeometry args={[.18,3.5,d]}/><meshStandardMaterial color={def.wallColor} roughness={.92}/></mesh>
     <mesh position={[w/2,1.75,0]} receiveShadow><boxGeometry args={[.18,3.5,d]}/><meshStandardMaterial color={def.wallColor} roughness={.92}/></mesh>
