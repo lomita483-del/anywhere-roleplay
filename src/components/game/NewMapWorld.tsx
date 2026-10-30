@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { useGame } from "@/game/store";
 import { g } from "@/game/state";
 import { getGraphicsProfile } from "@/game/graphics";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -633,18 +633,26 @@ function DrainCovers() {
 
 function CityNamedTraffic() {
   const refs=useRef<(THREE.Group|null)[]>([]);
+  const progress=useRef<number[]>([]);
   const quality=useGame(s=>s.graphicsQuality);
   const models=useMemo(()=>["danfo","taxi","sedan","suv","police","keke","danfo","taxi","sedan","suv"],[]);
   const count=quality==="low"?2:quality==="high"?8:4;
   const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
-  useFrame((state)=>{
+  useFrame((state, delta)=>{
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const group=refs.current[i];if(!group)continue;
       const route=routes[(i*2+1)%routes.length]!;
-      const u=((t*(quality==="low"?0.018:0.022)+i*.137)%1);
-      const point=route.getPointAt(u),tangent=route.getTangentAt(u);
-      group.position.set(point.x,0,point.z);
+      const length=route.getLength();
+      if(progress.current[i]===undefined)progress.current[i]=((i*.137)%1)*length;
+      const candidate=(progress.current[i]!+delta*(quality==="low"?4.2:5.2+(i%3)*.45))%length;
+      const point=route.getPointAt(candidate/length);
+      let junctionIndex=-1,nearestDistance=Infinity;
+      NEW_MAP_JUNCTIONS.forEach(([x,z],index)=>{const distance=Math.hypot(point.x-x,point.z-z);if(distance<nearestDistance){nearestDistance=distance;junctionIndex=index;}});
+      const signal=junctionIndex>=0?getNewMapTrafficSignalState(t,junctionIndex*4.5):"green";
+      if(!(nearestDistance<7.5&&signal!=="green"))progress.current[i]=candidate;
+      const actual=route.getPointAt(progress.current[i]!/length),tangent=route.getTangentAt(progress.current[i]!/length);
+      group.position.set(actual.x,0,actual.z);
       group.rotation.y=Math.atan2(tangent.x,tangent.z);
       group.visible=true;
     }
@@ -656,12 +664,13 @@ function CityNamedTraffic() {
 function CityTrafficSignals() {
   const heads = useRef<(THREE.Mesh | null)[][]>([]);
   const quality = useGame(s => s.graphicsQuality);
-  const junctions = useMemo(() => NEW_MAP_JUNCTIONS.filter((_, i) => quality === "low" ? i % 3 === 0 : quality === "medium" ? i % 2 === 0 : true), [quality]);
+  const junctions = useMemo(() => NEW_MAP_JUNCTIONS.map((point, index) => ({ point, index })).filter(({ index }) => quality === "low" ? index % 3 === 0 : quality === "medium" ? index % 2 === 0 : true), [quality]);
   useFrame(({ clock }) => {
     const elapsed = clock.elapsedTime;
     heads.current.forEach((lamps, index) => {
-      const phase = (elapsed + index * 4.5) % 18;
-      const activeLamp = phase < 10 ? 2 : phase < 12 ? 1 : 0;
+      const junctionIndex = junctions[index]?.index ?? index;
+      const state = getNewMapTrafficSignalState(elapsed, junctionIndex * 4.5);
+      const activeLamp = state === "green" ? 2 : state === "amber" ? 1 : 0;
       lamps.forEach((lamp, lampIndex) => {
         if (!lamp) return;
         const material = lamp.material as THREE.MeshStandardMaterial;
@@ -685,6 +694,7 @@ function CityTraffic() {
   const wheelRef=useRef<THREE.InstancedMesh>(null);
   const quality=useGame(s=>s.graphicsQuality);
   const dummy=useMemo(()=>new THREE.Object3D(),[]);
+  const progress=useRef<number[]>([]);
   const count=getGraphicsProfile(quality).trafficCount;
   const routes=useMemo(()=>NEW_MAP_ROADS.map(path=>new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22)),[]);
   useEffect(()=>{
@@ -693,19 +703,21 @@ function CityTraffic() {
     for(let i=0;i<count;i++)body.setColorAt(i,new THREE.Color(colors[i%colors.length]!));
     if(body.instanceColor)body.instanceColor.needsUpdate=true;
   },[count]);
-  useFrame((state)=>{
+  useFrame((state, delta)=>{
     const body=bodyRef.current,glass=glassRef.current,wheels=wheelRef.current;if(!body||!glass||!wheels)return;
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const route=routes[i%routes.length]!,length=route.getLength();
-      const startDistance=i*(length/count);
+      if(progress.current[i]===undefined)progress.current[i]=i*(length/count);
       const baseSpeed=quality==="low"?4.8:5.8+(i%4)*.7;
-      let distance=(t*baseSpeed+startDistance)%length;
-      let point=route.getPointAt(distance/length);
-      const nearStadium=Math.hypot(point.x,point.z)<32;
-      const nearPort=Math.hypot(point.x-116,point.z-120)<32;
-      if(nearStadium||nearPort)distance=(t*baseSpeed*.56+startDistance)%length;
-      point=route.getPointAt(distance/length);
+      const candidate=(progress.current[i]!+baseSpeed*delta)%length;
+      const approach=route.getPointAt(candidate/length);
+      let junctionIndex=-1,nearestDistance=Infinity;
+      NEW_MAP_JUNCTIONS.forEach(([x,z],index)=>{const distance=Math.hypot(approach.x-x,approach.z-z);if(distance<nearestDistance){nearestDistance=distance;junctionIndex=index;}});
+      const signal=junctionIndex>=0?getNewMapTrafficSignalState(t,junctionIndex*4.5):"green";
+      if(!(nearestDistance<7.5&&signal!=="green"))progress.current[i]=candidate;
+      const distance=progress.current[i]!;
+      const point=route.getPointAt(distance/length);
       const tangent=route.getTangentAt(distance/length),yaw=Math.atan2(-tangent.z,tangent.x);
       const isBus=i%7===0,isVan=i%5===0&&!isBus;
       const lengthScale=isBus?1.75:isVan?1.35:1;
