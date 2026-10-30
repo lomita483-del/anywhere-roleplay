@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout } from "./newMap";
+import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute } from "./newMap";
 
 describe("NEW MAP layout", () => {
   it("keeps every planned building, stall, tree and hill clear of roads and one another", () => {
@@ -19,6 +19,17 @@ describe("NEW MAP layout", () => {
     expect(seen.size).toBe(NEW_MAP_ROAD_GRAPH.nodes.length);
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "avenue" || edge.type === "boulevard" || edge.type === "perimeter").every(edge => edge.width === 8)).toBe(true);
     expect(NEW_MAP_ROAD_GRAPH.edges.filter(edge => edge.type === "street").every(edge => edge.width === 5)).toBe(true);
+  });
+
+  it("routes ride vehicles through connected NEW MAP streets instead of cutting directly across blocks", () => {
+    const route = findNewMapRoadRoute(-150, -120, 150, 120);
+    expect(route.length).toBeGreaterThan(3);
+    expect(route[0]).toEqual([-150, -120]);
+    expect(route[route.length - 1]).toEqual([150, 120]);
+    for (let i = 1; i < route.length - 1; i++) {
+      const [x, z] = route[i]!;
+      expect(NEW_MAP_ROAD_GRAPH.nodes.some(node => Math.hypot(node.x - x, node.z - z) < 0.01)).toBe(true);
+    }
   });
 
   it("includes named inner-city shops and food landmarks in the discoverable POI list", () => {
