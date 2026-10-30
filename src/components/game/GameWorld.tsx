@@ -398,6 +398,7 @@ function Traffic() {
       for (let j = 0; j < cars.length; j += 1) {
         if (i === j) continue;
         const other = cars[j];
+        if (!other) continue;
         if (other.t.lane.axis !== car.t.lane.axis ||
             Math.abs(other.t.lane.fixed - car.t.lane.fixed) > 0.15 ||
             other.dir !== car.dir) continue;
