@@ -3,7 +3,7 @@ import {
   ArrowLeft, Banknote, Briefcase, Car, Bike, Footprints, MapPin, Map as MapIcon, Package, Radio as RadioIcon, ShoppingBag, User, Shirt, Utensils, PlaneTakeoff, Fuel, Radar as RadarIcon, Settings as SettingsIcon, Users as UsersIcon, UserPlus, UserMinus, ShieldAlert, X,
 } from "lucide-react";
 import { g } from "@/game/state";
-import { useGame, naira, JOB_INFO, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
+import { useGame, naira, JOB_INFO, JOB_SKILL_MAP, skillPayoutMultiplier, MARKET_ITEMS, VEHICLE_CATALOG, DISTRICT_INFO, type JobType, type PlayerOutfit } from "@/game/store";
 import { deliverOwnedVehicle, exitVehicle } from "@/game/actions";
 import { supabase } from "@/integrations/supabase/client";
 import { POIS, ROADS_X, ROADS_Z, ROAD_HALF, JOB_POINTS, BUILDINGS, WORLD, BOUND } from "@/game/city";
@@ -90,6 +90,7 @@ function JobsApp() {
   const accept = useGame((s) => s.acceptJob);
   const cancel = useGame((s) => s.cancelJob);
   const nearTarget = useGame((s) => s.nearJobTarget);
+  const skills = useGame((s) => s.skills);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const remaining = active?.startedAt ? Math.max(0, (active.timeLimitSeconds ?? 480) - Math.floor((now - active.startedAt) / 1000)) : 480;
@@ -107,7 +108,8 @@ function JobsApp() {
             <span className="font-semibold text-amber-200">{Math.round(nearTarget)}m to target</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-emerald-400" style={{width:((active.stage+1)/active.targets.length*100)+"%"}} /></div>
-          <div className="mt-2 flex items-center justify-between text-xs"><span className="text-slate-200">Reward</span><span className="font-bold text-emerald-200">{naira(active.payout)}</span></div>
+          <div className="mt-2 flex items-center justify-between text-xs"><span className="text-slate-200">Base reward</span><span className="font-bold text-emerald-200">{naira(active.payout)}</span></div>
+          <div className="mt-1 text-[10px] text-slate-300">Final reward includes your career skill bonus when eligible.</div>
           <div className="mt-2 flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 py-2"><span className="text-xs text-slate-200">Time remaining</span><span className={"text-sm font-black "+(remaining<90?"text-rose-300":"text-amber-200")}>{remainingLabel}</span></div>
           <div className="mt-1 text-xs text-slate-300">Keep moving to the red job marker. The shift expires when the timer reaches 0:00.</div>
         </div>
@@ -128,6 +130,10 @@ function JobsApp() {
           </div>
           <div className="mt-1 text-xs text-slate-200">{JOB_INFO[t].desc}</div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-300"><span className="rounded-full bg-white/5 px-2 py-1">📍 {t==="airport"?"2.8–5.4 km":t==="estate-agent"?"1.5–4.8 km":t==="construction"?"0.8–2.2 km":t==="retail"?"0.6–2.6 km":t==="trader"?"1.0–3.5 km":"1.2–4.0 km"}</span><span className="rounded-full bg-white/5 px-2 py-1">⏱ 8 min limit</span></div>
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-sky-300/15 bg-sky-300/[0.05] px-3 py-2">
+            <div><div className="text-[11px] font-semibold text-sky-100">{({courier:"Courier",driver:"Driving",trader:"Trading",security:"Security",construction:"Construction",retail:"Retail",airport:"Aviation","estate-agent":"Negotiation"} as Record<JobType,string>)[t]} · Level {skills[JOB_SKILL_MAP[t]].level}</div><div className="mt-0.5 text-[10px] text-slate-300">Career skill bonus: {Math.round((skillPayoutMultiplier(skills[JOB_SKILL_MAP[t]].level)-1)*100)}%</div></div>
+            <span className="text-xs font-bold text-emerald-200">{naira(Math.round(JOB_INFO[t].payout*skillPayoutMultiplier(skills[JOB_SKILL_MAP[t]].level)))}</span>
+          </div>
           <button
             className="mt-2 min-h-11 w-full rounded-xl bg-amber-300/15 py-2 text-sm font-bold text-amber-100 active:scale-[0.98]"
             onClick={() => accept(t)}
