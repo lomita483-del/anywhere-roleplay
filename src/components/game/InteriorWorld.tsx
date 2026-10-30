@@ -36,13 +36,13 @@ function Npc({npc,index}:{npc:{role:string;x:number;z:number;lines:string[]};ind
 }
 
 function InteriorTapNavigation({scale}:{scale:number}) {
-  const target=useRef<THREE.Vector3|null>(null);\n  useEffect(()=>{const handler=(event:Event)=>{const detail=(event as CustomEvent<{x:number;z:number}>).detail;target.current=new THREE.Vector3(detail.x,0,detail.z);};window.addEventListener("interior-walk",handler);return()=>window.removeEventListener("interior-walk",handler);},[]);
+  const target=useRef<THREE.Vector3|null>(null);\n  useEffect(()=>{const handler=(event:Event)=>{const detail=(event as CustomEvent<{x:number;z:number;hotspotId:string;label:string}>).detail;target.current=new THREE.Vector3(detail.x,0,detail.z);(window as any).__pendingInteriorHotspot={id:detail.hotspotId,label:detail.label};};window.addEventListener("interior-walk",handler);return()=>window.removeEventListener("interior-walk",handler);},[]);
   useEffect(()=>{target.current=null;},[scale]);
   useFrame((_,dt)=>{
     const point=target.current;if(!point)return;
     const dx=point.x-g.playerPos.x,dz=point.z-g.playerPos.z;
     const distance=Math.hypot(dx,dz);
-    if(distance<.22){g.playerPos.set(point.x,0,point.z);g.playerSpeed=0;target.current=null;return;}
+    if(distance<.22){g.playerPos.set(point.x,0,point.z);g.playerSpeed=0;target.current=null;const pending=(window as any).__pendingInteriorHotspot;if(pending){useGame.getState().setPrompt({kind:"interior-hotspot",label:pending.label,hotspotId:pending.id});(window as any).__pendingInteriorHotspot=null;}return;}
     const step=Math.min(distance,Math.max(0,3.2*dt));
     g.playerPos.x+=dx/distance*step;g.playerPos.z+=dz/distance*step;
     g.playerYaw=Math.atan2(dx,dz);g.playerSpeed=3.2;
@@ -87,7 +87,7 @@ function InteriorTapNavigation({scale}:{scale:number}) {
     {def.hotspots.map(h=><group key={h.id} position={[h.x,.055,h.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.42,.55,24]}/><meshStandardMaterial color={def.accent} emissive={def.accent} emissiveIntensity={.9} side={THREE.DoubleSide}/></mesh>
       <Html position={[0,.2,0]} center distanceFactor={14} style={{pointerEvents:"auto"}}>
-        <button type="button" onClick={(event)=>{event.stopPropagation();g.playerSpeed=0;const destination=new THREE.Vector3(104*scale+h.x*scale,0,104*scale+h.z*scale);window.dispatchEvent(new CustomEvent("interior-walk",{detail:{x:destination.x,z:destination.z}}));const state=useGame.getState();state.setPrompt({kind:"interior-hotspot",label:h.label,hotspotId:h.id});}} className="whitespace-nowrap rounded-lg border border-emerald-200/40 bg-[#071319]/95 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg active:scale-95">{h.label}</button>
+        <button type="button" onClick={(event)=>{event.stopPropagation();g.playerSpeed=0;const destination=new THREE.Vector3(104+h.x,0,104+h.z);window.dispatchEvent(new CustomEvent("interior-walk",{detail:{x:destination.x,z:destination.z,hotspotId:h.id,label:h.label}}));}} className="whitespace-nowrap rounded-lg border border-emerald-200/40 bg-[#071319]/95 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg active:scale-95">{h.label}</button>
       </Html>
     </group>)}
     <mesh position={[def.exit.x,.04,def.exit.z]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[1.6,.9]}/><meshStandardMaterial color="#39df9b" emissive="#20b979" emissiveIntensity={1.2} transparent opacity={.8}/></mesh>
