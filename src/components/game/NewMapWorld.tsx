@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { useGame } from "@/game/store";
 import { g } from "@/game/state";
 import { getGraphicsProfile } from "@/game/graphics";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, getNewMapPedestrianSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -709,6 +709,32 @@ function CityTrafficSignals() {
   </group>)}</>;
 }
 
+function CityPedestrianSignals() {
+  const lamps = useRef<(THREE.Mesh | null)[][]>([]);
+  const quality = useGame(s => s.graphicsQuality);
+  const junctions = useMemo(() => NEW_MAP_JUNCTIONS.map((point, index) => ({ point, index })).filter(({ index }) => quality === "low" ? index % 3 === 0 : quality === "medium" ? index % 2 === 0 : true), [quality]);
+  useFrame(({ clock }) => {
+    const elapsed = clock.elapsedTime;
+    lamps.current.forEach((pair, visibleIndex) => {
+      const junctionIndex = junctions[visibleIndex]?.index ?? visibleIndex;
+      const walk = getNewMapPedestrianSignalState(elapsed, junctionIndex * 4.5) === "walk";
+      pair.forEach((lamp, lampIndex) => {
+        if (!lamp) return;
+        const material = lamp.material as THREE.MeshStandardMaterial;
+        material.emissiveIntensity = lampIndex === (walk ? 1 : 0) ? 1.5 : 0.035;
+      });
+    });
+  });
+  return <>{junctions.map(({ point: [x, z], index }) => <group key={index} position={[x - 4.1, 0, z - 4.1]}>
+    <mesh position={[0, 1.25, 0]}><cylinderGeometry args={[.055, .07, 2.5, 7]}/><meshStandardMaterial color="#343b3d" metalness={.45} roughness={.6}/></mesh>
+    <mesh position={[0, 2.35, 0]}><boxGeometry args={[.38, .72, .24]}/><meshStandardMaterial color="#202729" metalness={.2} roughness={.5}/></mesh>
+    {[0, 1].map((lamp) => <mesh key={lamp} ref={(el) => { const row = lamps.current[index] ?? (lamps.current[index] = [null, null]); row[lamp] = el; }} position={[0, 2.52 - lamp * .34, .13]}>
+      <sphereGeometry args={[.09, 9, 7]}/>
+      <meshStandardMaterial color={lamp === 0 ? "#e5483f" : "#46d17b"} emissive={lamp === 0 ? "#e5483f" : "#46d17b"} emissiveIntensity={.035}/>
+    </mesh>)}
+  </group>)}</>;
+}
+
 function CityTraffic() {
   const bodyRef=useRef<THREE.InstancedMesh>(null);
   const glassRef=useRef<THREE.InstancedMesh>(null);
@@ -1041,6 +1067,7 @@ function CityEcosystem() {
     <CityTrees />
     {buildings.map((b, i) => <CityBuilding key={i} b={b} />)}
     <CityTrafficSignals />
+    <CityPedestrianSignals />
     {quality === "high" ? <CityNamedTraffic /> : <CityTraffic />}
   </>;
 }
