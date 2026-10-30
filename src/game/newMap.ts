@@ -29,6 +29,7 @@ const roadEdges: NewMapRoadEdge[] = [
  ...[-56,-28,28,56].map((z,i)=>({id:"residential-ew-"+i,from:"res-ew-"+i,to:"res-ew-"+i,type:"street" as const,width:5,points:[[82,z],[96,z],[124,z],[152,z],[174,z]] as [number,number][]})),
  {id:"civic-link",from:"boulevard-east-north",to:"residential-avenue",type:"street",width:5,points:[[82,96],[110,96],[138,96],[160,96]]},
  {id:"civic-service-spur",from:"civic-link",to:"real-estate",type:"street",width:5,points:[[82,96],[68,96],[68,110],[68,132]]},
+ {id:"government-district-access",from:"civic-link",to:"government-house",type:"street",width:5,points:[[160,96],[168,112],[168,136],[168,164],[178,164]]},
  {id:"market-link",from:"market-west",to:"airport-avenue",type:"street",width:5,points:[[-58,-88],[-32,-88],[0,-88]]},
 ];
 function roadIntersections() {
@@ -136,6 +137,7 @@ export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
  {id:"university",label:"UNIVERSITY DISTRICT",x:-126,z:70,w:70,d:70,color:"#a98f7b"},
  {id:"residential",label:"RESIDENTIAL GRID",x:135,z:0,w:78,d:145,color:"#bdb79c"},
  {id:"civic",label:"CIVIC & OFFICE STRIP",x:112,z:98,w:72,d:72,color:"#b3a895"},
+ {id:"government",label:"GOVERNMENT & JUSTICE DISTRICT",x:145,z:142,w:56,d:64,color:"#a8aa9c"},
  {id:"port",label:"PORT & LOGISTICS",x:132,z:126,w:55,d:42,color:"#9c9e91"},
  {id:"lake-park",label:"LAKE PARK & RESORT",x:-120,z:142,w:62,d:54,color:"#789b76"},
  {id:"airport",label:"INTERNATIONAL AIRPORT",x:34,z:-112,w:68,d:100,color:"#9ba9a5"}
@@ -164,6 +166,8 @@ const rawBuildings: Omit<NewMapBuilding,"doorX"|"doorZ">[] = [
  {id:"real-estate",label:"REAL ESTATE OFFICE",kind:"real-estate",district:"civic",x:82,z:132,w:12,d:9,h:7,color:"#c7b89c",doorSide:"west"},
  {id:"mama-put",label:"MAMA PUT BUKA",kind:"mama-put",district:"market",x:-12,z:-116,w:9,d:7,h:4,color:"#d7b37a",doorSide:"east"},
  {id:"port-terminal",label:"PORT OF LAGOS",kind:"port",district:"port",x:105,z:142,w:23,d:15,h:8,color:"#b7a58a",doorSide:"east"},
+ {id:"government-house",label:"GOVERNMENT HOUSE",kind:"government",district:"government",x:145,z:130,w:14,d:12,h:10,color:"#d5c6a8",doorSide:"east"},
+ {id:"court-complex",label:"CITY COURT COMPLEX",kind:"court",district:"government",x:145,z:155,w:14,d:12,h:8,color:"#c7c4b8",doorSide:"east"},
 
  // Walkable inner-ring neighbourhood: small shops and food spots make the stadium district feel lived-in.
  ...[
@@ -184,7 +188,7 @@ export const NEW_MAP_BUILDINGS: NewMapBuilding[] = rawBuildings.map(b=>{
  return {...b,doorX:b.x+(b.doorSide==="east"?doorOffset:b.doorSide==="west"?doorOffset:0),doorZ:b.z+(b.doorSide==="north"||b.doorSide==="south"?doorOffset:0)};
 });
 export const NEW_MAP_POIS: NewMapPoi[] = [
- ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market","shop"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
+ ...NEW_MAP_BUILDINGS.filter(b=>["airport","port","stadium","university","lake","bank","police","fuel","pharmacy","mama-put","dealership","real-estate","hospital","market","shop","court","government"].includes(b.kind)||b.id==="school"||b.id.startsWith("home-")).map(b=>({id:b.id,label:b.label,kind:(b.kind==="tower"||b.kind==="factory"||b.kind==="warehouse"||b.kind==="depot"?"shop":b.kind==="residential"?"residential":b.kind) as NewMapPoiKind,x:b.doorX!,z:b.doorZ!,buildingId:b.id})),
  {id:"stadium",label:"CITY STADIUM",kind:"stadium",x:0,z:0},
  {id:"lake",label:"LAKE PARK & RESORT",kind:"lake",x:-120,z:142},
  {id:"atm-market",label:"MARKET ATM",kind:"atm",x:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorX!,z:NEW_MAP_BUILDINGS.find(b=>b.id==="market")!.doorZ!,buildingId:"market"},
