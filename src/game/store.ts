@@ -373,8 +373,8 @@ const DEFAULTS = {
   characterTraits: ["Street smart"],
   unlockedDistricts: ["Yaba / Surulere"],
   rentals: {} as Record<string, number>,
-  interior: false,
-  interiorLabel: "Ikoyi Apartment",
+  interior: true,
+  interiorLabel: "Your 3-Room Flat",
   interiorKind: "home",
   waypoint: null as GpsWaypoint | null,
   rideRequest: null as RideRequest | null,
@@ -478,14 +478,14 @@ export const useGame = create<GameStore>((set, get) => ({
       const migratedToNewMap = saved.city === "lagos" || !saved.city;
       const savedCity: CityId = migratedToNewMap ? "newmap" : (saved.city ?? "newmap");
       setCityWorld(savedCity);
-      g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 29 : saved.z);
+      g.playerPos.set(104, 0, 104); g.interiorReturn.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 29 : saved.z);
       if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8; }
       // Restore the saved world clock for NEW MAP too; resetting it to 09:30
       // on every load made the day/night cycle appear to never persist.
       const restoredTime = Number.isFinite(saved.time) ? ((saved.time % 24) + 24) % 24 : 9.5;
       g.time = restoredTime;
       set({
-        started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        started: true, city: savedCity, stadiumMode: false, interior: true, interiorLabel: "Your 3-Room Flat", interiorKind: "home", name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         employment: saved.employment ?? {}, workShift: saved.workShift ?? null, timeMode: saved.timeMode ?? "accelerated",
         skills: Object.fromEntries((Object.keys(DEFAULT_SKILLS) as SkillKey[]).map((key) => { const savedSkill = saved.skills?.[key]; const skillXp = Math.max(0, Number(savedSkill?.xp) || 0); return [key, { xp: skillXp, level: skillLevelForXp(skillXp) }]; })) as SkillProgression,
         inventory: saved.inventory || {}, owned: saved.owned || [],
@@ -505,15 +505,17 @@ export const useGame = create<GameStore>((set, get) => ({
     } else {
       setCityWorld(get().city);
       if (get().city === "newmap") {
-        g.playerPos.set(0, 0, 29);
+        g.playerPos.set(104, 0, 104); g.interiorReturn.set(0, 0, 29);
+        g.camDistance = 24; g.camPitch = 0.72;
         g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8;
       } else {
-        g.playerPos.set(0, 0, 18.2);
+        g.playerPos.set(104, 0, 104); g.interiorReturn.set(-14, 0, 18.2);
+        g.camDistance = 24; g.camPitch = 0.72;
         g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.25; g.camDistance = 16;
       }
       g.time = get().city === "newmap" ? 9.5 : 8;
       localStorage.removeItem(SAVE_KEY);
-      set({ ...DEFAULTS, started: true, cash: DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
+      set({ ...DEFAULTS, started: true, interior: true, interiorLabel: "Your 3-Room Flat", interiorKind: "home", cash: DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
     }
     g.started = true;
     if (!fresh && typeof window !== "undefined") {
