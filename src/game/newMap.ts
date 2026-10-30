@@ -57,6 +57,11 @@ export const NEW_MAP_ROAD_GRAPH = {
 };
 export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
+/** 18-second junction signal cycle: 10s green, 2s amber, 6s red. */
+export function getNewMapTrafficSignalState(elapsedSeconds: number, phaseOffset = 0): "green" | "amber" | "red" {
+ const phase = ((elapsedSeconds + phaseOffset) % 18 + 18) % 18;
+ return phase < 10 ? "green" : phase < 12 ? "amber" : "red";
+}
 export const NEW_MAP_ROAD_ENDPOINTS = roadEdges.flatMap(e=>{const first=e.points[0]!,last=e.points[e.points.length-1]!;if(Math.hypot(first[0]-last[0],first[1]-last[1])<0.1)return [];return [first,last].filter(p=>!NEW_MAP_JUNCTIONS.some(j=>Math.hypot(j[0]-p[0],j[1]-p[1])<1)).map(p=>({x:p[0],z:p[1],width:e.width}));});
 export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.id==="corporate-street-n");
 /** Find a shortest drivable route through the NEW MAP road graph.
