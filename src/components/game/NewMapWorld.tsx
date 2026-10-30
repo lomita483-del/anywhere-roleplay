@@ -654,27 +654,27 @@ function CityNamedTraffic() {
 }
 
 function CityTrafficSignals() {
-  const heads = useRef<(THREE.Mesh | null)[]>([]);
+  const heads = useRef<(THREE.Mesh | null)[][]>([]);
   const quality = useGame(s => s.graphicsQuality);
   const junctions = useMemo(() => NEW_MAP_JUNCTIONS.filter((_, i) => quality === "low" ? i % 3 === 0 : quality === "medium" ? i % 2 === 0 : true), [quality]);
   useFrame(({ clock }) => {
     const elapsed = clock.elapsedTime;
-    heads.current.forEach((head, index) => {
-      if (!head) return;
+    heads.current.forEach((lamps, index) => {
       const phase = (elapsed + index * 4.5) % 18;
-      const active = phase < 10 ? 2 : phase < 12 ? 1 : 0;
-      const material = head.material as THREE.MeshStandardMaterial;
-      material.color.set(active === 0 ? "#e5483f" : active === 1 ? "#f3c34f" : "#46d17b");
-      material.emissive.set(active === 0 ? "#e5483f" : active === 1 ? "#f3c34f" : "#46d17b");
-      material.emissiveIntensity = 1.1;
+      const activeLamp = phase < 10 ? 2 : phase < 12 ? 1 : 0;
+      lamps.forEach((lamp, lampIndex) => {
+        if (!lamp) return;
+        const material = lamp.material as THREE.MeshStandardMaterial;
+        material.emissiveIntensity = lampIndex === activeLamp ? 1.4 : 0.04;
+      });
     });
   });
   return <>{junctions.map(([x, z], index) => <group key={index} position={[x, 0, z]}>
     <mesh position={[4.1, 2.25, 4.1]}><cylinderGeometry args={[.09, .11, 4.5, 8]}/><meshStandardMaterial color="#343b3d" metalness={.55} roughness={.5}/></mesh>
     <mesh position={[4.1, 4.45, 4.1]}><boxGeometry args={[.48, 1.12, .38]}/><meshStandardMaterial color="#252b2d" metalness={.25} roughness={.5}/></mesh>
-    {[0, 1, 2].map((lamp) => <mesh key={lamp} ref={lamp === 1 ? (el) => { heads.current[index] = el; } : undefined} position={[4.1, 4.78 - lamp * .32, 3.89]}>
+    {[0, 1, 2].map((lamp) => <mesh key={lamp} ref={(el) => { const row = heads.current[index] ?? (heads.current[index] = [null, null, null]); row[lamp] = el; }} position={[4.1, 4.78 - lamp * .32, 3.89]}>
       <sphereGeometry args={[.105, 10, 8]}/>
-      <meshStandardMaterial color={lamp === 0 ? "#e5483f" : lamp === 1 ? "#f3c34f" : "#46d17b"} emissive={lamp === 0 ? "#e5483f" : lamp === 1 ? "#f3c34f" : "#46d17b"} emissiveIntensity={lamp === 0 ? 1.1 : .05}/>
+      <meshStandardMaterial color={lamp === 0 ? "#e5483f" : lamp === 1 ? "#f3c34f" : "#46d17b"} emissive={lamp === 0 ? "#e5483f" : lamp === 1 ? "#f3c34f" : "#46d17b"} emissiveIntensity={lamp === 0 ? .04 : 1.4}/>
     </mesh>)}
   </group>)}</>;
 }
