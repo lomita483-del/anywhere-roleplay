@@ -77,11 +77,17 @@ export interface JobStats {
 export interface BankTransaction { id: string; at: string; type: string; amount: number; note: string; }
 export interface OnlinePlayer { name: string; x: number; y: number; z: number; yaw: number; vehicle: string | null; outfit?: { gender?: "male" | "female"; skinTone?: string; top?: string; hairColor?: string }; }
 
+export interface EmploymentRecord { role: JobType; hiredAt: number; shiftsCompleted: number; totalEarned: number; }
+export interface WorkShift { role: JobType; startedAt: number; durationMinutes: number; }
+
 export interface SaveData {
   name: string;
   city?: CityId;
   xp?: number;
   skills?: Partial<SkillProgression>;
+  employment?: Partial<Record<JobType, EmploymentRecord>>;
+  workShift?: WorkShift | null;
+  timeMode?: "device" | "accelerated";
   cash: number;
   bank: number;
   inventory: Record<string, number>;
@@ -217,6 +223,13 @@ interface GameStore {
   xp: number;
   level: number;
   skills: SkillProgression;
+  employment: Partial<Record<JobType, EmploymentRecord>>;
+  workShift: WorkShift | null;
+  timeMode: "device" | "accelerated";
+  setTimeMode: (mode: "device" | "accelerated") => void;
+  hireForRole: (role: JobType) => boolean;
+  clockIn: (role: JobType) => boolean;
+  clockOut: () => boolean;
   addSkillXp: (skill: SkillKey, amount: number) => void;
   addXp: (amount: number) => void;
   graphicsQuality: "low" | "medium" | "high";
@@ -340,6 +353,9 @@ const DEFAULTS = {
   xp: 0,
   level: 1,
   skills: { ...DEFAULT_SKILLS },
+  employment: {} as Partial<Record<JobType, EmploymentRecord>>,
+  workShift: null as WorkShift | null,
+  timeMode: "accelerated" as const,
   graphicsQuality: getInitialGraphicsQuality(),
   name: "",
   cash: 100_000_000_000,
@@ -373,6 +389,34 @@ const DEFAULTS = {
 
 export const useGame = create<GameStore>((set, get) => ({
   ...DEFAULTS,
+  setTimeMode: (timeMode) => { set({ timeMode }); get().save(); },
+  hireForRole: (role) => {
+    if (get().employment[role]) return false;
+    set({ employment: { ...get().employment, [role]: { role, hiredAt: Date.now(), shiftsCompleted: 0, totalEarned: 0 } } });
+    get().radio("📄 Employment contract signed: " + JOB_INFO[role].title + ". You can now clock in for shifts.");
+    get().save(); return true;
+  },
+  clockIn: (role) => {
+    if (!get().employment[role] || get().workShift || get().activeJob || get().interior) return false;
+    if (get().needs.energy < 10 || get().needs.health < 15) return false;
+    set({ workShift: { role, startedAt: Date.now(), durationMinutes: 10 } });
+    get().radio("🕒 Shift started: " + JOB_INFO[role].title + ". Work for at least 2 minutes, then clock out.");
+    get().save(); return true;
+  },
+  clockOut: () => {
+    const shift = get().workShift; if (!shift) return false;
+    const elapsed = (Date.now() - shift.startedAt) / 60000;
+    if (elapsed < 2) return false;
+    const minutes = Math.min(shift.durationMinutes, elapsed);
+    const base = JOB_INFO[shift.role].payout;
+    const skill = get().skills[JOB_SKILL_MAP[shift.role]];
+    const payout = Math.round(base * Math.min(1, minutes / 10) * skillPayoutMultiplier(skill.level));
+    const record = get().employment[shift.role];
+    if (!record || payout <= 0) return false;
+    get().earn(payout, "bank"); get().addXp(25); get().addSkillXp(JOB_SKILL_MAP[shift.role], 20);
+    set({ workShift: null, employment: { ...get().employment, [shift.role]: { ...record, shiftsCompleted: record.shiftsCompleted + 1, totalEarned: record.totalEarned + payout } }, needs: { ...get().needs, energy: Math.max(0, get().needs.energy - 8), fun: Math.max(0, get().needs.fun - 3) } });
+    get().radio("✅ Shift completed. " + N(payout) + " paid to your bank."); get().save(); return true;
+  },
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
   setCity: (city) => {
     setCityWorld(city);
@@ -441,6 +485,7 @@ export const useGame = create<GameStore>((set, get) => ({
       g.time = restoredTime;
       set({
         started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
+        employment: saved.employment ?? {}, workShift: saved.workShift ?? null, timeMode: saved.timeMode ?? "accelerated",
         skills: Object.fromEntries((Object.keys(DEFAULT_SKILLS) as SkillKey[]).map((key) => { const savedSkill = saved.skills?.[key]; const skillXp = Math.max(0, Number(savedSkill?.xp) || 0); return [key, { xp: skillXp, level: skillLevelForXp(skillXp) }]; })) as SkillProgression,
         inventory: saved.inventory || {}, owned: saved.owned || [],
         jobStats: { ...DEFAULTS.jobStats, ...saved.jobStats },
@@ -479,7 +524,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const s = get();
     if (!s.started) return;
     const data: SaveData = {
-      name: s.name, city: s.city, xp: s.xp, skills: s.skills, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
+      name: s.name, city: s.city, xp: s.xp, skills: s.skills, employment: s.employment, workShift: s.workShift, timeMode: s.timeMode, cash: s.cash, bank: s.bank, transactions: s.transactions.slice(-50), inventory: s.inventory, owned: s.owned,
       jobStats: s.jobStats, time: g.time, savedAt: Date.now(), x: g.playerPos.x, z: g.playerPos.z,
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
