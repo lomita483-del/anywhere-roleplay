@@ -948,8 +948,7 @@ export default function GameWorld() {
       const dz = move.z;
       const mag = Math.hypot(dx, dz);
       if (mag > 0.01) {
-        dx /= mag;
-        dz /= mag;
+        // Preserve analog stick pressure; getCameraRelativeMove already caps diagonal input.
         const sprint = k.has("ShiftLeft") || k.has("ShiftRight");
         const exhausted = st.needs.hunger < 20 || st.needs.energy < 15;
         const speed = g.adminFlying ? g.adminFlySpeed : (sprint ? 6.2 : 3.2) * (exhausted ? 0.6 : 1);
