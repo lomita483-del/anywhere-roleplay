@@ -387,7 +387,10 @@ export const useGame = create<GameStore>((set, get) => ({
       setCityWorld(savedCity);
       g.playerPos.set(savedCity === "newmap" ? 0 : saved.x, 0, savedCity === "newmap" ? 29 : saved.z);
       if (savedCity === "newmap") { g.playerYaw = Math.PI; g.camYaw = 0; g.camPitch = 0.34; g.camDistance = 8; }
-      g.time = savedCity === "newmap" ? 9.5 : saved.time;
+      // Restore the saved world clock for NEW MAP too; resetting it to 09:30
+      // on every load made the day/night cycle appear to never persist.
+      const restoredTime = Number.isFinite(saved.time) ? ((saved.time % 24) + 24) % 24 : 9.5;
+      g.time = restoredTime;
       set({
         started: true, city: savedCity, stadiumMode: false, name: saved.name || "Hustler", cash: saved.cash, bank: saved.bank, transactions: saved.transactions ?? [], xp: Math.max(0, saved.xp ?? 0), level: Math.floor(Math.max(0, saved.xp ?? 0) / 100) + 1,
         inventory: saved.inventory || {}, owned: saved.owned || [],
@@ -401,7 +404,7 @@ export const useGame = create<GameStore>((set, get) => ({
         unlockedDistricts: saved.unlockedDistricts ?? ["Yaba / Surulere"],
         rentals: saved.rentals ?? {},
         spawnedVehicles: Array.isArray(saved.spawnedVehicles) ? saved.spawnedVehicles : [],
-        clock: savedCity === "newmap" ? 9.5 : Number.isFinite(saved.time) ? saved.time : 8,
+        clock: restoredTime,
         hasSave: true,
       });
     } else {
