@@ -59,6 +59,75 @@ export const NEW_MAP_ROADS: [number,number][][] = roadEdges.map(e=>e.points);
 export const NEW_MAP_ROAD_WIDTHS = roadEdges.map(e=>e.width);
 export const NEW_MAP_ROAD_ENDPOINTS = roadEdges.flatMap(e=>{const first=e.points[0]!,last=e.points[e.points.length-1]!;if(Math.hypot(first[0]-last[0],first[1]-last[1])<0.1)return [];return [first,last].filter(p=>!NEW_MAP_JUNCTIONS.some(j=>Math.hypot(j[0]-p[0],j[1]-p[1])<1)).map(p=>({x:p[0],z:p[1],width:e.width}));});
 export const NEW_MAP_LOCAL_ROAD_START_INDEX = roadEdges.findIndex(e=>e.id==="corporate-street-n");
+/** Find a shortest drivable route through the NEW MAP road graph.
+ * The returned polyline includes the exact start/end points and road-node waypoints.
+ * Graph edges are treated as two-way streets; vehicle-side rules remain the AI's responsibility.
+ */
+export function findNewMapRoadRoute(startX: number, startZ: number, endX: number, endZ: number): [number, number][] {
+  const nodes = NEW_MAP_ROAD_GRAPH.nodes;
+  if (!nodes.length) return [[startX, startZ], [endX, endZ]];
+  const nearestNode = (x: number, z: number) => nodes.reduce((best, node) =>
+    Math.hypot(node.x - x, node.z - z) < Math.hypot(best.x - x, best.z - z) ? node : best, nodes[0]!);
+  const start = nearestNode(startX, startZ);
+  const end = nearestNode(endX, endZ);
+  if (start.id === end.id) return [[startX, startZ], [start.x, start.z], [endX, endZ]];
+
+  const adjacency = new Map<string, { id: string; cost: number }[]>();
+  for (const node of nodes) adjacency.set(node.id, []);
+  for (const edge of NEW_MAP_ROAD_GRAPH.edges) {
+    const a = nodes.find(node => node.id === edge.from);
+    const b = nodes.find(node => node.id === edge.to);
+    if (!a || !b) continue;
+    const cost = Math.hypot(a.x - b.x, a.z - b.z);
+    adjacency.get(a.id)!.push({ id: b.id, cost });
+    adjacency.get(b.id)!.push({ id: a.id, cost });
+  }
+
+  const distances = new Map<string, number>(nodes.map(node => [node.id, Infinity]));
+  const previous = new Map<string, string>();
+  const pending = new Set(nodes.map(node => node.id));
+  distances.set(start.id, 0);
+  while (pending.size) {
+    let current: string | null = null;
+    let best = Infinity;
+    for (const id of pending) {
+      const distance = distances.get(id) ?? Infinity;
+      if (distance < best) { best = distance; current = id; }
+    }
+    if (!current || !Number.isFinite(best)) break;
+    if (current === end.id) break;
+    pending.delete(current);
+    for (const next of adjacency.get(current) ?? []) {
+      if (!pending.has(next.id)) continue;
+      const candidate = best + next.cost;
+      if (candidate < (distances.get(next.id) ?? Infinity)) {
+        distances.set(next.id, candidate);
+        previous.set(next.id, current);
+      }
+    }
+  }
+
+  const ids = [end.id];
+  let cursor = end.id;
+  while (cursor !== start.id) {
+    const parent = previous.get(cursor);
+    if (!parent) return [[startX, startZ], [endX, endZ]];
+    ids.push(parent);
+    cursor = parent;
+  }
+  ids.reverse();
+  const route: [number, number][] = [[startX, startZ]];
+  for (const id of ids) {
+    const node = nodes.find(item => item.id === id)!;
+    const point: [number, number] = [node.x, node.z];
+    const last = route[route.length - 1]!;
+    if (Math.hypot(last[0] - point[0], last[1] - point[1]) > 0.5) route.push(point);
+  }
+  const last = route[route.length - 1]!;
+  if (Math.hypot(last[0] - endX, last[1] - endZ) > 0.5) route.push([endX, endZ]);
+  return route;
+}
+
 
 export const NEW_MAP_DISTRICTS: NewMapDistrict[] = [
  {id:"corporate",label:"CORPORATE DISTRICT",x:-126,z:-120,w:70,d:56,color:"#819b83"},
