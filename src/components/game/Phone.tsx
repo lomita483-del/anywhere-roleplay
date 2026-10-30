@@ -292,7 +292,7 @@ function HomeApp() {
             </article>;
           })}
         </div>
-        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Skill levels and XP are saved with your character on this device. Perks currently show progression milestones; gameplay bonuses and specialist job unlocks will be connected in a later phase.</p>
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Skill levels and XP are saved with your character on this device. Career levels 3–4 add a 5% payout bonus; level 5 and above add 10% to matching jobs.</p>
       </section>
       <div className="rounded-xl border border-hud-line bg-white/[0.035] p-3">
         <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Character identity & backstory</div>
@@ -759,6 +759,8 @@ function RideApp() {
 function SettingsApp() {
   const graphicsQuality = useGame((s) => s.graphicsQuality);
   const setGraphicsQuality = useGame((s) => s.setGraphicsQuality);
+  const timeMode = useGame((s) => s.timeMode);
+  const setTimeMode = useGame((s) => s.setTimeMode);
   const [volume, setVolume] = useState(() => {
     if (typeof window === "undefined") return 65;
     const value = Number(localStorage.getItem("lagos-volume") ?? 65);
@@ -773,6 +775,11 @@ function SettingsApp() {
       <p className="mt-1 text-xs leading-relaxed text-slate-300">Choose the balance between visual detail and smooth performance on your device.</p>
       <div className="mt-3 grid grid-cols-3 gap-2">{(["low","medium","high"] as const).map(q=><button key={q} onClick={()=>setGraphicsQuality(q)} className={"min-h-11 rounded-xl border px-2 py-2 text-xs font-bold capitalize "+(graphicsQuality===q?"border-emerald-300/60 bg-emerald-300/15 text-emerald-100":"border-white/10 bg-black/20 text-slate-200")}>{q}</button>)}</div>
       <div className="mt-2 text-xs text-slate-300">{graphicsQuality==="low"?"Fewer pedestrians and vehicles for lower-end phones.":graphicsQuality==="medium"?"Balanced traffic and pedestrian density.":"Maximum available traffic and pedestrian density."}</div>
+    </section>
+    <section className="rounded-2xl border border-sky-300/20 bg-sky-950/20 p-4">
+      <h3 className="text-sm font-bold text-white">World time</h3>
+      <p className="mt-1 text-xs leading-relaxed text-slate-300">Choose whether the simulation follows your device clock or uses an accelerated in-game day. This preference is saved with your character.</p>
+      <div className="mt-3 grid grid-cols-2 gap-2">{([{id:"device" as const,label:"Device time",desc:"Use local time"},{id:"accelerated" as const,label:"Accelerated",desc:"Game day cycle"}]).map(mode=><button key={mode.id} aria-pressed={timeMode===mode.id} onClick={()=>setTimeMode(mode.id)} className={"rounded-xl border p-3 text-left "+(timeMode===mode.id?"border-sky-300/50 bg-sky-300/15":"border-white/10 bg-black/20")}><div className="text-xs font-bold text-white">{mode.label}</div><div className="mt-1 text-[10px] text-slate-300">{mode.desc}</div></button>)}</div>
     </section>
     <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
       <h3 className="text-sm font-bold text-white">Sound preferences</h3>
