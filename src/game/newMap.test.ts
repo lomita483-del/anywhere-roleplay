@@ -33,6 +33,20 @@ describe("NEW MAP layout", () => {
     }
   });
 
+  it("builds out the university campus with enterable library and student services", () => {
+    const campus = NEW_MAP_BUILDINGS.filter(building => building.district === "university");
+    expect(campus.map(building => building.id)).toEqual(expect.arrayContaining([
+      "university", "school", "pharmacy", "university-library", "student-union"
+    ]));
+    for (const id of ["university-library", "student-union"]) {
+      const building = campus.find(item => item.id === id)!;
+      expect(NEW_MAP_POIS.some(poi => poi.buildingId === id && poi.label === building.label)).toBe(true);
+      expect(getInteriorKind(building.label, building.kind)).toBe("university");
+      expect(isNewMapBlocked(building.doorX!, building.doorZ!, 0.4)).toBe(false);
+    }
+    expect(getInteriorDefinition("UNIVERSITY LIBRARY", "university").hotspots.length).toBeGreaterThan(2);
+  });
+
   it("adds distinct government and court destinations with dedicated furnished interiors", () => {
     const government = NEW_MAP_BUILDINGS.find(building => building.id === "government-house");
     const court = NEW_MAP_BUILDINGS.find(building => building.id === "court-complex");
