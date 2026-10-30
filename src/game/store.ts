@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { JOB_POINTS, POIS, isBlocked, clampWorld, districtAt, setCityWorld, type CityId } from "./city";
 import { g } from "./state";
+import { queueCloudSave, readCloudSave } from "./cloudSave";
 
 export type JobType = "courier" | "driver" | "trader" | "security" | "construction" | "retail" | "airport" | "estate-agent";
 
@@ -515,6 +516,27 @@ export const useGame = create<GameStore>((set, get) => ({
       set({ ...DEFAULTS, started: true, cash: DEFAULTS.cash, clock: get().city === "newmap" ? 9.5 : 8, name: get().name || "Hustler" });
     }
     g.started = true;
+    if (!fresh && typeof window !== "undefined") {
+      void readCloudSave().then((cloud) => {
+        if (!cloud || !get().started) return;
+        let localSavedAt = 0;
+        try {
+          const local = localStorage.getItem(SAVE_KEY);
+          localSavedAt = local ? (Number((JSON.parse(local) as SaveData).savedAt) || 0) : 0;
+        } catch { /* ignore corrupt local cache */ }
+        if (cloud.updatedAt > localSavedAt && cloud.state && typeof cloud.state === "object") {
+          try {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(cloud.state));
+            get().start(false);
+            get().radio("☁️ Your latest cloud save has been restored.");
+          } catch (error) {
+            console.warn("[CloudSave] Could not apply cloud snapshot.", error);
+          }
+        } else if (localSavedAt > cloud.updatedAt) {
+          get().save();
+        }
+      });
+    }
   },
   setName: (name) => { set({ name: name.slice(0, 16) }); get().save(); },
   setBackground: (background) => { set({ background: { ...get().background, ...background } }); get().save(); },
@@ -529,6 +551,7 @@ export const useGame = create<GameStore>((set, get) => ({
       activeJob: s.activeJob, waypoint: s.waypoint, outfit: s.outfit, needs: s.needs, background: s.background, characterTraits: s.characterTraits, unlockedDistricts: s.unlockedDistricts, rentals: s.rentals, spawnedVehicles: s.spawnedVehicles.map((vehicle) => { const runtime = g.vehicles.get(vehicle.id); const shouldPersistFuel = vehicle.id.startsWith("own-") || vehicle.fuel !== undefined; return { ...vehicle, x: runtime?.px ?? vehicle.x, z: runtime?.pz ?? vehicle.z, rotY: runtime?.yaw ?? vehicle.rotY, ...(shouldPersistFuel ? { fuel: runtime?.fuel ?? vehicle.fuel ?? 100 } : {}), ...(vehicle.condition !== undefined ? { condition: vehicle.condition } : {}) }; }),
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* storage full */ }
+    queueCloudSave(data as unknown as Record<string, unknown>);
   },
 
   spend: (amount, from) => {
