@@ -343,6 +343,8 @@ export default function Hud() {
         <div className="pointer-events-auto absolute right-3 top-24 flex max-w-[44vw] flex-col gap-1.5 sm:right-5">
           <button className="min-h-10 rounded-xl border border-amber-300/30 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-amber-100" onClick={() => useGame.getState().sleep()}>🛏 Sleep · 07:00</button>
           <button className="min-h-10 rounded-xl border border-emerald-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-emerald-100" onClick={() => openPhone("inventory")}>🧊 Fridge / Stored food</button>
+          <button className="min-h-10 rounded-xl border border-cyan-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-cyan-100" onClick={() => useGame.getState().shower()}>🚿 Take a shower</button>
+          <button className="min-h-10 rounded-xl border border-violet-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-violet-100" onClick={() => useGame.getState().useBathroom()}>🚻 Use bathroom</button>
           <button className="min-h-10 rounded-xl border border-sky-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-sky-100" onClick={() => openPhone("wardrobe")}>👕 Wardrobe</button>
           <button className="min-h-10 rounded-xl border border-white/15 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-white" onClick={() => useGame.getState().radio("📺 The TV is playing the evening news from Lagos.")}>📺 Turn on TV</button>
           <button className="min-h-10 rounded-xl border border-rose-300/25 bg-[#101820]/95 px-3 py-2 text-xs font-bold text-rose-100" onClick={exitApartment}>Exit {interiorLabel} ↗</button>
