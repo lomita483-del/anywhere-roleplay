@@ -359,63 +359,94 @@ function ParkedVehicle({ id, model, register, scale = 1 }: { id: string; model: 
 function Traffic() {
   const refs = useRef<(THREE.Group | null)[]>([]);
   const graphicsQuality = useGame((s) => s.graphicsQuality);
-  const trafficCount = graphicsQuality === "low" ? 8 : graphicsQuality === "medium" ? 18 : TRAFFIC.length;
+  const trafficCount = graphicsQuality === "low" ? 12 : graphicsQuality === "medium" ? 24 : TRAFFIC.length;
   const cars = useMemo(
-    () =>
-      TRAFFIC.map((t, i) => ({
-        t,
-        dir: t.offset > 0.5 ? -1 : 1,
-        p: t.lane.from + (t.offset % 1) * (t.lane.to - t.lane.from),
-      })),
+    () => TRAFFIC.map((t, i) => ({
+      t,
+      dir: t.offset > 0.5 ? -1 as const : 1 as const,
+      p: t.lane.from + (t.offset % 0.5) * 2 * (t.lane.to - t.lane.from),
+      speed: t.speed * 0.72,
+      desiredSpeed: t.speed,
+    })),
     []
   );
+
   useFrame((state, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
     const horizontalGreen = Math.floor(state.clock.elapsedTime / 12) % 2 === 0;
-    cars.forEach((c, i) => {
-      const grp = refs.current[i];
-      if (i >= trafficCount || Math.hypot(g.playerPos.x - (c.t.lane.axis === "x" ? c.p : c.t.lane.fixed), g.playerPos.z - (c.t.lane.axis === "x" ? c.t.lane.fixed : c.p)) > 125) {
-        if (grp) grp.visible = false;
+    const roadLength = 336;
+    const acceleration = 3.2;
+    const braking = 7.5;
+    const safeGap = 3.2;
+
+    cars.forEach((car, i) => {
+      const group = refs.current[i];
+      const x = car.t.lane.axis === "x" ? car.p : car.t.lane.fixed;
+      const z = car.t.lane.axis === "x" ? car.t.lane.fixed : car.p;
+      const nearPlayer = Math.hypot(g.playerPos.x - x, g.playerPos.z - z) < 135;
+      if (i >= trafficCount || !nearPlayer) {
+        if (group) group.visible = false;
         return;
       }
-      if (grp) grp.visible = true;
-      const crossings = c.t.lane.axis === "x" ? ROADS_X : ROADS_Z;
-      const nextCrossing = crossings
-        .map((point) => ({ point, ahead: (point - c.p) * c.dir }))
-        .filter((point) => point.ahead >= 0 && point.ahead < 7)
-        .sort((a, b) => a.ahead - b.ahead)[0];
-      const green = c.t.lane.axis === "x" ? horizontalGreen : !horizontalGreen;
-      // A simple alternating signal phase creates visible go-slows at busy junctions.
-      if (nextCrossing && !green) {
-        if (grp) {
-          if (c.t.lane.axis === "x") { grp.position.set(c.p, 0, c.t.lane.fixed); grp.rotation.y = c.dir > 0 ? Math.PI / 2 : -Math.PI / 2; }
-          else { grp.position.set(c.t.lane.fixed, 0, c.p); grp.rotation.y = c.dir > 0 ? 0 : Math.PI; }
+      if (group) group.visible = true;
+
+      let targetSpeed = car.t.speed;
+      // Follow the closest vehicle ahead in the same lane. This prevents overlap
+      // and produces natural queues instead of cars passing through one another.
+      let nearestGap = Infinity;
+      let leaderSpeed = targetSpeed;
+      for (let j = 0; j < cars.length; j += 1) {
+        if (i === j) continue;
+        const other = cars[j];
+        if (other.t.lane.axis !== car.t.lane.axis ||
+            Math.abs(other.t.lane.fixed - car.t.lane.fixed) > 0.15 ||
+            other.dir !== car.dir) continue;
+        const rawGap = (other.p - car.p) * car.dir;
+        const gap = rawGap >= 0 ? rawGap : rawGap + roadLength;
+        if (gap > 0.5 && gap < nearestGap) {
+          nearestGap = gap;
+          leaderSpeed = other.speed;
         }
-        return;
       }
-      c.p += c.dir * c.t.speed * dt;
-      if (c.p > c.t.lane.to) c.p = c.t.lane.from;
-      if (c.p < c.t.lane.from) c.p = c.t.lane.to;
-      if (!grp) return;
-      if (c.t.lane.axis === "x") {
-        grp.position.set(c.p, 0, c.t.lane.fixed);
-        grp.rotation.y = c.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+      if (nearestGap < 18) {
+        const available = Math.max(0, nearestGap - safeGap);
+        targetSpeed = Math.min(targetSpeed, Math.sqrt(Math.max(0, leaderSpeed * leaderSpeed + 2 * 4.5 * available)));
+      }
+
+      // Respect the alternating junction lights with progressive braking.
+      const crossings = car.t.lane.axis === "x" ? ROADS_X : ROADS_Z;
+      const nextCrossing = crossings
+        .map((point) => ({ point, ahead: (point - car.p) * car.dir }))
+        .filter((point) => point.ahead >= 0 && point.ahead < 24)
+        .sort((left, right) => left.ahead - right.ahead)[0];
+      const green = car.t.lane.axis === "x" ? horizontalGreen : !horizontalGreen;
+      if (nextCrossing && !green) {
+        const stoppingDistance = Math.max(0, nextCrossing.ahead - 5.5);
+        targetSpeed = Math.min(targetSpeed, Math.sqrt(2 * 4.5 * stoppingDistance));
+      }
+
+      if (car.speed < targetSpeed) car.speed = Math.min(targetSpeed, car.speed + acceleration * dt);
+      else car.speed = Math.max(targetSpeed, car.speed - braking * dt);
+      car.p += car.dir * car.speed * dt;
+      if (car.p > car.t.lane.to) car.p = car.t.lane.from + (car.p - car.t.lane.to);
+      if (car.p < car.t.lane.from) car.p = car.t.lane.to - (car.t.lane.from - car.p);
+
+      if (!group) return;
+      if (car.t.lane.axis === "x") {
+        group.position.set(car.p, 0, car.t.lane.fixed);
+        group.rotation.y = car.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
       } else {
-        grp.position.set(c.t.lane.fixed, 0, c.p);
-        grp.rotation.y = c.dir > 0 ? 0 : Math.PI;
+        group.position.set(car.t.lane.fixed, 0, car.p);
+        group.rotation.y = car.dir > 0 ? 0 : Math.PI;
       }
     });
   });
+
   return (
     <>
-      {TRAFFIC.slice(0, trafficCount).map((t, i) => (
-        <group
-          key={i}
-          ref={(o) => {
-            refs.current[i] = o;
-          }}
-        >
-          <VehicleBody model={t.model} />
+      {TRAFFIC.map((route, i) => (
+        <group key={i} ref={(node) => { refs.current[i] = node; }}>
+          <VehicleBody model={route.model} />
         </group>
       ))}
     </>
