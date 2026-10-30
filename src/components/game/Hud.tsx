@@ -365,18 +365,6 @@ export default function Hud() {
         </nav>
       )}
 
-      {/* Phone toggle */}
-      {!phoneOpen && (
-        <button
-          className="pointer-events-auto absolute bottom-6 right-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-hud-line bg-hud-dim backdrop-blur-md active:scale-95"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => openPhone()}
-          aria-label="Open phone"
-        >
-          <PhoneIcon className="h-6 w-6 text-hud-accent" />
-        </button>
-      )}
-
       {!phoneOpen && !stadiumMode && <Joystick />}
       {stadiumMode && !phoneOpen && <div className="pointer-events-auto absolute bottom-7 left-1/2 z-30 -translate-x-1/2"><button type="button" onClick={exitStadium} className="rounded-full border border-amber-200/70 bg-[#101820]/95 px-6 py-3 text-sm font-black tracking-wide text-amber-100 shadow-2xl shadow-black/50 active:scale-95">↗ EXIT STADIUM</button><div className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Spectator mode · Free entry</div></div>}
       <Phone />
