@@ -460,9 +460,30 @@ function RoadFurniture() {
         if(d%3<1) signs.push({x:p.x-tan.z*5.2,z:p.z+tan.x*5.2,yaw});
       }
     });
-    // Zebra crossings belong at real junctions, not at arbitrary road midpoints.
-    const junctionCrossings:{x:number;z:number;yaw:number}[]=NEW_MAP_JUNCTIONS.map(([x,z])=>({x,z,yaw:0}));
-    junctionCrossings.forEach(({x,z,yaw})=>{for(let stripe=-3;stripe<=3;stripe++)crossings.push({x:x+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:z+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});});
+    // Place zebra crossings perpendicular to the actual road direction at each junction.
+    NEW_MAP_JUNCTIONS.forEach(([jx,jz])=>{
+      const directions:{x:number;z:number}[]=[];
+      NEW_MAP_ROADS.forEach(path=>{
+        for(let i=1;i<path.length;i++){
+          const a=path[i-1]!,b=path[i]!,dx=b[0]-a[0],dz=b[1]-a[1],lengthSq=dx*dx+dz*dz;
+          if(lengthSq<1e-6)continue;
+          const t=Math.max(0,Math.min(1,((jx-a[0])*dx+(jz-a[1])*dz)/lengthSq));
+          const px=a[0]+dx*t,pz=a[1]+dz*t;
+          if(Math.hypot(jx-px,jz-pz)>0.65)continue;
+          const length=Math.hypot(dx,dz),ux=dx/length,uz=dz/length;
+          const angle=Math.atan2(uz,ux);
+          if(!directions.some(d=>Math.abs(Math.sin(Math.atan2(d.z,d.x)-angle))<0.12))directions.push({x:ux,z:uz});
+        }
+      });
+      directions.slice(0,2).forEach(({x:ux,z:uz})=>{
+        const yaw=Math.atan2(-uz,ux);
+        // Keep the crossing just outside the junction box, spanning the carriageway.
+        const cx=jx+ux*5.4,cz=jz+uz*5.4;
+        for(let stripe=-3;stripe<=3;stripe++){
+          crossings.push({x:cx+Math.cos(yaw+Math.PI/2)*stripe*1.05,z:cz+Math.sin(yaw+Math.PI/2)*stripe*1.05,yaw});
+        }
+      });
+    });
     return {lamps,crossings,signs};
   }, []);
   useEffect(()=>{
