@@ -178,6 +178,7 @@ function HomeApp() {
   const stats = useGame((s) => s.jobStats);
   const xp = useGame((s) => s.xp);
   const level = useGame((s) => s.level);
+  const skills = useGame((s) => s.skills);
   const owned = useGame((s) => s.owned);
   const background = useGame((s) => s.background);
   const setBackground = useGame((s) => s.setBackground);
@@ -244,6 +245,36 @@ function HomeApp() {
           {([{title:"First Hustle",done:stats.deliveries+stats.drives+stats.trades+stats.patrols>0,desc:"Complete your first job"},{title:"₦100K Club",done:cash+bank>=100000,desc:"Hold ₦100,000 total"},{title:"First Vehicle",done:owned.length>0,desc:"Own a vehicle"},{title:"City Explorer",done:useGame.getState().unlockedDistricts.length>=3,desc:"Unlock three districts"}] as const).map(a=><div key={a.title} className={`rounded-xl border p-2 ${a.done?"border-emerald-300/25 bg-emerald-400/10":"border-white/10 bg-black/10"}`}><div className={`text-xs font-bold ${a.done?"text-emerald-200":"text-slate-200"}`}>{a.done?"✓ ":"🔒 "}{a.title}</div><div className="mt-1 text-xs text-slate-300">{a.desc}</div></div>)}
         </div>
       </div>
+      <section className="rounded-xl border border-sky-300/20 bg-sky-300/[0.035] p-3">
+        <div className="flex items-center justify-between">
+          <div><div className="text-sm font-bold text-white">Skills & career perks</div><div className="mt-1 text-[11px] text-slate-300">Complete matching jobs to build professional experience.</div></div>
+          <span className="rounded-full bg-sky-300/10 px-2 py-1 text-[10px] font-bold text-sky-100">8 skills</span>
+        </div>
+        <div className="mt-3 space-y-3">
+          {(Object.entries(skills) as [keyof typeof skills, (typeof skills)[keyof typeof skills]][]).map(([key, skill]) => {
+            const labels: Record<string, { title: string; perk: string }> = {
+              driving: { title: "Driving", perk: "Smoother handling" },
+              trading: { title: "Trading", perk: "Better trade opportunities" },
+              security: { title: "Security", perk: "Improved patrol reputation" },
+              construction: { title: "Construction", perk: "Advanced site roles" },
+              retail: { title: "Retail", perk: "Specialist shop shifts" },
+              aviation: { title: "Aviation", perk: "Advanced ground-crew roles" },
+              courier: { title: "Courier", perk: "Priority delivery work" },
+              negotiation: { title: "Negotiation", perk: "Premium client assignments" },
+            };
+            const info = labels[key];
+            const progress = skill.xp % 100;
+            const perkUnlocked = skill.level >= 3;
+            return <article key={key} className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{info.title}</span><span className="text-[11px] font-bold text-sky-100">Level {skill.level}</span></div>
+              <div className="mt-2 flex items-center justify-between text-[10px] text-slate-300"><span>{skill.xp} total XP</span><span>{progress}/100 to next level</span></div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/50"><div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-300" style={{ width: progress + "%" }} /></div>
+              <div className={"mt-2 text-[10px] " + (perkUnlocked ? "text-emerald-200" : "text-slate-400")}>{perkUnlocked ? "✓ Perk unlocked · " : "🔒 Level 3 perk · "}{info.perk}</div>
+            </article>;
+          })}
+        </div>
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-400">Skill levels and XP are saved with your character on this device. Perks currently show progression milestones; gameplay bonuses and specialist job unlocks will be connected in a later phase.</p>
+      </section>
       <div className="rounded-xl border border-hud-line bg-white/[0.035] p-3">
         <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Character identity & backstory</div>
         <label className="mb-2 block text-[10px] text-hud-muted">Alias / name
