@@ -863,6 +863,7 @@ function CityEcosystem() {
   const airportTerminal=NEW_MAP_BUILDINGS.find(b=>b.id==="airport-terminal")!;
   const industrialDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="industrial")!;
   const civicDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="civic")!;
+  const governmentDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="government")!;
   const lakeDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="lake-park")!;
   const portDistrict=NEW_MAP_DISTRICTS.find(d=>d.id==="port")!;
   const craneRefs=useRef<(THREE.Group|null)[]>([]);
@@ -885,6 +886,7 @@ function CityEcosystem() {
     <DrainCovers />
     <Html position={[industrialDistrict.x,12,industrialDistrict.z]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>INDUSTRIAL DISTRICT</div></Html>
     <Html position={[civicDistrict.x,12,civicDistrict.z-20]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>CIVIC & OFFICE BLOCKS</div></Html>
+    <Html position={[governmentDistrict.x,12,governmentDistrict.z-23]} center distanceFactor={36} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923e8",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>GOVERNMENT & JUSTICE DISTRICT</div></Html>
     <Html position={[lakeDistrict.x,8,lakeDistrict.z-35]} center distanceFactor={38} style={{pointerEvents:"none"}}><div style={{padding:"4px 8px",whiteSpace:"nowrap",background:"#071923df",border:"1px solid #d7b66c",color:"#fff0c8",fontSize:9,fontWeight:900,letterSpacing:1.3}}>LAKE PARK & RESORT</div></Html>
     {/* North airport: runways, taxiways, terminal, aircraft and tower. */}
     <group position={[airportTerminal.x, 0, airportTerminal.z-48]}>
