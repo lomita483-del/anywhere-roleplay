@@ -80,6 +80,7 @@ export interface OnlinePlayer { name: string; x: number; y: number; z: number; y
 
 export interface EmploymentRecord { role: JobType; hiredAt: number; shiftsCompleted: number; totalEarned: number; }
 export interface WorkShift { role: JobType; startedAt: number; durationMinutes: number; }
+export interface WorkCommute { role: JobType; stage: "pickup" | "driving" | "working"; startedAt: number; workplace: string; }
 
 export interface SaveData {
   name: string;
@@ -226,6 +227,7 @@ interface GameStore {
   skills: SkillProgression;
   employment: Partial<Record<JobType, EmploymentRecord>>;
   workShift: WorkShift | null;
+  workCommute: WorkCommute | null;
   timeMode: "device" | "accelerated";
   setTimeMode: (mode: "device" | "accelerated") => void;
   hireForRole: (role: JobType) => boolean;
@@ -356,6 +358,7 @@ const DEFAULTS = {
   skills: { ...DEFAULT_SKILLS },
   employment: {} as Partial<Record<JobType, EmploymentRecord>>,
   workShift: null as WorkShift | null,
+  workCommute: null as WorkCommute | null,
   timeMode: "accelerated" as const,
   graphicsQuality: getInitialGraphicsQuality(),
   name: "",
@@ -398,11 +401,57 @@ export const useGame = create<GameStore>((set, get) => ({
     get().save(); return true;
   },
   clockIn: (role) => {
-    if (!get().employment[role] || get().workShift || get().activeJob || get().interior) return false;
-    if (get().needs.energy < 10 || get().needs.health < 15) return false;
-    set({ workShift: { role, startedAt: Date.now(), durationMinutes: 10 } });
-    get().radio("🕒 Shift started: " + JOB_INFO[role].title + ". Work for at least 2 minutes, then clock out.");
-    get().save(); return true;
+    const current = get();
+    if (!current.employment[role] || current.workShift || current.workCommute || current.activeJob) return false;
+    if (current.needs.energy < 10 || current.needs.health < 15) return false;
+    if (current.interior && current.interiorKind !== "home") return false;
+    const workplaces: Record<JobType, { label: string; kind: string; point: [number, number] }> = {
+      courier: { label: "Courier & Logistics Depot", kind: "depot", point: [22, 47] },
+      driver: { label: "City Transport Depot", kind: "depot", point: [-40, 32] },
+      trader: { label: "Balogun Market", kind: "market", point: [-40, 32] },
+      security: { label: "Police Headquarters", kind: "police", point: [86, 78] },
+      construction: { label: "Construction Site Office", kind: "factory", point: [86, 78] },
+      retail: { label: "Retail & Corporate Plaza", kind: "tower", point: [2, 42] },
+      airport: { label: "Airport Cargo Operations", kind: "airport", point: [140, -132] },
+      "estate-agent": { label: "Property & Estate Office", kind: "real-estate", point: [151, 88] },
+    };
+    const destination = workplaces[role];
+    if (current.interior) {
+      const returnPosition = g.interiorReturn.clone();
+      current.setInterior(false);
+      g.playerPos.copy(returnPosition);
+    }
+    g.joy.x = 0; g.joy.y = 0; g.playerSpeed = 0;
+    const start = { x: g.playerPos.x, z: g.playerPos.z };
+    const end = { x: destination.point[0], z: destination.point[1] };
+    const vehicleId = "work-commute-" + Date.now();
+    g.vehicles.set(vehicleId, { id: vehicleId, model: "taxi", px: start.x, pz: start.z, vx: 0, vz: 0, yaw: Math.atan2(end.x-start.x,end.z-start.z), speed: 0, color: "#d8b83f", fuel: 100 });
+    const startedAt = Date.now();
+    set({ workCommute: { role, stage: "pickup", startedAt, workplace: destination.label }, waypoint: { x: end.x, z: end.z, label: destination.label, kind: destination.kind } });
+    get().radio("🚕 Your work ride is arriving. Your commute is beginning.");
+    const duration = 6500;
+    const timer = window.setInterval(() => {
+      const elapsed = Math.min(1, (Date.now() - startedAt) / duration);
+      const vehicle = g.vehicles.get(vehicleId);
+      if (vehicle) {
+        vehicle.px = start.x + (end.x-start.x) * elapsed;
+        vehicle.pz = start.z + (end.z-start.z) * elapsed;
+        vehicle.speed = elapsed < 1 ? 8 : 0;
+        vehicle.yaw = Math.atan2(end.x-start.x,end.z-start.z);
+      }
+      if (elapsed >= 1) {
+        window.clearInterval(timer);
+        g.vehicles.delete(vehicleId);
+        g.playerPos.set(104, 0, 104);
+        g.playerYaw = Math.PI;
+        current.setInterior(true, destination.label, destination.kind);
+        set({ workCommute: { role, stage: "working", startedAt, workplace: destination.label }, waypoint: null, workShift: { role, startedAt: Date.now(), durationMinutes: 10 } });
+        get().radio("🏢 Arrived at " + destination.label + ". Your shift has started.");
+        get().save();
+      }
+    }, 50);
+    get().save();
+    return true;
   },
   clockOut: () => {
     const shift = get().workShift; if (!shift) return false;
@@ -415,7 +464,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const record = get().employment[shift.role];
     if (!record || payout <= 0) return false;
     get().earn(payout, "bank"); get().addXp(25); get().addSkillXp(JOB_SKILL_MAP[shift.role], 20);
-    set({ workShift: null, employment: { ...get().employment, [shift.role]: { ...record, shiftsCompleted: record.shiftsCompleted + 1, totalEarned: record.totalEarned + payout } }, needs: { ...get().needs, energy: Math.max(0, get().needs.energy - 8), fun: Math.max(0, get().needs.fun - 3) } });
+    set({ workShift: null, workCommute: null, employment: { ...get().employment, [shift.role]: { ...record, shiftsCompleted: record.shiftsCompleted + 1, totalEarned: record.totalEarned + payout } }, needs: { ...get().needs, energy: Math.max(0, get().needs.energy - 8), fun: Math.max(0, get().needs.fun - 3) } });
     get().radio("✅ Shift completed. " + N(payout) + " paid to your bank."); get().save(); return true;
   },
   setGraphicsQuality: (quality) => { if (typeof window !== "undefined") localStorage.setItem("lagos-graphics-quality", quality); set({ graphicsQuality: quality }); },
