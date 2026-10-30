@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getInteriorDefinition, getInteriorKind } from "./interiors";
 import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute } from "./newMap";
 
 describe("NEW MAP layout", () => {
@@ -30,6 +31,19 @@ describe("NEW MAP layout", () => {
       const [x, z] = route[i]!;
       expect(NEW_MAP_ROAD_GRAPH.nodes.some(node => Math.hypot(node.x - x, node.z - z) < 0.01)).toBe(true);
     }
+  });
+
+  it("adds distinct government and court destinations with dedicated furnished interiors", () => {
+    const government = NEW_MAP_BUILDINGS.find(building => building.id === "government-house");
+    const court = NEW_MAP_BUILDINGS.find(building => building.id === "court-complex");
+    expect(government?.district).toBe("government");
+    expect(court?.district).toBe("government");
+    expect(NEW_MAP_POIS.some(poi => poi.buildingId === government?.id)).toBe(true);
+    expect(NEW_MAP_POIS.some(poi => poi.buildingId === court?.id)).toBe(true);
+    expect(getInteriorKind("GOVERNMENT HOUSE")).toBe("government");
+    expect(getInteriorKind("CITY COURT COMPLEX")).toBe("court");
+    expect(getInteriorDefinition("GOVERNMENT HOUSE").props.length).toBeGreaterThan(5);
+    expect(getInteriorDefinition("CITY COURT COMPLEX").hotspots.length).toBeGreaterThan(1);
   });
 
   it("includes named inner-city shops and food landmarks in the discoverable POI list", () => {
