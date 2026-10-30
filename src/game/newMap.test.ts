@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getInteriorDefinition, getInteriorKind } from "./interiors";
-import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute, getNewMapTrafficSignalState } from "./newMap";
+import { NEW_MAP_BUILDINGS, NEW_MAP_JUNCTIONS, NEW_MAP_ROAD_GRAPH, NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_POIS, NEW_MAP_LAKE_LAYOUT, NEW_MAP_PORT_WATER, NEW_MAP_BOUNDS, NEW_MAP_TREES, NEW_MAP_MARKET_STALLS, isNewMapBlocked, validateNewMapLayout, findNewMapRoadRoute, getNewMapTrafficSignalState, getNewMapPedestrianSignalState } from "./newMap";
 
 describe("NEW MAP layout", () => {
   it("keeps every planned building, stall, tree and hill clear of roads and one another", () => {
@@ -30,6 +30,15 @@ describe("NEW MAP layout", () => {
     expect(getNewMapTrafficSignalState(18)).toBe("green");
     expect(getNewMapTrafficSignalState(0, 4.5)).toBe("green");
     expect(getNewMapTrafficSignalState(14, 4.5)).toBe("green");
+  });
+
+  it("gives pedestrians a walk phase only while the matching vehicle signal is red", () => {
+    expect(getNewMapPedestrianSignalState(0)).toBe("wait");
+    expect(getNewMapPedestrianSignalState(10)).toBe("wait");
+    expect(getNewMapPedestrianSignalState(12)).toBe("walk");
+    expect(getNewMapPedestrianSignalState(17.99)).toBe("walk");
+    expect(getNewMapPedestrianSignalState(18)).toBe("wait");
+    expect(getNewMapPedestrianSignalState(7.5, 4.5)).toBe("walk");
   });
 
   it("routes ride vehicles through connected NEW MAP streets instead of cutting directly across blocks", () => {
