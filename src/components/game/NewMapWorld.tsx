@@ -175,7 +175,7 @@ function BigScreen({ z, rotate = false }: { z: number; rotate?: boolean }) {
 }
 
 
-type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string };
+type CityBlock = { x: number; z: number; w: number; d: number; h: number; color: string; label?: string; doorSide?: "north" | "south" | "east" | "west" };
 
 function CityBuilding({ b }: { b: CityBlock }) {
   const root = useRef<THREE.Group>(null);
@@ -207,7 +207,11 @@ function CityBuilding({ b }: { b: CityBlock }) {
   const roofColors = ["#934b37", "#4f5c66", "#a75f3d", "#596b56", "#6c5147"];
   const roofColor = roofColors[Math.abs(Math.round(b.x * 3 + b.z)) % roofColors.length]!;
   return (
-    <group ref={root} position={[b.x, 0, b.z]}>
+    <group
+      ref={root}
+      position={[b.x, 0, b.z]}
+      rotation-y={b.doorSide === "north" ? Math.PI : b.doorSide === "east" ? Math.PI / 2 : b.doorSide === "west" ? -Math.PI / 2 : 0}
+    >
       {isHouse ? (
         <>
           {/* A small landscaped plot makes each home read as a real property, not a loose box. */}
@@ -870,7 +874,7 @@ function CityEcosystem() {
   const quality=useGame(s=>s.graphicsQuality);
   const parkedAircraftCount=quality==="low"?3:quality==="medium"?5:8;
   useFrame((state)=>{craneRefs.current.forEach((crane,i)=>{if(crane)crane.rotation.y=Math.sin(state.clock.elapsedTime*.32+i*1.4)*.08;});});
-  const buildings = useMemo<CityBlock[]>(() => NEW_MAP_BUILDINGS.filter(b => b.district !== "residential").map((b) => ({ x:b.x,z:b.z,w:b.w,d:b.d,h:b.h,color:b.color,label:b.label })), []);
+  const buildings = useMemo<CityBlock[]>(() => NEW_MAP_BUILDINGS.filter(b => b.district !== "residential").map((b) => ({ x:b.x,z:b.z,w:b.w,d:b.d,h:b.h,color:b.color,label:b.label,doorSide:b.doorSide })), []);
   return <>
     {/* Curving S-roads and a U-shaped boulevard connect compact districts. */}
     <CurvedRoadNetwork />
