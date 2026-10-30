@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations, Html } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
-import { g } from "@/game/state";
+import { g, getCameraRelativeMove } from "@/game/state";
 import { getInteriorDefinition } from "@/game/interiors";
 import InteriorWorld from "@/components/game/InteriorWorld";
 import { NEW_MAP_SCALE, NEW_MAP_BOUNDS, isNewMapBlocked } from "@/game/newMap";
@@ -941,12 +941,11 @@ export default function GameWorld() {
     } else {
       const kf = !controlsBlocked ? ((k.has("KeyW") || k.has("ArrowUp") ? 1 : 0) - (k.has("KeyS") || k.has("ArrowDown") ? 1 : 0)) : 0;
       const ks = !controlsBlocked ? ((k.has("KeyA") || k.has("ArrowLeft") ? 1 : 0) - (k.has("KeyD") || k.has("ArrowRight") ? 1 : 0)) : 0;
-      const ix = ks + g.joy.x;
-      const iz = kf - g.joy.y;
-      const fx = -Math.sin(g.camYaw), fz = -Math.cos(g.camYaw);
-      const rx = Math.cos(g.camYaw), rz = -Math.sin(g.camYaw);
-      let dx = fx * iz + rx * ix;
-      let dz = fz * iz + rz * ix;
+      // Keyboard left/right is left-positive; the virtual joystick is right-positive.
+      // Convert both to the same camera-relative convention before projecting onto the ground.
+      const move = getCameraRelativeMove(g.camYaw, kf - g.joy.y, -ks + g.joy.x);
+      const dx = move.x;
+      const dz = move.z;
       const mag = Math.hypot(dx, dz);
       if (mag > 0.01) {
         dx /= mag;
@@ -982,7 +981,7 @@ export default function GameWorld() {
           g.playerPos.z = cw[1];
         }
         g.playerSpeed = mag * speed;
-        g.playerYaw = Math.atan2(dx, dz);
+        const facingYaw = Math.atan2(dx, dz);\n        g.playerYaw = THREE.MathUtils.damp(g.playerYaw, facingYaw, 14, dt);
       } else {
         g.playerSpeed = 0;
       }
