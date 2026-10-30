@@ -59,9 +59,17 @@ export const INTERIOR_DEFS: Record<string, InteriorDef> = {
   ],npcs:[npc("Reception officer",-3,-2,["Welcome to Government House.","Please sign in at reception."]),npc("Administrative aide",2,-2,["The meeting room is prepared.","Appointments are handled at reception."])],hotspots:[h("reception","Reception",-3,-2,"openModal:government"),h("meeting","Meeting room",0,1,"openModal:government"),h("admin","Administrative office",2,-2,"openModal:government")],exit:{x:0,z:5}},
   generic:{name:"City Interior",size:[10,9],floorColor:"#777a73",wallColor:"#c7c8bd",accent:"#d6b15e",props:[p("counter",0,-2,"#80664a",[2,.8,.7]),p("chair",-2,0,"#705744",[.6,.7,.6]),p("plant",3,1,"#3b8052",[.7,1.2,.7])],npcs:[npc("Staff member",1,-1,["Welcome in, how can I help?","Please ask if you need anything."])],hotspots:[h("service","Service counter",0,-2,"openModal:service")],exit:{x:0,z:4}}
 };
+
+// Career-specific workplace variants keep each employment route visually distinct.
+INTERIOR_DEFS["courier-depot"] = { ...INTERIOR_DEFS.depot, name: "Courier Logistics Hub", props: [...INTERIOR_DEFS.depot.props, p("rack",-4,2,"#66877d",[1,1.8,.7]), p("counter",0,2,"#8e6948",[2,.8,.7])], hotspots: [...INTERIOR_DEFS.depot.hotspots, h("dispatch","Dispatch desk",0,2,"openModal:service")] };
+INTERIOR_DEFS["transport-depot"] = { ...INTERIOR_DEFS.depot, name: "City Transport Terminal", props: [...INTERIOR_DEFS.depot.props, p("bench",-3,2,"#765b43",[2,.4,.6]), p("board",0,-3,"#253b42",[2,1,.12])] };
+INTERIOR_DEFS["construction-site"] = { ...INTERIOR_DEFS.factory, name: "Construction Site Office", props: [...INTERIOR_DEFS.factory.props, p("desk",0,-3,"#76543b",[2,.8,.8]), p("rack",5,2,"#8b927d",[1,1.8,.7])] };
+INTERIOR_DEFS["retail-workplace"] = { ...INTERIOR_DEFS.tower, name: "Retail & Corporate Plaza", props: [...INTERIOR_DEFS.tower.props, p("shelf",5,0,"#8b7658",[.8,1.7,.5]), p("counter",5,2,"#a27b50",[1.8,.9,.7])] };
+INTERIOR_DEFS["estate-office"] = { ...INTERIOR_DEFS["real-estate"], name: "Property & Estate Office", props: [...INTERIOR_DEFS["real-estate"].props, p("chair",2,1,"#66594d",[.6,.8,.6]), p("board",-3,-2,"#b9c9b4",[1.6,1.3,.15])] };
+
 export function getInteriorKind(label: string, kind?: string): string {
   const k=(kind??"").toLowerCase();
-  const known=["home","bank","mama-put","hospital","pharmacy","police","market","depot","fuel","dealership","real-estate","tower","factory","university","school","airport","port","resort","court","government"];
+  const known=["home","courier-depot","transport-depot","construction-site","retail-workplace","estate-office","bank","mama-put","hospital","pharmacy","police","market","depot","fuel","dealership","real-estate","tower","factory","university","school","airport","port","resort","court","government"];
   if(known.includes(k))return k;
   const s=label.toLowerCase();
   if(/bank|atm/.test(s))return "bank";
