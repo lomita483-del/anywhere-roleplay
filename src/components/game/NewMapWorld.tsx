@@ -678,7 +678,7 @@ function CityTrafficSignals() {
       });
     });
   });
-  return <>{junctions.map(([x, z], index) => <group key={index} position={[x, 0, z]}>
+  return <>{junctions.map(({ point: [x, z], index }) => <group key={index} position={[x, 0, z]}>
     <mesh position={[4.1, 2.25, 4.1]}><cylinderGeometry args={[.09, .11, 4.5, 8]}/><meshStandardMaterial color="#343b3d" metalness={.55} roughness={.5}/></mesh>
     <mesh position={[4.1, 4.45, 4.1]}><boxGeometry args={[.48, 1.12, .38]}/><meshStandardMaterial color="#252b2d" metalness={.25} roughness={.5}/></mesh>
     {[0, 1, 2].map((lamp) => <mesh key={lamp} ref={(el) => { const row = heads.current[index] ?? (heads.current[index] = [null, null, null]); row[lamp] = el; }} position={[4.1, 4.78 - lamp * .32, 3.89]}>
