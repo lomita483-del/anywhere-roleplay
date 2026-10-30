@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { useGame } from "@/game/store";
 import { g } from "@/game/state";
 import { getGraphicsProfile } from "@/game/graphics";
-import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, getNewMapPedestrianSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS } from "@/game/newMap";
+import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, getNewMapPedestrianSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS, isNewMapBlocked } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
@@ -841,7 +841,41 @@ function CityPedestrians() {
   const heads=useRef<THREE.InstancedMesh>(null);
   const quality=useGame(s=>s.graphicsQuality);
   const count=getGraphicsProfile(quality).pedestrianCount;
-  const anchors=useMemo(()=>[[-38,-76],[-28,-72],[-110,32],[-102,35],[0,0],[12,8],[78,10],[98,-40],[-112,118]] as [number,number][],[]);
+  // Build walkable pedestrian paths along both edges of every road, using the same
+  // road geometry as the rendered sidewalks. Invalid samples (buildings/water/props)
+  // are discarded and disconnected runs are split to prevent pedestrians cutting through obstacles.
+  const sidewalkRoutes=useMemo(()=>{
+    const routes:THREE.Vector3[][]=[];
+    NEW_MAP_ROADS.forEach((path,roadIndex)=>{
+      const width=NEW_MAP_ROAD_WIDTHS[roadIndex]??5;
+      const curve=new THREE.CatmullRomCurve3(path.map(([x,z])=>new THREE.Vector3(x,0,z)),false,"catmullrom",.22);
+      const sampleCount=Math.max(48,Math.ceil(curve.getLength()/2.2));
+      for(const side of [-1,1]){
+        let run:THREE.Vector3[]=[];
+        let previous:THREE.Vector3|null=null;
+        for(let step=0;step<=sampleCount;step++){
+          const u=step/sampleCount;
+          const point=curve.getPointAt(u),tangent=curve.getTangentAt(u);
+          const candidate=new THREE.Vector3(
+            point.x+tangent.z*side*(width*.5+1.05),
+            0,
+            point.z-tangent.x*side*(width*.5+1.05)
+          );
+          const blocked=isNewMapBlocked(candidate.x,candidate.z,.42);
+          if(blocked||(previous&&candidate.distanceTo(previous)>4.8)){
+            if(run.length>=5)routes.push(run);
+            run=[];
+          }
+          if(!blocked){
+            run.push(candidate);
+            previous=candidate;
+          }else previous=null;
+        }
+        if(run.length>=5)routes.push(run);
+      }
+    });
+    return routes;
+  },[]);
   const crossingRoutes=useMemo(()=>{
     const routes:{sx:number;sz:number;ex:number;ez:number;junctionIndex:number}[]=[];
     NEW_MAP_JUNCTIONS.forEach(([jx,jz],junctionIndex)=>{
@@ -858,7 +892,8 @@ function CityPedestrians() {
       });
       directions.slice(0,2).forEach(({x:ux,z:uz})=>{
         const cx=jx+ux*5.4,cz=jz+uz*5.4,px=-uz,pz=ux;
-        routes.push({sx:cx-px*5.2,sz:cz-pz*5.2,ex:cx+px*5.2,ez:cz+pz*5.2,junctionIndex});
+        const sx=cx-px*5.2,sz=cz-pz*5.2,ex=cx+px*5.2,ez=cz+pz*5.2;
+        if(!isNewMapBlocked(sx,sz,.35)&&!isNewMapBlocked(ex,ez,.35))routes.push({sx,sz,ex,ez,junctionIndex});
       });
     });
     return routes;
@@ -874,11 +909,12 @@ function CityPedestrians() {
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const phase=i*1.73;
-      let x:number,z:number,yaw:number;
+      let x=0,z=0,yaw=0,walking=false;
       if(i%5===0&&crossingRoutes.length){
         const route=crossingRoutes[Math.floor(i/5)%crossingRoutes.length]!;
-        const signalTime=((t+route.junctionIndex*4.5)%18+18)%18;
-        const cycleNumber=Math.floor((t+route.junctionIndex*4.5)/18);
+        const cycleTime=t+route.junctionIndex*4.5;
+        const signalTime=((cycleTime%18)+18)%18;
+        const cycleNumber=Math.floor(cycleTime/18);
         const progress=Math.max(0,Math.min(1,(signalTime-12)/2.4));
         const reverse=cycleNumber%2===1;
         const sx=reverse?route.ex:route.sx,sz=reverse?route.ez:route.sz;
@@ -886,14 +922,32 @@ function CityPedestrians() {
         x=sx+(ex-sx)*progress;
         z=sz+(ez-sz)*progress;
         yaw=Math.atan2(ex-sx,ez-sz);
+        walking=signalTime>=12&&signalTime<14.4;
+      }else if(sidewalkRoutes.length){
+        const route=sidewalkRoutes[Math.floor(i/5)%sidewalkRoutes.length]!;
+        const lengths:number[]=[0];
+        for(let p=1;p<route.length;p++)lengths.push(lengths[p-1]!+route[p]!.distanceTo(route[p-1]!));
+        const total=lengths[lengths.length-1]!;
+        const speed=.72+(i%4)*.12;
+        const raw=((t*speed+phase*2.1)%(total*2));
+        const distance=raw<=total?raw:total*2-raw;
+        let segment=1;
+        while(segment<lengths.length-1&&lengths[segment]!<distance)segment++;
+        const a=route[segment-1]!,b=route[segment]!;
+        const span=Math.max(.001,lengths[segment]!-lengths[segment-1]!);
+        const alpha=THREE.MathUtils.clamp((distance-lengths[segment-1]!)/span,0,1);
+        x=THREE.MathUtils.lerp(a.x,b.x,alpha);
+        z=THREE.MathUtils.lerp(a.z,b.z,alpha);
+        yaw=Math.atan2(b.x-a.x,b.z-a.z);
+        if(raw>total)yaw+=Math.PI;
+        walking=true;
       }else{
-        const a=anchors[i%anchors.length]!;
-        x=a[0]+Math.sin(t*.32+phase)*2.8;
-        z=a[1]+Math.cos(t*.27+phase)*2.2;
-        yaw=Math.atan2(Math.cos(t*.27+phase),Math.cos(t*.32+phase));
+        x=-38+Math.sin(t*.25+phase)*1.5;
+        z=-76+Math.cos(t*.25+phase)*1.5;
       }
-      dummy.position.set(x,.78,z);dummy.scale.set(.34,.95,.28);dummy.rotation.y=yaw;dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
-      dummy.position.set(x,1.48,z);dummy.scale.set(.23,.23,.23);dummy.rotation.set(0,0,0);dummy.updateMatrix();head.setMatrixAt(i,dummy.matrix);
+      const stride=walking?Math.sin(t*8+phase):0;
+      dummy.position.set(x,.78+Math.abs(stride)*.035,z);dummy.scale.set(.34,.95,.28);dummy.rotation.y=yaw;dummy.rotation.z=walking?stride*.055:0;dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);
+      dummy.position.set(x,1.48+Math.abs(stride)*.035,z);dummy.scale.set(.23,.23,.23);dummy.rotation.set(0,yaw,0);dummy.updateMatrix();head.setMatrixAt(i,dummy.matrix);
     }
     body.instanceMatrix.needsUpdate=true;head.instanceMatrix.needsUpdate=true;
   });
