@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Landmark, Moon, Sun, Wallet, Phone as PhoneIcon, ChevronsUp, MapPin, Satellite, ZoomIn, ZoomOut, ShieldCheck } from "lucide-react";
+import { Landmark, Moon, Sun, Wallet, Phone as PhoneIcon, ChevronsUp, MapPin, Satellite, ZoomIn, ZoomOut, ShieldCheck, Home, ShoppingBag, Map as MapIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { g } from "@/game/state";
@@ -347,6 +347,23 @@ export default function Hud() {
         </div>
       )}
       {interior && !/apartment|studio|home/i.test(interiorLabel) && <button className="pointer-events-auto absolute right-5 top-24 rounded-xl border border-[#eab308]/30 bg-[#101820]/90 px-3 py-2 text-xs font-bold text-[#f4d16a]" onClick={exitApartment}>Exit {interiorLabel} ↗</button>}
+
+      {/* Compact in-world navigation: these shortcuts open the real phone apps. */}
+      {!phoneOpen && !stadiumMode && (
+        <nav aria-label="Game navigation" className="pointer-events-auto absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-white/15 bg-[#07131b]/88 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,.48)] backdrop-blur-xl sm:bottom-6 sm:gap-2 sm:p-2">
+          {([
+            { label: "HOME", icon: Home, app: "home" as const },
+            { label: "BUY", icon: ShoppingBag, app: "market" as const },
+            { label: "MAP", icon: MapIcon, app: "map" as const },
+            { label: "PHONE", icon: PhoneIcon, app: null },
+          ]).map(({ label, icon: Icon, app }) => (
+            <button key={label} type="button" onClick={() => app ? openPhone(app) : openPhone()} className="flex min-w-[62px] flex-col items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[9px] font-black tracking-[.13em] text-white/80 transition hover:bg-white/10 hover:text-amber-100 active:scale-95 sm:min-w-[72px] sm:px-3" aria-label={label === "MAP" ? "Open city map" : label === "BUY" ? "Open marketplace" : label === "HOME" ? "Open player profile" : "Open phone"}>
+              <Icon className="h-[18px] w-[18px] text-[#e9ad49]" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* Phone toggle */}
       {!phoneOpen && (
