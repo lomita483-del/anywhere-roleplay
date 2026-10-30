@@ -981,7 +981,7 @@ export default function GameWorld() {
           g.playerPos.z = cw[1];
         }
         g.playerSpeed = mag * speed;
-        const facingYaw = Math.atan2(dx, dz);\n        g.playerYaw = THREE.MathUtils.damp(g.playerYaw, facingYaw, 14, dt);
+        const facingYaw = Math.atan2(dx, dz);\n        const shortestTurn = THREE.MathUtils.euclideanModulo(facingYaw - g.playerYaw + Math.PI, Math.PI * 2) - Math.PI;\n        g.playerYaw = THREE.MathUtils.damp(g.playerYaw, g.playerYaw + shortestTurn, 14, dt);
       } else {
         g.playerSpeed = 0;
       }
