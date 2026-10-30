@@ -39,10 +39,10 @@ export interface GpsWaypoint { x: number; z: number; label: string; kind?: strin
 export interface RideRequest { id: string; service: "ride" | "bike" | "private" | "danfo" | "keke"; status: "approaching" | "travelling"; destination: GpsWaypoint; fare: number; x: number; z: number; yaw: number; }
 export interface PlayerOutfit { gender?: "male" | "female"; skinTone: string; hair: string; hairColor?: string; top: string; bottom: string; accessory: string; }
 
-export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; }
+export interface PlayerNeeds { hunger: number; energy: number; health: number; stress: number; hygiene: number; fun: number; bladder: number; }
 export interface CharacterBackground { family: string; education: string; neighborhood: string; }
 
-export const DEFAULT_NEEDS: PlayerNeeds = { hunger: 100, energy: 100, health: 100, stress: 8, hygiene: 100 };
+export const DEFAULT_NEEDS: PlayerNeeds = { hunger: 100, energy: 100, health: 100, stress: 8, hygiene: 100, fun: 82, bladder: 12 };
 
 export interface JobStats {
   deliveries: number;
@@ -207,6 +207,9 @@ interface GameStore {
   tickNeeds: (seconds: number) => void;
   eatFood: (kind: "mama-put" | "snack" | "water") => boolean;
   sleep: () => void;
+  useBathroom: () => boolean;
+  shower: () => boolean;
+  restoreFun: (amount?: number) => void;
   rentals: Record<string, number>;
   rentMarketItem: (key: string) => boolean;
   setOutfit: (outfit: Partial<PlayerOutfit>) => void;
@@ -575,26 +578,41 @@ export const useGame = create<GameStore>((set, get) => ({
     const n = get().needs;
     const hunger = Math.max(0, n.hunger - seconds / 30);
     const energy = Math.max(0, n.energy - seconds / 45);
+    const fun = Math.max(0, n.fun - seconds / 150);
+    const bladder = Math.min(100, n.bladder + seconds / 210);
     const stress = Math.min(100, n.stress + (g.playerSpeed > 5 ? seconds * 0.035 : seconds * 0.008));
     const hygiene = Math.max(0, n.hygiene - seconds / 180);
     const health = Math.max(0, Math.min(100, n.health + (hunger > 15 && energy > 10 ? seconds * 0.006 : -seconds * 0.06)));
-    set({ needs: { hunger, energy, health, stress, hygiene } });
+    set({ needs: { hunger, energy, health, stress, hygiene, fun, bladder } });
   },
   eatFood: (kind) => {
     const choices = { "mama-put": { price: 900, hunger: 42, energy: 12, stress: -8, hygiene: 0, message: "🍲 Mama Put rice and stew — belle don full!" }, snack: { price: 250, hunger: 12, energy: 3, stress: -2, hygiene: 0, message: "🥟 Quick roadside snack bought." }, water: { price: 150, hunger: 0, energy: 2, stress: -4, hygiene: 0, message: "💧 Cold sachet water. Refreshing!" } } as const;
     const item = choices[kind];
     if (!get().spend(item.price, "cash") && !get().spend(item.price, "bank")) return false;
     const n = get().needs;
-    set({ needs: { hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), health: n.health, stress: Math.max(0, n.stress + item.stress), hygiene: n.hygiene } });
+    set({ needs: { ...n, hunger: Math.min(100, n.hunger + item.hunger), energy: Math.min(100, n.energy + item.energy), stress: Math.max(0, n.stress + item.stress), bladder: Math.min(100, n.bladder + (kind === "water" ? 14 : 5)) } });
     get().radio(item.message); get().save(); return true;
   },
   sleep: () => {
     const n = get().needs;
     g.time = 7;
-    set({ clock: 7, needs: { hunger: Math.max(0, n.hunger - 8), energy: 100, health: Math.min(100, n.health + 8), stress: Math.max(0, n.stress - 24), hygiene: n.hygiene } });
+    set({ clock: 7, needs: { ...n, hunger: Math.max(0, n.hunger - 8), energy: 100, health: Math.min(100, n.health + 8), stress: Math.max(0, n.stress - 24), fun: Math.min(100, n.fun + 24), bladder: Math.min(100, n.bladder + 10) } });
     get().save();
     get().radio("🏠 You rested until 07:00. Energy restored; a new Lagos morning begins.");
   },
+  useBathroom: () => {
+    const s = get();
+    if (!s.interior) { get().radio("🚻 Find a home, mall or public restroom first."); return false; }
+    set({ needs: { ...s.needs, bladder: 0, hygiene: Math.min(100, s.needs.hygiene + 3), stress: Math.max(0, s.needs.stress - 3) } });
+    get().radio("🚻 Bathroom break complete."); get().save(); return true;
+  },
+  shower: () => {
+    const s = get();
+    if (!s.interior || !/home|apartment|studio|house|mansion/i.test(s.interiorLabel)) { get().radio("🚿 You need to be inside your home to shower."); return false; }
+    set({ needs: { ...s.needs, hygiene: 100, stress: Math.max(0, s.needs.stress - 8) } });
+    get().radio("🚿 Fresh and clean. Hygiene restored."); get().save(); return true;
+  },
+  restoreFun: (amount = 18) => { const n=get().needs; set({ needs: { ...n, fun: Math.min(100,n.fun+Math.max(0,amount)), stress: Math.max(0,n.stress-5) } }); get().save(); },
   setInterior: (inside, label, kind) => set({ interior: inside, ...(label ? { interiorLabel: label } : {}), ...(kind ? { interiorKind: kind } : {}) }),
   setWaypoint: (waypoint) => { set({ waypoint }); get().save(); },
   requestRide: (service) => {
