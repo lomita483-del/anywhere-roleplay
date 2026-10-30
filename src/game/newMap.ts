@@ -152,6 +152,19 @@ export function isNewMapBlocked(x: number, z: number, radius = 0.5): boolean {
     z - radius < NEW_MAP_PORT_WATER.z + NEW_MAP_PORT_WATER.d / 2
   ) return true;
 
+  // NEW MAP roadside props are solid too: the player and vehicles must not pass
+  // through stalls, tree trunks, light poles or billboard supports.
+  if (NEW_MAP_MARKET_STALLS.some((stall) =>
+    x + radius > stall.x - stall.w / 2 && x - radius < stall.x + stall.w / 2 &&
+    z + radius > stall.z - stall.d / 2 && z - radius < stall.z + stall.d / 2
+  )) return true;
+  if (NEW_MAP_TREES.some((tree) => Math.hypot(x - tree.x, z - tree.z) < radius + (tree.type === "palm" ? 0.65 : 0.8))) return true;
+  if (NEW_MAP_LIGHT_POLES.some((pole) => Math.hypot(x - pole.x, z - pole.z) < radius + 0.38)) return true;
+  if (NEW_MAP_BILLBOARDS.some((board) =>
+    x + radius > board.x - board.w / 2 && x - radius < board.x + board.w / 2 &&
+    z + radius > board.z - board.d / 2 && z - radius < board.z + board.d / 2
+  )) return true;
+
   return false;
 }
 
