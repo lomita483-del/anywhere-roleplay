@@ -7,6 +7,7 @@ import { g } from "@/game/state";
 import { getGraphicsProfile } from "@/game/graphics";
 import { NEW_MAP_ROADS, NEW_MAP_ROAD_WIDTHS, NEW_MAP_SCALE, NEW_MAP_BUILDINGS, NEW_MAP_MARKET_STALLS, NEW_MAP_TREES, NEW_MAP_HILLS, NEW_MAP_GROUND_PATCHES, NEW_MAP_JUNCTIONS, getNewMapTrafficSignalState, getNewMapPedestrianSignalState, NEW_MAP_ROAD_ENDPOINTS, NEW_MAP_POIS, NEW_MAP_DISTRICTS, isNewMapBlocked } from "@/game/newMap";
 import { VehicleBody } from "./GameWorld";
+import { advanceTrafficProgress } from "@/game/trafficFollowing";
 
 /** Compact premium stadium; expensive match and crowd actors mount only in spectator mode. */
 type MatchPlayerData = { x: number; z: number; team: number; index: number };
@@ -663,7 +664,8 @@ function CityNamedTraffic() {
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
       const group=refs.current[i];if(!group)continue;
-      const route=routes[(i*2+1)%routes.length]!;
+      const routeIndex=(i*2+1)%routes.length;
+      const route=routes[routeIndex]!;
       const length=route.getLength();
       if(progress.current[i]===undefined)progress.current[i]=((i*.137)%1)*length;
       const candidate=(progress.current[i]!+delta*(quality==="low"?4.2:5.2+(i%3)*.45))%length;
@@ -671,7 +673,8 @@ function CityNamedTraffic() {
       let junctionIndex=-1,nearestDistance=Infinity;
       NEW_MAP_JUNCTIONS.forEach(([x,z],index)=>{const distance=Math.hypot(point.x-x,point.z-z);if(distance<nearestDistance){nearestDistance=distance;junctionIndex=index;}});
       const signal=junctionIndex>=0?getNewMapTrafficSignalState(t,junctionIndex*4.5):"green";
-      if(!(nearestDistance<7.5&&signal!=="green"))progress.current[i]=candidate;
+      const leaders=progress.current.filter((p,j)=>j!==i&&p!==undefined&&((j*2+1)%routes.length)===routeIndex) as number[];
+      progress.current[i]=advanceTrafficProgress({current:progress.current[i]!,candidate,routeLength:length,leaders,minimumGap:8,nearSignal:nearestDistance<7.5,signal});
       const actual=route.getPointAt(progress.current[i]!/length),tangent=route.getTangentAt(progress.current[i]!/length);
       group.position.set(actual.x,0,actual.z);
       group.rotation.y=Math.atan2(tangent.x,tangent.z);
@@ -754,7 +757,8 @@ function CityTraffic() {
     const body=bodyRef.current,glass=glassRef.current,wheels=wheelRef.current;if(!body||!glass||!wheels)return;
     const t=state.clock.elapsedTime;
     for(let i=0;i<count;i++){
-      const route=routes[i%routes.length]!,length=route.getLength();
+      const routeIndex=i%routes.length;
+      const route=routes[routeIndex]!,length=route.getLength();
       if(progress.current[i]===undefined)progress.current[i]=i*(length/count);
       const baseSpeed=quality==="low"?4.8:5.8+(i%4)*.7;
       const candidate=(progress.current[i]!+baseSpeed*delta)%length;
@@ -762,7 +766,8 @@ function CityTraffic() {
       let junctionIndex=-1,nearestDistance=Infinity;
       NEW_MAP_JUNCTIONS.forEach(([x,z],index)=>{const distance=Math.hypot(approach.x-x,approach.z-z);if(distance<nearestDistance){nearestDistance=distance;junctionIndex=index;}});
       const signal=junctionIndex>=0?getNewMapTrafficSignalState(t,junctionIndex*4.5):"green";
-      if(!(nearestDistance<7.5&&signal!=="green"))progress.current[i]=candidate;
+      const leaders=progress.current.filter((p,j)=>j!==i&&p!==undefined&&(j%routes.length)===routeIndex) as number[];
+      progress.current[i]=advanceTrafficProgress({current:progress.current[i]!,candidate,routeLength:length,leaders,minimumGap:7,nearSignal:nearestDistance<7.5,signal});
       const distance=progress.current[i]!;
       const point=route.getPointAt(distance/length);
       const tangent=route.getTangentAt(distance/length),yaw=Math.atan2(-tangent.z,tangent.x);
